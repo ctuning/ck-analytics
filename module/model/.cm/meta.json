@@ -1,0 +1,14 @@
+{
+  "license": "See CK LICENSE.txt for licensing details", 
+  "desc": "Universal predictive model", 
+  "copyright": "See CK Copyright.txt for copyright details", 
+  "actions": {
+    "use": {
+      "desc": "use model"
+    }, 
+    "build": {
+      "desc": "build model"
+    }
+  }, 
+  "developer": "Grigori Fursin"
+}
