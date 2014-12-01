@@ -48,6 +48,7 @@ def add(i):
 
               (experiment_repo_uoa)      - if defined, use it instead of repo_uoa
                                            (useful for remote repositories)
+              (remote_repo_uoa)          - if remote access, use this as a remote repo UOA
               (experiment_uoa)           - if entry with aggregated experiments is already known
               (experiment_uid)           - if entry with aggregated experiments is already known
               (add_new)                  - if 'yes', do not search for existing entry,
@@ -90,6 +91,8 @@ def add(i):
     xruoa=i.get('experiment_repo_uoa','')
     if xruoa!='': ruoa=xruoa
 
+    rruoa=i.get('remote_repo_uoa','')
+
     spbf=i.get('search_point_by_features','')
     dpoint={}
     point=0
@@ -108,6 +111,7 @@ def add(i):
        ii={'action':'search',
            'common_func':'yes',
            'repo_uoa': ruoa,
+           'remote_repo_uoa': rruoa,
            'module_uoa': work['self_module_uoa'],
            'search_dict':{'meta':meta}}
        r=ck.access(ii)
@@ -132,6 +136,7 @@ def add(i):
        ii={'action':'add',
            'common_func':'yes',
            'repo_uoa': ruoa,
+           'remote_repo_uoa': rruoa,
            'module_uoa': work['self_module_uoa'],
            'dict':dd}
        r=ck.access(ii)
@@ -147,6 +152,7 @@ def add(i):
     ii={'action':'load',
         'common_func':'yes',
         'repo_uoa': ruoa,
+        'remote_repo_uoa': rruoa,
         'module_uoa': work['self_module_uoa'],
         'data_uoa':euid,
         'get_lock':'yes'
@@ -224,6 +230,7 @@ def add(i):
     ii={'action':'update',
         'common_func':'yes',
         'repo_uoa': ruoa,
+        'remote_repo_uoa': rruoa,
         'module_uoa': work['self_module_uoa'],
         'data_uoa':euid,
         'dict':dd,
@@ -272,6 +279,8 @@ def plot(i):
 
 
     o=i.get('out','')
+
+    rruoa=i.get('remote_repo_uoa','')
 
     # Get table
     r=get(i)
@@ -370,6 +379,7 @@ def get(i):
 
     Input:  {
               (repo_uoa) or (experiment_repo_uoa)   - can be wild cards
+              (remote_repo_uoa)                     - if remote access, use this as a remote repo UOA
               (module_uoa)                          - can be wild cards
               (data_uoa)                            - can be wild cards
 
@@ -401,6 +411,8 @@ def get(i):
     xruoa=i.get('experiment_repo_uoa','')
     if xruoa!='': ruoa=xruoa
 
+    rruoa=i.get('remote_repo_uoa','')
+
     muoa=i.get('module_uoa','')
     duoa=i.get('data_uoa','')
 
@@ -417,6 +429,7 @@ def get(i):
     ii={'action':'search',
         'common_func':'yes',
         'repo_uoa':ruoa,
+        'remote_repo_uoa': rruoa,
         'module_uoa':muoa,
         'data_uoa':duoa,
         'repo_uoa_list':ruoal,
@@ -483,4 +496,13 @@ def get(i):
 
             table[sigraph].append(vect)
 
+    # If sort
+#    for sg in table:
+#        x=table[sg]
+#        y=sorted(x, key=which_key)
+#        table[sg]=y
+
     return {'return':0, 'table':table}
+
+#def which_key(d):
+#    return d[0]
