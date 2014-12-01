@@ -1,10 +1,8 @@
 {
   "actions": {
     "build": {
-      "desc": "build model"
-    }, 
-    "use": {
-      "desc": "use model"
+      "desc": "build model", 
+      "for_web": "yes"
     }, 
     "validate": {
       "desc": "validate model", 
@@ -12,10 +10,21 @@
     }
   }, 
   "copyright": "See CK Copyright.txt for copyright details", 
-  "desc": "Universal predictive model", 
+  "desc": "Predictive modeling using R", 
   "developer": "Grigori Fursin", 
   "license": "See CK LICENSE.txt for licensing details", 
+  "model_code_build": "model_$#model_name#$_build.R", 
+  "model_code_predict": "model_$#model_name#$_predict.R", 
   "module_deps": {
     "experiment": "bc0409fb61f0aa82"
-  }
+  }, 
+  "module_names": [
+    "earth", 
+    "lm", 
+    "nnet", 
+    "party", 
+    "randomforest", 
+    "rpart", 
+    "svm"
+  ]
 }

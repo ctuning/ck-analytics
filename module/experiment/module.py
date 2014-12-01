@@ -49,6 +49,7 @@ def add(i):
               (experiment_repo_uoa)      - if defined, use it instead of repo_uoa
                                            (useful for remote repositories)
               (remote_repo_uoa)          - if remote access, use this as a remote repo UOA
+
               (experiment_uoa)           - if entry with aggregated experiments is already known
               (experiment_uid)           - if entry with aggregated experiments is already known
               (add_new)                  - if 'yes', do not search for existing entry,
@@ -252,21 +253,30 @@ def plot(i):
     """
 
     Input:  {
-              (repo_uoa) or (experiment_repo_uoa)   - can be wild cards
-              (module_uoa)                          - can be wild cards
-              (data_uoa)                            - can be wild cards
+              Select entries or table:
+                 (repo_uoa) or (experiment_repo_uoa)     - can be wild cards
+                 (remote_repo_uoa)                       - if remote access, use this as a remote repo UOA
+                 (module_uoa) or (experiment_module_uoa) - can be wild cards
+                 (data_uoa) or (experiment_data_uoa)     - can be wild cards
 
-              (repo_uoa_list)      - list of repos to search
-              (module_uoa_list)    - list of module to search
-              (data_uoa_list)      - list of data to search
+                 (repo_uoa_list)                       - list of repos to search
+                 (module_uoa_list)                     - list of module to search
+                 (data_uoa_list)                       - list of data to search
 
-              (search_dict)        - search dict
-              (ignore_case)        - if 'yes', ignore case when searching
+                 (search_dict)                         - search dict
+                 (ignore_case)                         - if 'yes', ignore case when searching
 
-              (font)               - dict with font params ({family, weight, size})
+                       OR 
+
+                 table                                 - experiment table (if drawing from other functions)
+
 
               (flat_keys_list)                      - list of flat keys to extract from points into table
                                                       (order is important: for example, for plot -> X,Y,Z)
+              (flat_keys_index)                     - add all flat keys starting from this index 
+
+              Graphical parameters:
+
             }
 
     Output: {
@@ -280,9 +290,7 @@ def plot(i):
 
     o=i.get('out','')
 
-    rruoa=i.get('remote_repo_uoa','')
-
-    # Get table
+    # Get table from entries
     r=get(i)
     if r['return']>0: return r
     table=r['table']
@@ -378,20 +386,32 @@ def get(i):
     """
 
     Input:  {
-              (repo_uoa) or (experiment_repo_uoa)   - can be wild cards
-              (remote_repo_uoa)                     - if remote access, use this as a remote repo UOA
-              (module_uoa)                          - can be wild cards
-              (data_uoa)                            - can be wild cards
+              Select entries or table:
+                 (repo_uoa) or (experiment_repo_uoa)     - can be wild cards
+                 (remote_repo_uoa)                       - if remote access, use this as a remote repo UOA
+                 (module_uoa) or (experiment_module_uoa) - can be wild cards
+                 (data_uoa) or (experiment_data_uoa)     - can be wild cards
 
-              (repo_uoa_list)                       - list of repos to search
-              (module_uoa_list)                     - list of module to search
-              (data_uoa_list)                       - list of data to search
+                 (repo_uoa_list)                       - list of repos to search
+                 (module_uoa_list)                     - list of module to search
+                 (data_uoa_list)                       - list of data to search
 
-              (search_dict)                         - search dict
-              (ignore_case)                         - if 'yes', ignore case when searching
+                 (search_dict)                         - search dict
+                 (ignore_case)                         - if 'yes', ignore case when searching
+
+                       OR 
+
+                 table                                 - experiment table (if drawing from other functions)
+
 
               (flat_keys_list)                      - list of flat keys to extract from points into table
                                                       (order is important: for example, for plot -> X,Y,Z)
+              (flat_keys_index)                     - add all flat keys starting from this index 
+
+              (substitute_x_with_loop)              - if 'yes', substitute first vector dimension with a loop
+
+
+              (sort_index)                          - if !='', sort by this number within vector (i.e. 0 - X, 1 - Y, etc)
             }
 
     Output: {
@@ -399,110 +419,208 @@ def get(i):
                                          >  0, if error
               (error)      - error text if return > 0
 
-              table        - First dimension is for different graphs on one plot
-                             Second dimension: list of values for 
+              table        - first dimension is for different graphs on one plot
+                             Second dimension: list of vectors [X,Y,Z,...]
+
+              real_keys    - all added keys (useful when flat_keys_index is used)
             }
 
     """
 
     o=i.get('out','')
 
-    ruoa=i.get('repo_uoa','')
-    xruoa=i.get('experiment_repo_uoa','')
-    if xruoa!='': ruoa=xruoa
+    table=i.get('table',{})
 
-    rruoa=i.get('remote_repo_uoa','')
-
-    muoa=i.get('module_uoa','')
-    duoa=i.get('data_uoa','')
-
-    ruoal=i.get('repo_uoa_list',[])
-    muoal=i.get('module_uoa_list',[])
-    duoal=i.get('data_uoa_list',[])
-
-    sd=i.get('search_dict',{})
-    ic=i.get('ignore_case','')
-
+    fki=i.get('flat_keys_index','')
     fkl=i.get('flat_keys_list',[])
+    rfkl=[] # real flat keys (if all)
+    trfkl=[]
 
-    # Search entries
-    ii={'action':'search',
-        'common_func':'yes',
-        'repo_uoa':ruoa,
-        'remote_repo_uoa': rruoa,
-        'module_uoa':muoa,
-        'data_uoa':duoa,
-        'repo_uoa_list':ruoal,
-        'module_uoa_list':muoal,
-        'data_uoa_list':duoal,
-        'search_dict':sd,
-        'ignore_case':ic}
-    r=ck.access(ii)
-    if r['return']>0: return r
+    if len(table)==0:
+       ruoa=i.get('repo_uoa','')
+       xruoa=i.get('experiment_repo_uoa','')
+       if xruoa!='': ruoa=xruoa
 
-    lst=r['lst']
+       rruoa=i.get('remote_repo_uoa','')
 
-    table={}
-    igraph=0
-    sigraph=str(igraph)
+       muoa=i.get('experiment_module_uoa','')
+       if muoa=='':
+          muoa=i.get('module_uoa','')
 
-    # Iterate over entries
-    for e in lst:
-        ruid=e['repo_uid']
-        muoa=e['module_uoa']
-        muid=e['module_uid']
-        duoa=e['data_uoa']
-        duid=e['data_uid']
+       duoa=i.get('experiment_data_uoa','')
+       if duoa=='':
+          duoa=i.get('data_uoa','')
 
-        # Load entry
-        if o=='con':
-           ck.out('Loading entry '+muoa+':'+duoa+' ...')
+       ruoal=i.get('repo_uoa_list',[])
+       muoal=i.get('module_uoa_list',[])
+       duoal=i.get('data_uoa_list',[])
 
-        ii={'action':'load',
-            'repo_uoa':ruid,
-            'module_uoa':muid,
-            'data_uoa':duid}
-        r=ck.access(ii)
-        if r['return']>0: return r
+       sd=i.get('search_dict',{})
+       ic=i.get('ignore_case','')
 
-        p=r['path']
-        dd=r['dict']
-        ipoints=int(dd.get('points','0'))
+       # Search entries
+       ii={'action':'search',
+           'common_func':'yes',
+           'repo_uoa':ruoa,
+           'remote_repo_uoa': rruoa,
+           'module_uoa':muoa,
+           'data_uoa':duoa,
+           'repo_uoa_list':ruoal,
+           'module_uoa_list':muoal,
+           'data_uoa_list':duoal,
+           'search_dict':sd,
+           'ignore_case':ic}
+       r=ck.access(ii)
+       if r['return']>0: return r
 
-        for ip in range(1, ipoints+1):
-            sp=str(ip)
-            spz=sp.zfill(8)
-            fpflat=spz+'.flat.json'
-            fpflat1=os.path.join(p, fpflat)
+       lst=r['lst']
 
-            r=ck.load_json_file({'json_file':fpflat1})
-            if r['return']>0: return r
-            df=r['dict']
+       table={}
+       igraph=0
+       sigraph=str(igraph)
 
-            # Create final vector (X,Y,Z,...)
-            vect=[]
-            if len(fkl)==0:
-               # Add all sorted (otherwise there is no order in python dict
-               for k in sorted(df.keys()):
-                   v=df[k]
-                   vect.append(v)
-            else:
-               for k in fkl:
-                   v=float(df.get(k,'')) # TBD
-                   vect.append(v)
+       # Iterate over entries
+       for e in lst:
+           ruid=e['repo_uid']
+           muoa=e['module_uoa']
+           muid=e['module_uid']
+           duoa=e['data_uoa']
+           duid=e['data_uid']
 
-            # Add vector
-            if sigraph not in table: table[sigraph]=[]
+           # Load entry
+           if o=='con':
+              ck.out('Loading entry '+muoa+':'+duoa+' ...')
 
-            table[sigraph].append(vect)
+           ii={'action':'load',
+               'repo_uoa':ruid,
+               'module_uoa':muid,
+               'data_uoa':duid}
+           r=ck.access(ii)
+           if r['return']>0: return r
+
+           p=r['path']
+           dd=r['dict']
+           ipoints=int(dd.get('points','0'))
+
+           for ip in range(1, ipoints+1):
+               sp=str(ip)
+               spz=sp.zfill(8)
+               fpflat=spz+'.flat.json'
+               fpflat1=os.path.join(p, fpflat)
+
+               r=ck.load_json_file({'json_file':fpflat1})
+               if r['return']>0: return r
+               df=r['dict']
+
+               # Create final vector (X,Y,Z,...)
+               vect=[]
+               if fki!='' or len(fkl)==0:
+                  # Add all sorted (otherwise there is no order in python dict
+                  for k in sorted(df.keys()):
+                      if fki=='' or k.startswith(fki):
+                         if len(rfkl)==0:
+                            trfkl.append(k)
+                         v=df[k]
+                         vect.append(v)
+                  if len(trfkl)!=0:
+                     rfkl=trfkl
+               else:
+                  for k in fkl:
+                      v=float(df.get(k,'')) # TBD
+                      vect.append(v)
+                     
+               # Add vector
+               if sigraph not in table: table[sigraph]=[]
+
+               table[sigraph].append(vect)
+
+    if len(rfkl)==0 and len(fkl)!=0: rfkl=fkl
 
     # If sort
-#    for sg in table:
-#        x=table[sg]
-#        y=sorted(x, key=which_key)
-#        table[sg]=y
+    si=i.get('sort_index','')
+    if si!='':
+       isi=int(si)
+       for sg in table:
+           x=table[sg]
+           y=sorted(x, key=lambda var: var[isi])
+           table[sg]=y
 
-    return {'return':0, 'table':table}
+    # Substitute all X with a loop (usually to sort Y and compare with predictions in scatter graphs, etc)
+    if i.get('substitute_x_with_loop','')=='yes':
+       for sg in table:
+           h=0
+           x=table[sg]
+           for q in range(0, len(x)):
+               h+=1
+	       x[q][0]=h
+           table[sg]=x
 
-#def which_key(d):
-#    return d[0]
+    return {'return':0, 'table':table, 'real_keys':rfkl}
+
+##############################################################################
+# Convert experiment table to CSV
+
+def convert_table_to_csv(i):
+    """
+
+    Input:  {
+              table              - experiment table
+              keys               - keys
+              file_name          - output file for CSV
+              csv_no_header      - if 'yes', do not add header
+              (csv_separator)    - CSV entry separator (default ;)
+              (csv_decimal_mark) - CSV decimal mark    (default .)
+
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    tbl=i['table']
+    keys=i['keys']
+    keys_desc=i.get('keys_desc',{})
+
+    fout=i['file_name']
+
+    sep=i.get('csv_separator',';')
+    if sep=='': sep=';'
+
+    dec=i.get('csv_decimal_mark',',')
+    if dec=='': dec=','
+
+    c=''
+
+    # Prepare description line
+    line=''
+    if i.get('csv_no_header','')!='yes':
+       for k in keys:
+           if line!='': line+=sep
+           line+='"'+k+'"'
+       c+=line+'\n'
+
+    # Iterate over data
+    for t in tbl:
+        line=''
+        for k in range(0, len(keys)):
+            if line!='': line+=sep
+            v=t[k]
+            try:
+              v=str(float(v)).replace(',', dec)
+            except Exception as e:
+              v='"'+str(v)+'"'
+            line+=v
+        c+=line+'\n'
+
+    try:
+       f=open(fout,'wt')
+       f.write(c+'\n');
+       f.close()
+    except Exception as e:
+       return {'return':1, 'error':'problem writing csv file ('+format(e)+')'}
+
+    return {'return':0}
