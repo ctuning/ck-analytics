@@ -15,6 +15,10 @@
     "plot": {
       "desc": "plot universal graph by flat dimensions", 
       "for_web": "no"
+    }, 
+    "stat_analysis": {
+      "desc": "Statistical analysis of experimental results", 
+      "for_web": "yes"
     }
   }, 
   "copyright": "See CK Copyright.txt for copyright details", 

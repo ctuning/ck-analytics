@@ -27,7 +27,7 @@ x=data.frame(data_set[,1:ncol(data_set)-1])
 y=data_set[,ncol(data_set)]
 
 # model
-model=svm(y~.,data=x,cost=10,gamma=10)
+model=svm(y~.,data=x,cost=10,gamma=0.1)
 
 # Saving model
 save(model, file=paste(foutput,'',sep=''))

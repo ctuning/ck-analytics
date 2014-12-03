@@ -170,6 +170,7 @@ def add(i):
        ck.out('  Loaded and locked successfully (lock UID='+lock_uid+') ...')
 
     # If species found, check if search point by feature
+    ddfe={}
     if euid!='' and spbf=='yes':
        if len(ft)==0:
           return {'return':1, 'error':'can\'t search by features when they are not present'}
@@ -178,7 +179,6 @@ def add(i):
 
        for q in range(1, ipoints+1):
            sp=str(q)
-#              ck.out('   Checking q='+sp+' ...')
            fp=sp.zfill(8)+'.json'
            pfp=os.path.join(p,fp)
 
@@ -195,18 +195,18 @@ def add(i):
               point=q
               if o=='con':
                  ck.out('      Found point by features: '+str(q))
+
               break
 
     # Adding new point (if not found by features)
     if point==0:
        ipoints+=1
+
+       point=ipoints
        sp=str(ipoints)
        spz=sp.zfill(8)
        fp=spz+'.json'
        fp1=os.path.join(p, fp)
-
-       fpflat=spz+'.flat.json'
-       fpflat1=os.path.join(p, fpflat)
 
        if o=='con': 
           ck.out('  Saving point '+sp+' ...')
@@ -214,15 +214,33 @@ def add(i):
        r=ck.save_json_to_file({'json_file':fp1, 'dict':dd, 'sort_keys':sk})
        if r['return']>0: return r
 
-       # Flatten dictionary
+       dd['points']=sp
+
+    # Perform statistical analysis
+    if point!=0:
+
+       # Flatten submitted data
        r=ck.flatten_dict({'dict':dd})
        if r['return']>0: return r
-
        ddf=r['dict']
-       r=ck.save_json_to_file({'json_file':fpflat1, 'dict':ddf, 'sort_keys':sk})
-       if r['return']>0: return r
 
-       dd['points']=sp
+       # Load flattened and statistically analyzed data
+       spz=str(point).zfill(8)
+       fpflat=spz+'.flat.json'
+       fpflat1=os.path.join(p, fpflat)
+
+       if os.path.isfile(fpflat1):
+          r=ck.load_json_file({'json_file':fpflat1})
+          if r['return']>0: return r
+          ddfe=r['dict']
+
+       r=stat_analysis({'dict':ddfe, 'dict1':ddf})
+       if r['return']>0: return r
+       ddfe=r['dict']
+
+       # Save updated flat dict to file
+       r=ck.save_json_to_file({'json_file':fpflat1, 'dict':ddfe, 'sort_keys':sk})
+       if r['return']>0: return r
 
     # Adding/updating entry
     if o=='con': 
@@ -274,8 +292,10 @@ def plot(i):
               (flat_keys_list)                      - list of flat keys to extract from points into table
                                                       (order is important: for example, for plot -> X,Y,Z)
               (flat_keys_index)                     - add all flat keys starting from this index 
+              (flat_keys_index_end)                 - add all flat keys ending with this index (default #min)
 
               Graphical parameters:
+                plot_type                  - mpl_2d_scatter
 
             }
 
@@ -299,83 +319,116 @@ def plot(i):
        return {'return':1, 'error':'no points found'}
 
     # Prepare libraries
-#    import numpy as np
-    import matplotlib as mpl
+    pt=i.get('plot_type','')
+    if pt.startswith('mpl_'):
 
-    if ck.cfg.get('use_internal_engine_for_plotting','')=='yes':
-       mpl.use('Agg') # if XWindows is not installed, use internal engine
+   #    import numpy as np
+       import matplotlib as mpl
 
-    import matplotlib.pyplot as plt
+       if ck.cfg.get('use_internal_engine_for_plotting','')=='yes':
+          mpl.use('Agg') # if XWindows is not installed, use internal engine
 
-    # Set font
-    font=i.get('font',{})
-    if len(font)==0:
-       font = {'family':'arial', 
-               'weight':'normal', 
-               'size': 10}
+       import matplotlib.pyplot as plt
 
-    plt.rc('font', **font)
+       # Set font
+       font=i.get('font',{})
+       if len(font)==0:
+          font = {'family':'arial', 
+                  'weight':'normal', 
+                  'size': 10}
 
-    # Configure graph
-    gs=cfg['mpl_point_styles']
+       plt.rc('font', **font)
 
-    sizex=i.get('mpl_image_size_x','')
-    if sizex=='': sizex='9'
+       # Configure graph
+       gs=cfg['mpl_point_styles']
 
-    sizey=i.get('mpl_image_size_y','')
-    if sizey=='': sizey='5'
+       sizex=i.get('mpl_image_size_x','')
+       if sizex=='': sizex='9'
 
-    dpi=i.get('mpl_image_dpi','')
-    if dpi=='': dpi='100'
+       sizey=i.get('mpl_image_size_y','')
+       if sizey=='': sizey='5'
 
-    if sizex!='' and sizey!='' and dpi!='':
-       fig=plt.figure(figsize=(int(sizex),int(sizey)))
+       dpi=i.get('mpl_image_dpi','')
+       if dpi=='': dpi='100'
+
+       if sizex!='' and sizey!='' and dpi!='':
+          fig=plt.figure(figsize=(int(sizex),int(sizey)))
+       else:
+          fig=plt.figure()
+
+       if i.get('plot_grid','')=='yes':
+          plt.grid(True)
+
+       sp=fig.add_subplot(111)
+   #    sp.set_yscale('log')
+
+       xmin=i.get('xmin','')
+       xmax=i.get('xmax','')
+       ymin=i.get('ymin','')
+       ymax=i.get('ymax','')
+
+       if xmin!='' and xmax!='':
+          sp.set_xlim(float(xmin), float(xmax))
+       if ymin!='' and ymax!='':
+          sp.set_ylim(float(ymin), float(ymax))
+
+       xerr=i.get('display_x_error_bar','')
+       yerr=i.get('display_y_error_bar','')
+
+       # Add points
+       s=0
+       for g in table:
+           gt=table[g]
+
+           if pt=='mpl_2d_scatter':
+              mx=[]
+              mxerr=[]
+              my=[]
+              myerr=[]
+
+              for u in gt:
+                  iu=0
+
+                  mx.append(u[iu])
+                  iu+=1
+
+                  if xerr=='yes':
+                     mxerr.append(u[iu])
+                     iu+=1 
+
+                  my.append(u[iu])
+                  iu+=1
+
+                  if yerr=='yes':
+                     myerr.append(u[iu])
+                     iu+=1 
+
+              if xerr!='yes' and yerr!='yes':
+                 sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=gs[s]['color'], marker=gs[s]['marker'])
+              elif xerr!='yes':
+                 sp.errorbar(mx, my, myerr, myerr, capsize=0, ls='none', c=gs[s]['color'])
+              elif yerr!='yes':
+                 sp.errorbar(mx, my, mxerr, capsize=0, ls='none', c=gs[s]['color'])
+              else:
+                 sp.errorbar(mx, my, mxerr, myerr, capsize=0, ls='none', c=gs[s]['color'])
+
+           s+=1
+           if s>=len(gs):s=0
+
+       # Set axes names
+       axd=i.get('axis_x_desc','')
+       if axd!='': plt.xlabel(axd)
+
+       ayd=i.get('axis_y_desc','')
+       if ayd!='': plt.ylabel(ayd)
+
+       atitle=i.get('title','')
+       if atitle!='': plt.title(atitle)
+
+       plt.show()
+
     else:
-       fig=plt.figure()
-
-    if i.get('plot_grid','')=='yes':
-       plt.grid(True)
-
-    sp=fig.add_subplot(111)
-#    sp.set_yscale('log')
-
-    xmin=i.get('xmin','')
-    xmax=i.get('xmax','')
-    ymin=i.get('ymin','')
-    ymax=i.get('ymax','')
-
-    if xmin!='' and xmax!='':
-       sp.set_xlim(float(xmin), float(xmax))
-    if ymin!='' and ymax!='':
-       sp.set_ylim(float(ymin), float(ymax))
-
-    # Add points
-    s=0
-    for g in table:
-        gt=table[g]
-
-        mx=[]
-        my=[]
-
-        for u in gt:
-            mx.append(u[0])
-            my.append(u[1])
-
-        sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=gs[s]['color'], marker=gs[s]['marker'])
-        s+=1
-        if s>=len(gs):s=0
-
-    # Set axes names
-    axd=i.get('axis_x_desc','')
-    if axd!='': plt.xlabel(axd)
-
-    ayd=i.get('axis_y_desc','')
-    if ayd!='': plt.ylabel(ayd)
-
-    atitle=i.get('title','')
-    if atitle!='': plt.title(atitle)
-
-    plt.show()
+       return {'return':1, 'error':'this type of plot ('+pt+') is not supported'}
 
     return {'return':0}
 
@@ -407,9 +460,9 @@ def get(i):
               (flat_keys_list)                      - list of flat keys to extract from points into table
                                                       (order is important: for example, for plot -> X,Y,Z)
               (flat_keys_index)                     - add all flat keys starting from this index 
+              (flat_keys_index_end)                 - add all flat keys ending with this index (default #min)
 
               (substitute_x_with_loop)              - if 'yes', substitute first vector dimension with a loop
-
 
               (sort_index)                          - if !='', sort by this number within vector (i.e. 0 - X, 1 - Y, etc)
             }
@@ -432,6 +485,7 @@ def get(i):
     table=i.get('table',{})
 
     fki=i.get('flat_keys_index','')
+    fkie=i.get('flat_keys_index_end','#min')
     fkl=i.get('flat_keys_list',[])
     rfkl=[] # real flat keys (if all)
     trfkl=[]
@@ -517,7 +571,7 @@ def get(i):
                if fki!='' or len(fkl)==0:
                   # Add all sorted (otherwise there is no order in python dict
                   for k in sorted(df.keys()):
-                      if fki=='' or k.startswith(fki):
+                      if (fki=='' or k.startswith(fki)) and (fkie=='' or k.endswith(fkie)):
                          if len(rfkl)==0:
                             trfkl.append(k)
                          v=df[k]
@@ -526,7 +580,12 @@ def get(i):
                      rfkl=trfkl
                else:
                   for k in fkl:
-                      v=float(df.get(k,'')) # TBD
+                      v=df.get(k,'')
+                      try:
+                         v=float(v) # TBD
+                      except Exception as e:
+                         v=0
+                         pass
                       vect.append(v)
                      
                # Add vector
@@ -624,3 +683,88 @@ def convert_table_to_csv(i):
        return {'return':1, 'error':'problem writing csv file ('+format(e)+')'}
 
     return {'return':0}
+
+
+##############################################################################
+# Statistical analysis of experimental results
+
+def stat_analysis(i):
+    """
+
+    Input:  {
+              dict         - existing flat dict 
+              dict1        - new flat dict to add
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+
+              dict         - updated dict
+            }
+
+    """
+
+    d=i['dict']
+    d1=i['dict1']
+
+    for k in d1:
+        v1=d1[k]
+
+        # Put all values (useful to calculate averages, deviations, etc)
+        k_all=k+'#all'
+        v=d.get(k_all,[])
+        if v1 not in v:
+           v.append(v1)
+           d[k_all]=v
+
+           # Try to convert to float
+           vfs=True # successfully converted
+           try:
+              vf=float(v1)
+           except Exception as e:
+              vfs=False 
+              pass
+
+           if not vfs:
+              d[k]=v1
+           else:
+              # Calculate min
+              k_min=k+'#min'
+
+              v=d.get(k_min,'')
+              if v=='':
+                 vfmin=vf
+              else:
+                 vfmin=float(v)
+                 if vf<vfmin: vfmin=vf
+              d[k_min]=str(vfmin)
+
+              # Add min to original (for compatibility with CM)
+              d[k]=str(vfmin)
+
+              # Calculate max
+              k_max=k+'#max'
+
+              v=d.get(k_max,'')
+              if v=='':
+                 vfmax=vf
+              else:
+                 vfmax=float(v)
+                 if vf>vfmax: vfmax=vf
+              d[k_max]=str(vfmax)
+
+              # Calculate #delta (max-min)
+              k_delta=k+'#delta'
+              d[k_delta]=str(vfmax-vfmin)
+
+              # Calculate #delta percent (max-min)/min
+              if vfmax!=vfmin:
+                 k_delta=k+'#delta_percent'
+                 d[k_delta]=str((vfmax-vfmin)/vfmin)
+
+              # Calculate average
+              k_average=k+'#average'
+
+    return {'return':0, 'dict':d}
