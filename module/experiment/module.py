@@ -760,7 +760,7 @@ def stat_analysis(i):
               d[k_delta]=str(vfmax-vfmin)
 
               # Calculate #delta percent (max-min)/min
-              if vfmax!=vfmin:
+              if vfmin:
                  k_delta=k+'#delta_percent'
                  d[k_delta]=str((vfmax-vfmin)/vfmin)
 
