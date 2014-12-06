@@ -1,23 +1,7 @@
 {
-  "actions": {
-    "build": {
-      "desc": "build model", 
-      "for_web": "yes"
-    }, 
-    "validate": {
-      "desc": "validate model", 
-      "for_web": "yes"
-    }
-  }, 
-  "copyright": "See CK Copyright.txt for copyright details", 
-  "desc": "Predictive modeling using R", 
-  "developer": "Grigori Fursin", 
-  "license": "See CK LICENSE.txt for licensing details", 
   "model_code_build": "model_$#model_name#$_build.R", 
-  "model_code_predict": "model_$#model_name#$_predict.R", 
-  "module_deps": {
-    "experiment": "bc0409fb61f0aa82"
-  }, 
+  "copyright": "See CK Copyright.txt for copyright details", 
+  "license": "See CK LICENSE.txt for licensing details", 
   "module_names": [
     "earth", 
     "lm", 
@@ -26,5 +10,21 @@
     "randomforest", 
     "rpart", 
     "svm"
-  ]
+  ], 
+  "actions": {
+    "validate": {
+      "for_web": "yes", 
+      "desc": "validate model"
+    }, 
+    "build": {
+      "for_web": "yes", 
+      "desc": "build model"
+    }
+  }, 
+  "model_code_predict": "model_$#model_name#$_predict.R", 
+  "module_deps": {
+    "experiment": "bc0409fb61f0aa82"
+  }, 
+  "desc": "Predictive modeling using R", 
+  "developer": "Grigori Fursin"
 }
