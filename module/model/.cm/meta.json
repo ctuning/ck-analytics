@@ -18,6 +18,7 @@
   "desc": "Universal predictive model", 
   "license": "See CK LICENSE.txt for licensing details", 
   "module_deps": {
-    "experiment": "bc0409fb61f0aa82"
+    "experiment": "bc0409fb61f0aa82",
+    "experiment.graph": "2d41f89bcf32d4d4"
   }
 }

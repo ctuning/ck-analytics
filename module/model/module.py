@@ -267,29 +267,30 @@ def validate(i):
         if diff>0.1: #10%
            x1=' ***'
 
-        line="%11.3f" % v + "%11.3f" % pv + "%7.3f" % diff + x1
-        ck.out(line)
+        if o=='con':
+           line="%11.3f" % v + "%11.3f" % pv + "%7.3f" % diff + x1
+           ck.out(line)
 
     rmse=math.sqrt(s/lctable)
 
-#    rr['rmse']=str(rmse)
-#    rr['max_var']=var
-
-    ck.out('')
-    ck.out('Model RMSE='+str(rmse))
+    if o=='con':
+       ck.out('')      
+       ck.out('Model RMSE='+str(rmse))
 
     # Visualize?
     if i.get('visualize','')=='yes':
+       if o=='con':
+          ck.out('')
+          ck.out('Attempting to visualize ...')
+
        table={"0":[], "1":[]}
        for k in range(0, lctable):
            table["0"].append([0, ctable[k][0]])
            table["1"].append([0, pt[k][0]])
 
        ii={'action':'plot',
-           'module_uoa':cfg['module_deps']['experiment'],
-           'table':table,
-           'sort_index':'1',
-           'substitute_x_with_loop':'yes'}
+           'module_uoa':cfg['module_deps']['experiment.graph'],
+           'table':table}
        iig=i.get('graph_params',{})
        ii.update(iig)
        r=ck.access(ii)

@@ -301,182 +301,6 @@ def add(i):
     return r
 
 ##############################################################################
-# plot universal graph by flat dimensions
-
-def plot(i):
-    """
-
-    Input:  {
-              Select entries or table:
-                 (repo_uoa) or (experiment_repo_uoa)     - can be wild cards
-                 (remote_repo_uoa)                       - if remote access, use this as a remote repo UOA
-                 (module_uoa) or (experiment_module_uoa) - can be wild cards
-                 (data_uoa) or (experiment_data_uoa)     - can be wild cards
-
-                 (repo_uoa_list)                       - list of repos to search
-                 (module_uoa_list)                     - list of module to search
-                 (data_uoa_list)                       - list of data to search
-
-                 (search_dict)                         - search dict
-                 (ignore_case)                         - if 'yes', ignore case when searching
-
-                       OR 
-
-                 table                                 - experiment table (if drawing from other functions)
-
-
-              (flat_keys_list)                      - list of flat keys to extract from points into table
-                                                      (order is important: for example, for plot -> X,Y,Z)
-              (flat_keys_index)                     - add all flat keys starting from this index 
-              (flat_keys_index_end)                 - add all flat keys ending with this index (default #min)
-
-              Graphical parameters:
-                plot_type                  - mpl_2d_scatter
-
-            }
-
-    Output: {
-              return       - return code =  0, if successful
-                                         >  0, if error
-              (error)      - error text if return > 0
-            }
-
-    """
-
-
-    o=i.get('out','')
-
-    # Get table from entries
-    r=get(i)
-    if r['return']>0: return r
-    table=r['table']
-
-    if len(table)==0:
-       return {'return':1, 'error':'no points found'}
-
-    # Prepare libraries
-    pt=i.get('plot_type','')
-    if pt.startswith('mpl_'):
-
-   #    import numpy as np
-       import matplotlib as mpl
-
-       if ck.cfg.get('use_internal_engine_for_plotting','')=='yes':
-          mpl.use('Agg') # if XWindows is not installed, use internal engine
-
-       import matplotlib.pyplot as plt
-
-       # Set font
-       font=i.get('font',{})
-       if len(font)==0:
-          font = {'family':'arial', 
-                  'weight':'normal', 
-                  'size': 10}
-
-       plt.rc('font', **font)
-
-       # Configure graph
-       gs=cfg['mpl_point_styles']
-
-       sizex=i.get('mpl_image_size_x','')
-       if sizex=='': sizex='9'
-
-       sizey=i.get('mpl_image_size_y','')
-       if sizey=='': sizey='5'
-
-       dpi=i.get('mpl_image_dpi','')
-       if dpi=='': dpi='100'
-
-       if sizex!='' and sizey!='' and dpi!='':
-          fig=plt.figure(figsize=(int(sizex),int(sizey)))
-       else:
-          fig=plt.figure()
-
-       if i.get('plot_grid','')=='yes':
-          plt.grid(True)
-
-       sp=fig.add_subplot(111)
-   #    sp.set_yscale('log')
-
-       xmin=i.get('xmin','')
-       xmax=i.get('xmax','')
-       ymin=i.get('ymin','')
-       ymax=i.get('ymax','')
-
-       if xmin!='' and xmax!='':
-          sp.set_xlim(float(xmin), float(xmax))
-       if ymin!='' and ymax!='':
-          sp.set_ylim(float(ymin), float(ymax))
-
-       xerr=i.get('display_x_error_bar','')
-       yerr=i.get('display_y_error_bar','')
-
-       # Add points
-       s=0
-       for g in table:
-           gt=table[g]
-
-           if pt=='mpl_2d_scatter':
-              mx=[]
-              mxerr=[]
-              my=[]
-              myerr=[]
-
-              for u in gt:
-                  iu=0
-
-                  # Check if no None
-                  partial=False
-                  for q in u:
-                      if q==None:
-                         partial=True
-                         break
-
-                  if not partial:
-                     mx.append(u[iu])
-                     iu+=1
-
-                     if xerr=='yes':
-                        mxerr.append(u[iu])
-                        iu+=1 
-
-                     my.append(u[iu])
-                     iu+=1
-
-                     if yerr=='yes':
-                        myerr.append(u[iu])
-                        iu+=1 
-
-              if xerr!='yes' and yerr!='yes':
-                 sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=gs[s]['color'], marker=gs[s]['marker'])
-              elif xerr!='yes':
-                 sp.errorbar(mx, my, myerr, myerr, capsize=0, ls='none', c=gs[s]['color'])
-              elif yerr!='yes':
-                 sp.errorbar(mx, my, mxerr, capsize=0, ls='none', c=gs[s]['color'])
-              else:
-                 sp.errorbar(mx, my, mxerr, myerr, capsize=0, ls='none', c=gs[s]['color'])
-
-           s+=1
-           if s>=len(gs):s=0
-
-       # Set axes names
-       axd=i.get('axis_x_desc','')
-       if axd!='': plt.xlabel(axd)
-
-       ayd=i.get('axis_y_desc','')
-       if ayd!='': plt.ylabel(ayd)
-
-       atitle=i.get('title','')
-       if atitle!='': plt.title(atitle)
-
-       plt.show()
-
-    else:
-       return {'return':1, 'error':'this type of plot ('+pt+') is not supported'}
-
-    return {'return':0}
-
-##############################################################################
 # get points from multiple entries
 
 def get(i):
@@ -507,7 +331,6 @@ def get(i):
               (flat_keys_index_end)                 - add all flat keys ending with this index (default #min)
 
               (substitute_x_with_loop)              - if 'yes', substitute first vector dimension with a loop
-
               (sort_index)                          - if !='', sort by this number within vector (i.e. 0 - X, 1 - Y, etc)
             }
 
@@ -636,24 +459,18 @@ def get(i):
 
     if len(rfkl)==0 and len(fkl)!=0: rfkl=fkl
 
-    # If sort
+    # If sort/substitute
     si=i.get('sort_index','')
     if si!='':
-       isi=int(si)
-       for sg in table:
-           x=table[sg]
-           y=sorted(x, key=lambda var: var[isi])
-           table[sg]=y
+       rx=sort_table({'table':table, 'sort_index':si})
+       if rx['return']>0: return rx
+       table=rx['table']
 
     # Substitute all X with a loop (usually to sort Y and compare with predictions in scatter graphs, etc)
     if i.get('substitute_x_with_loop','')=='yes':
-       for sg in table:
-           h=0
-           x=table[sg]
-           for q in range(0, len(x)):
-               h+=1
-	       x[q][0]=h
-           table[sg]=x
+       rx=substitute_x_with_loop({'table':table})
+       if rx['return']>0: return rx
+       table=rx['table']
 
     return {'return':0, 'table':table, 'real_keys':rfkl}
 
@@ -709,10 +526,13 @@ def convert_table_to_csv(i):
         for k in range(0, len(keys)):
             if line!='': line+=sep
             v=t[k]
-            try:
-              v=str(float(v)).replace(',', dec)
-            except Exception as e:
-              v='"'+str(v)+'"'
+
+            if type(v)==float:
+               v=str(v).replace(',', dec)
+            elif type(v)==int:
+               v=str(v)
+            else:
+               v='"'+str(v)+'"'
             line+=v
         c+=line+'\n'
 
@@ -724,7 +544,6 @@ def convert_table_to_csv(i):
        return {'return':1, 'error':'problem writing csv file ('+format(e)+')'}
 
     return {'return':0}
-
 
 ##############################################################################
 # Process multiple experiments
@@ -825,3 +644,64 @@ def process_multi(i):
               d[k_average]=va
 
     return {'return':0, 'dict':d, 'max_delta_percent':max_delta_percent, 'min':mmin, 'max':mmax}
+
+##############################################################################
+# sort table
+
+def sort_table(i):
+    """
+    Input:  {
+              table        - experiment table
+              sort_index   - if !='', sort by this number within vector (i.e. 0 - X, 1 - Y, etc)
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+
+              table        - updated experient table
+            }
+
+    """
+
+    table=i['table']
+    si=i['sort_index']
+
+    isi=int(si)
+    for sg in table:
+        x=table[sg]
+        y=sorted(x, key=lambda var: var[isi])
+        table[sg]=y
+
+    return {'return':0, 'table':table}
+
+##############################################################################
+# substitute x axis in table with loop
+
+def substitute_x_with_loop(i):
+    """
+    Input:  {
+              table        - experiment table
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+              table        - updated experient table
+            }
+
+    """
+
+    table=i['table']
+
+    for sg in table:
+        h=0
+        x=table[sg]
+        for q in range(0, len(x)):
+            h+=1
+            x[q][0]=h
+        table[sg]=x
+
+    return {'return':0, 'table':table}
