@@ -85,6 +85,7 @@ def build(i):
                 model_module_uoa                        - model module
                 model_name                              - model name
                 (model_out_file)                        - model output file, otherwise generated as tmp file
+                (keep_temp_files)                       - if 'yes', keep temp files 
             }
 
     Output: {
@@ -102,6 +103,7 @@ def build(i):
 
     mmuoa=i['model_module_uoa']
     mn=i['model_name']
+    ktf=i.get('keep_temp_files','')
 
     # Get table through experiment module for features
     iif=copy.deepcopy(i)
@@ -139,14 +141,18 @@ def build(i):
         'features_table': ftable,
         'features_keys': fkeys,
         'characteristics_table': ctable,
-        'characteristics_keys': ckeys
+        'characteristics_keys': ckeys,
+        'keep_temp_files':ktf
        }
     r=ck.access(ii)
     if r['return']>0: return r
 
+    mif=r['model_input_file']
     mf=r['model_file']
 
     if o=='con':
+       if ktf=='yes':
+         ck.out('Temp model input file '+mif)
        ck.out('Generated model was saved into file '+mf)
 
     i['out']=o

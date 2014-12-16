@@ -45,12 +45,16 @@ def build(i):
               characteristics_table - characteristics table (in experiment module format)
               characteristics_keys  - characteristics flat keys
 
+              (keep_temp_files)     - if 'yes', keep temp files 
             }
 
     Output: {
               return       - return code =  0, if successful
                                          >  0, if error
               (error)      - error text if return > 0
+
+              model_input_file - temp input file (csv) - can be deleted if not keep_temp_files
+              model_file       - output model file 
             }
 
     """
@@ -73,6 +77,8 @@ def build(i):
 
     if len(ckeys)>1:
        return {'return':1, 'error':'currently we support only modeling for 1 characteristic'}
+
+    ktf=i.get('keep_temp_files','')
 
     # First convert to CSV for R ***********************************
     # Prepare common table from features and characteristics
@@ -125,12 +131,12 @@ def build(i):
     cmd='r --vanilla --args '+fn1+' '+fn2+' < '+pmc
     os.system(cmd)
 
-    if os.path.isfile(fn1): os.remove(fn1)
+    if ktf!='yes' and os.path.isfile(fn1): os.remove(fn1)
 
     if not os.path.isfile(fn2): 
        return {'return':1, 'error':'model was not created'}
 
-    return {'return':0, 'model_file':fn2}
+    return {'return':0, 'model_input_file':fn1, 'model_file':fn2}
 
 ##############################################################################
 # validate model

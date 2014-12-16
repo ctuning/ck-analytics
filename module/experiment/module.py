@@ -65,7 +65,6 @@ def add(i):
                                               by default ['characteristics', 'features'],
                                               if empty, no stat analysis
 
-              (overwrite_subpoint)          - (int) if !=-1, overwrite a given subpoint
               (record_all_subpoints)        - if 'yes', record all subpoints
               (max_delta_percent_threshold) - (float) if set, record all subpoints where max_delta_percent exceeds this threshold
             }
@@ -206,6 +205,13 @@ def add(i):
 
               break
 
+    # Add information about user
+    ri=ck.prepare_special_info_about_entry({})
+    if ri['return']>0: return ri
+    dsi=ri['dict']
+
+    dd['added']=dsi
+
     # Adding new point (if not found by features)
     if point==0:
        ipoints+=1
@@ -249,23 +255,25 @@ def add(i):
 
     mdpt=i.get('max_delta_percent_threshold',-1)
 
+    xx=ddfe.get('added',{})
+    xx1=xx.get('first',{})
+    if len(xx1)==0: 
+       xx['first']=dsi
+    xx['last']=dsi
+    ddfe['added']=xx
+
     # Check if record all points or only with max_delta_percent > max_delta_percent_threshold
     sp=ddfe.get('sub_points',-1)
     if sp==-1:
        ddfe['sub_points']=0
 
-    osp=i.get('overwrite_subpoint',-1)
-    if osp!=-1 or i.get('record_all_subpoints','')=='yes' or ((mdpt!=-1 and mdp>mdpt) or mmin=='yes' or mmax=='yes'):
-       if osp!=-1:
-          sp=osp
-          ssp=''
-       else:
-          sp+=1
-          if sp>9999:
-             return {'return':1, 'error':'max number of subpoints is reached (9999)'}
+    if sp!=-1 and (i.get('record_all_subpoints','')=='yes' or ((mdpt!=-1 and mdp>mdpt) or mmin=='yes' or mmax=='yes')):
+       sp+=1
+       if sp>9999:
+          return {'return':1, 'error':'max number of subpoints is reached (9999)'}
 
-          ddfe['sub_points']=sp
-          ssp='.'+str(sp).zfill(4)
+       ddfe['sub_points']=sp
+       ssp='.'+str(sp).zfill(4)
 
        fssp=spz+ssp+'.json'
        fssp1=os.path.join(p, fssp)
@@ -329,6 +337,7 @@ def get(i):
                                                       (order is important: for example, for plot -> X,Y,Z)
               (flat_keys_index)                     - add all flat keys starting from this index 
               (flat_keys_index_end)                 - add all flat keys ending with this index (default #min)
+              (flat_keys_index_end_delta)           - add delta after key (+-)
 
               (substitute_x_with_loop)              - if 'yes', substitute first vector dimension with a loop
               (sort_index)                          - if !='', sort by this number within vector (i.e. 0 - X, 1 - Y, etc)
@@ -353,6 +362,7 @@ def get(i):
 
     fki=i.get('flat_keys_index','')
     fkie=i.get('flat_keys_index_end','#min')
+    fkied=i.get('flat_keys_index_end_delta','')
     fkl=i.get('flat_keys_list',[])
     rfkl=[] # real flat keys (if all)
     trfkl=[]
@@ -442,7 +452,23 @@ def get(i):
                          if len(rfkl)==0:
                             trfkl.append(k)
                          v=df[k]
+                         if v!=None and type(v)==list:
+                            if len(v)==0: v=None
+                            else: v=v[0]
                          vect.append(v)
+
+                         # Check if delta
+                         if fkie!='' and fkied!='':
+                            kb=k[:len(k)-len(fkie)]
+                            kbd=kb+fkied
+                            if len(rfkl)==0:
+                               trfkl.append(kbd)
+                            vd=df.get(kbd, None)
+                            if vd!=None and type(vd)==list:
+                               if len(vd)==0: vd=None
+                               else: vd=vd[0]
+                            vect.append(vd)
+
                   if len(trfkl)!=0:
                      rfkl=trfkl
                else:
@@ -642,6 +668,14 @@ def process_multi(i):
               k_average=k+'#average'
               va=sum(d[k_all])/float(vr)
               d[k_average]=va
+
+           else:
+              # Add first value to min 
+              k_min=k+'#min'
+              vmin=d.get(k_min,'')
+              if vmin=='':
+                 mmin='yes'
+                 d[k_min]=v1
 
     return {'return':0, 'dict':d, 'max_delta_percent':max_delta_percent, 'min':mmin, 'max':mmax}
 
