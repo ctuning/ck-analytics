@@ -38,28 +38,36 @@ def add(i):
     """
 
     Input:  {
-              dict                       - format prepared for predictive analytics
-                                           {
-                                             "meta"            - coarse grain meta information to distinct entries (species)
-                                             ("choices")       - choices (for example, optimizations)
-                                             "features"        - species features (mostly unchanged)
-                                             "characteristics" - species characteristics (measured)
-                                           }
+              dict                          - format prepared for predictive analytics
+                                              {
+                                                "meta"            - coarse grain meta information to distinct entries (species)
+                                                ("choices")       - choices (for example, optimizations)
+                                                "features"        - species features (mostly unchanged)
+                                                "characteristics" - species characteristics (measured)
+                                              }
 
-              (experiment_repo_uoa)      - if defined, use it instead of repo_uoa
-                                           (useful for remote repositories)
-              (remote_repo_uoa)          - if remote access, use this as a remote repo UOA
+              (experiment_repo_uoa)         - if defined, use it instead of repo_uoa
+                                              (useful for remote repositories)
+              (remote_repo_uoa)             - if remote access, use this as a remote repo UOA
 
-              (experiment_uoa)           - if entry with aggregated experiments is already known
-              (experiment_uid)           - if entry with aggregated experiments is already known
-              (add_new)                  - if 'yes', do not search for existing entry,
-                                           but add a new one!
+              (experiment_uoa)              - if entry with aggregated experiments is already known
+              (experiment_uid)              - if entry with aggregated experiments is already known
+              (add_new)                     - if 'yes', do not search for existing entry,
+                                              but add a new one!
 
-              (search_point_by_features) - if 'yes', add point
+              (search_point_by_features)    - if 'yes', add point
 
-              (ignore_update)            - if 'yes', do not record update control info (date, user, etc)
+              (ignore_update)               - if 'yes', do not record update control info (date, user, etc)
 
-              (sort_keys)                - if 'yes', sort keys in output json
+              (sort_keys)                   - if 'yes', sort keys in output json
+
+              (process_multi_keys)          - list of keys (starts with) to perform stat analysis on flat array,
+                                              by default ['characteristics', 'features'],
+                                              if empty, no stat analysis
+
+              (overwrite_subpoint)          - (int) if !=-1, overwrite a given subpoint
+              (record_all_subpoints)        - if 'yes', record all subpoints
+              (max_delta_percent_threshold) - (float) if set, record all subpoints where max_delta_percent exceeds this threshold
             }
 
     Output: {
@@ -201,48 +209,76 @@ def add(i):
     # Adding new point (if not found by features)
     if point==0:
        ipoints+=1
-
        point=ipoints
+
        sp=str(ipoints)
        spz=sp.zfill(8)
        fp=spz+'.json'
        fp1=os.path.join(p, fp)
 
-       if o=='con': 
-          ck.out('  Saving point '+sp+' ...')
-
+       if o=='con': ck.out('  Saving point '+sp+' ...')
        r=ck.save_json_to_file({'json_file':fp1, 'dict':dd, 'sort_keys':sk})
        if r['return']>0: return r
 
        dd['points']=sp
 
-    # Perform statistical analysis
-    if point!=0:
+    # Flatten data and perform basic analysis **********************************
+    r=ck.flatten_dict({'dict':dd})
+    if r['return']>0: return r
+    ddf=r['dict']
 
-       # Flatten submitted data
-       r=ck.flatten_dict({'dict':dd})
-       if r['return']>0: return r
-       ddf=r['dict']
+    # Load flattened data
+    spz=str(point).zfill(8)
+    fpflat=spz+'.flat.json'
+    fpflat1=os.path.join(p, fpflat)
 
-       # Load flattened and statistically analyzed data
-       spz=str(point).zfill(8)
-       fpflat=spz+'.flat.json'
-       fpflat1=os.path.join(p, fpflat)
-
-       if os.path.isfile(fpflat1):
-          r=ck.load_json_file({'json_file':fpflat1})
-          if r['return']>0: return r
-          ddfe=r['dict']
-
-       r=stat_analysis({'dict':ddfe, 'dict1':ddf})
+    if os.path.isfile(fpflat1):
+       r=ck.load_json_file({'json_file':fpflat1})
        if r['return']>0: return r
        ddfe=r['dict']
 
-       # Save updated flat dict to file
-       r=ck.save_json_to_file({'json_file':fpflat1, 'dict':ddfe, 'sort_keys':sk})
+    # Process multiple points
+    sak=i.get('process_multi_keys',['characteristics', 'features'])
+
+    r=process_multi({'dict':ddfe, 'dict1':ddf, 'process_multi_keys':sak})
+    if r['return']>0: return r
+    ddfe=r['dict']
+    mdp=r['max_delta_percent']
+    mmin=r['min']
+    mmax=r['max']
+
+    mdpt=i.get('max_delta_percent_threshold',-1)
+
+    # Check if record all points or only with max_delta_percent > max_delta_percent_threshold
+    sp=ddfe.get('sub_points',-1)
+    if sp==-1:
+       ddfe['sub_points']=0
+
+    osp=i.get('overwrite_subpoint',-1)
+    if osp!=-1 or i.get('record_all_subpoints','')=='yes' or ((mdpt!=-1 and mdp>mdpt) or mmin=='yes' or mmax=='yes'):
+       if osp!=-1:
+          sp=osp
+          ssp=''
+       else:
+          sp+=1
+          if sp>9999:
+             return {'return':1, 'error':'max number of subpoints is reached (9999)'}
+
+          ddfe['sub_points']=sp
+          ssp='.'+str(sp).zfill(4)
+
+       fssp=spz+ssp+'.json'
+       fssp1=os.path.join(p, fssp)
+
+       # Save subpoint dict to file
+       r=ck.save_json_to_file({'json_file':fssp1, 'dict':dd, 'sort_keys':sk})
        if r['return']>0: return r
 
-    # Adding/updating entry
+    # Save updated flat dict to file
+    r=ck.save_json_to_file({'json_file':fpflat1, 'dict':ddfe, 'sort_keys':sk})
+    if r['return']>0: return r
+
+    # Adding/updating entry *****************************************************
     if o=='con': 
        ck.out('  Updating entry and unlocking ...')
 
@@ -389,19 +425,27 @@ def plot(i):
               for u in gt:
                   iu=0
 
-                  mx.append(u[iu])
-                  iu+=1
+                  # Check if no None
+                  partial=False
+                  for q in u:
+                      if q==None:
+                         partial=True
+                         break
 
-                  if xerr=='yes':
-                     mxerr.append(u[iu])
-                     iu+=1 
+                  if not partial:
+                     mx.append(u[iu])
+                     iu+=1
 
-                  my.append(u[iu])
-                  iu+=1
+                     if xerr=='yes':
+                        mxerr.append(u[iu])
+                        iu+=1 
 
-                  if yerr=='yes':
-                     myerr.append(u[iu])
-                     iu+=1 
+                     my.append(u[iu])
+                     iu+=1
+
+                     if yerr=='yes':
+                        myerr.append(u[iu])
+                        iu+=1 
 
               if xerr!='yes' and yerr!='yes':
                  sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=gs[s]['color'], marker=gs[s]['marker'])
@@ -580,17 +624,14 @@ def get(i):
                      rfkl=trfkl
                else:
                   for k in fkl:
-                      v=df.get(k,'')
-                      try:
-                         v=float(v) # TBD
-                      except Exception as e:
-                         v=0
-                         pass
+                      v=df.get(k,None)
+                      if v!=None and type(v)==list:
+                         if len(v)==0: v=None
+                         else: v=v[0]
                       vect.append(v)
                      
                # Add vector
                if sigraph not in table: table[sigraph]=[]
-
                table[sigraph].append(vect)
 
     if len(rfkl)==0 and len(fkl)!=0: rfkl=fkl
@@ -686,22 +727,28 @@ def convert_table_to_csv(i):
 
 
 ##############################################################################
-# Statistical analysis of experimental results
+# Process multiple experiments
 
-def stat_analysis(i):
+def process_multi(i):
     """
 
     Input:  {
-              dict         - existing flat dict 
-              dict1        - new flat dict to add
+              dict                  - existing flat dict 
+              dict1                 - new flat dict to add
+              (process_multi_keys)  - list of keys (starts with) to perform stat analysis on flat array,
+                                      by default ['characteristics', 'features'],
+                                      if empty, no stat analysis
             }
 
     Output: {
-              return       - return code =  0, if successful
-                                         >  0, if error
-              (error)      - error text if return > 0
+              return            - return code =  0, if successful
+                                              >  0, if error
+              (error)           - error text if return > 0
 
-              dict         - updated dict
+              dict              - updated dict
+              max_delta_percent - max % delta in float/int data (useful to record points with unusual behavior)
+              min               - 'yes', if one of monitored values reached min
+              max               - 'yes', if one of monitored values reached max
             }
 
     """
@@ -709,62 +756,72 @@ def stat_analysis(i):
     d=i['dict']
     d1=i['dict1']
 
-    for k in d1:
-        v1=d1[k]
+    sak=i.get('process_multi_keys',['characteristics', 'features'])
 
-        # Put all values (useful to calculate averages, deviations, etc)
-        k_all=k+'#all'
-        v=d.get(k_all,[])
-        if v1 not in v:
+    max_delta_percent=0
+    mmin=''
+    mmax=''
+
+    for k in d1:
+        process=False
+        for kk in sak:
+            if k.startswith('##'+kk+'#'):
+               process=True
+               break
+
+        if process:
+           v1=d1[k]
+
+           # Number of repetitions
+           k_repeats=k+'#repeats'
+           vr=d.get(k_repeats,0)
+           vr+=1
+           d[k_repeats]=vr
+
+           # Put all values (useful to calculate averages, deviations, etc)
+           k_all=k+'#all'
+           v=d.get(k_all,[])
            v.append(v1)
            d[k_all]=v
 
-           # Try to convert to float
-           vfs=True # successfully converted
-           try:
-              vf=float(v1)
-           except Exception as e:
-              vfs=False 
-              pass
+           # Put only unique values 
+           k_all_u=k+'#all_unique'
+           v=d.get(k_all_u,[])
+           if v1 not in v: v.append(v1)
+           d[k_all_u]=v
 
-           if not vfs:
-              d[k]=v1
-           else:
+           # If float or int, perform basic analysis
+           if type(v1)==float or type(v1)==int:
               # Calculate min
               k_min=k+'#min'
-
-              v=d.get(k_min,'')
-              if v=='':
-                 vfmin=vf
-              else:
-                 vfmin=float(v)
-                 if vf<vfmin: vfmin=vf
-              d[k_min]=str(vfmin)
-
-              # Add min to original (for compatibility with CM)
-              d[k]=str(vfmin)
+              vmin=d.get(k_min,v1)
+              if v1<vmin: 
+                 vmin=v1
+                 mmin='yes'
+              d[k_min]=vmin
 
               # Calculate max
               k_max=k+'#max'
-
-              v=d.get(k_max,'')
-              if v=='':
-                 vfmax=vf
-              else:
-                 vfmax=float(v)
-                 if vf>vfmax: vfmax=vf
-              d[k_max]=str(vfmax)
+              vmax=d.get(k_max,v1)
+              if v1>vmax: 
+                 vmax=v1
+                 mmax='yes'
+              d[k_max]=vmax
 
               # Calculate #delta (max-min)
               k_delta=k+'#delta'
-              d[k_delta]=str(vfmax-vfmin)
+              d[k_delta]=vmax-vmin
 
               # Calculate #delta percent (max-min)/min
-              if vfmin:
-                 k_delta=k+'#delta_percent'
-                 d[k_delta]=str((vfmax-vfmin)/vfmin)
+              if vmin!=0:
+                 vp=(vmax-vmin)/vmin
+                 k_delta_p=k+'#delta_percent'
+                 d[k_delta_p]=vp
+                 if vp>max_delta_percent: max_delta_percent=vp
 
               # Calculate average
               k_average=k+'#average'
+              va=sum(d[k_all])/float(vr)
+              d[k_average]=va
 
-    return {'return':0, 'dict':d}
+    return {'return':0, 'dict':d, 'max_delta_percent':max_delta_percent, 'min':mmin, 'max':mmax}
