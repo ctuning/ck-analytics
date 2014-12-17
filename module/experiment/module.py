@@ -66,7 +66,7 @@ def add(i):
                                               if empty, no stat analysis
 
               (record_all_subpoints)        - if 'yes', record all subpoints
-              (max_delta_percent_threshold) - (float) if set, record all subpoints where max_delta_percent exceeds this threshold
+              (max_range_percent_threshold) - (float) if set, record all subpoints where max_range_percent exceeds this threshold
             }
 
     Output: {
@@ -249,11 +249,11 @@ def add(i):
     r=process_multi({'dict':ddfe, 'dict1':ddf, 'process_multi_keys':sak})
     if r['return']>0: return r
     ddfe=r['dict']
-    mdp=r['max_delta_percent']
+    mdp=r['max_range_percent']
     mmin=r['min']
     mmax=r['max']
 
-    mdpt=i.get('max_delta_percent_threshold',-1)
+    mdpt=i.get('max_range_percent_threshold',-1)
 
     xx=ddfe.get('added',{})
     xx1=xx.get('first',{})
@@ -262,7 +262,7 @@ def add(i):
     xx['last']=dsi
     ddfe['added']=xx
 
-    # Check if record all points or only with max_delta_percent > max_delta_percent_threshold
+    # Check if record all points or only with max_range_percent > max_range_percent_threshold
     sp=ddfe.get('sub_points',-1)
     if sp==-1:
        ddfe['sub_points']=0
@@ -337,7 +337,7 @@ def get(i):
                                                       (order is important: for example, for plot -> X,Y,Z)
               (flat_keys_index)                     - add all flat keys starting from this index 
               (flat_keys_index_end)                 - add all flat keys ending with this index (default #min)
-              (flat_keys_index_end_delta)           - add delta after key (+-)
+              (flat_keys_index_end_range)           - add range after key (+-)
 
               (substitute_x_with_loop)              - if 'yes', substitute first vector dimension with a loop
               (sort_index)                          - if !='', sort by this number within vector (i.e. 0 - X, 1 - Y, etc)
@@ -362,7 +362,7 @@ def get(i):
 
     fki=i.get('flat_keys_index','')
     fkie=i.get('flat_keys_index_end','#min')
-    fkied=i.get('flat_keys_index_end_delta','')
+    fkied=i.get('flat_keys_index_end_range','')
     fkl=i.get('flat_keys_list',[])
     rfkl=[] # real flat keys (if all)
     trfkl=[]
@@ -457,7 +457,7 @@ def get(i):
                             else: v=v[0]
                          vect.append(v)
 
-                         # Check if delta
+                         # Check if range
                          if fkie!='' and fkied!='':
                             kb=k[:len(k)-len(fkie)]
                             kbd=kb+fkied
@@ -591,7 +591,7 @@ def process_multi(i):
               (error)           - error text if return > 0
 
               dict              - updated dict
-              max_delta_percent - max % delta in float/int data (useful to record points with unusual behavior)
+              max_range_percent - max % range in float/int data (useful to record points with unusual behavior)
               min               - 'yes', if one of monitored values reached min
               max               - 'yes', if one of monitored values reached max
             }
@@ -603,7 +603,7 @@ def process_multi(i):
 
     sak=i.get('process_multi_keys',['characteristics', 'features'])
 
-    max_delta_percent=0
+    max_range_percent=0
     mmin=''
     mmax=''
 
@@ -623,7 +623,7 @@ def process_multi(i):
            vr+=1
            d[k_repeats]=vr
 
-           # Put all values (useful to calculate averages, deviations, etc)
+           # Put all values (useful to calculate means, deviations, etc)
            k_all=k+'#all'
            v=d.get(k_all,[])
            v.append(v1)
@@ -653,21 +653,31 @@ def process_multi(i):
                  mmax='yes'
               d[k_max]=vmax
 
-              # Calculate #delta (max-min)
-              k_delta=k+'#delta'
-              d[k_delta]=vmax-vmin
+              # Calculate #range (max-min)
+              k_range=k+'#range'
+              vrange=vmax-vmin
+              d[k_range]=vrange
 
-              # Calculate #delta percent (max-min)/min
+              # Calculate #halfrange (max-min)/2
+              k_halfrange=k+'#halfrange'
+              vhrange=vrange/2
+              d[k_halfrange]=vhrange
+
+              # Calculate #halfrange (max-min)/2
+              k_center=k+'#center'
+              d[k_center]=vmin+vhrange
+
+              # Calculate #range percent (max-min)/min
               if vmin!=0:
                  vp=(vmax-vmin)/vmin
-                 k_delta_p=k+'#delta_percent'
-                 d[k_delta_p]=vp
-                 if vp>max_delta_percent: max_delta_percent=vp
+                 k_range_p=k+'#range_percent'
+                 d[k_range_p]=vp
+                 if vp>max_range_percent: max_range_percent=vp
 
-              # Calculate average
-              k_average=k+'#average'
+              # Calculate mean
+              k_mean=k+'#mean'
               va=sum(d[k_all])/float(vr)
-              d[k_average]=va
+              d[k_mean]=va
 
            else:
               # Add first value to min 
@@ -677,7 +687,7 @@ def process_multi(i):
                  mmin='yes'
                  d[k_min]=v1
 
-    return {'return':0, 'dict':d, 'max_delta_percent':max_delta_percent, 'min':mmin, 'max':mmax}
+    return {'return':0, 'dict':d, 'max_range_percent':max_range_percent, 'min':mmin, 'max':mmax}
 
 ##############################################################################
 # sort table

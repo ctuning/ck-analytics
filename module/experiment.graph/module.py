@@ -209,14 +209,14 @@ def plot(i):
                         myerr.append(u[iu])
                         iu+=1 
 
-              if xerr!='yes' and yerr!='yes':
-                 sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=gs[s]['color'], marker=gs[s]['marker'])
-              elif xerr!='yes':
-                 sp.errorbar(mx, my, myerr, myerr, capsize=0, ls='none', c=gs[s]['color'])
-              elif yerr!='yes':
-                 sp.errorbar(mx, my, mxerr, capsize=0, ls='none', c=gs[s]['color'])
+              if xerr=='yes' and yerr=='yes':
+                 sp.errorbar(mx, my, xerr=mxerr, yerr=myerr, ls='none', c=gs[s]['color'])
+              elif xerr=='yes' and yerr!='yes':
+                 sp.errorbar(mx, my, xerr=mxerr, ls='none', c=gs[s]['color'])
+              elif yerr=='yes' and xerr!='yes':
+                  sp.errorbar(mx, my, yerr=myerr, ls='none', c=gs[s]['color'])
               else:
-                 sp.errorbar(mx, my, mxerr, myerr, capsize=0, ls='none', c=gs[s]['color'])
+                 sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=gs[s]['color'], marker=gs[s]['marker'])
 
            s+=1
            if s>=len(gs):s=0
