@@ -42,7 +42,7 @@ def add(i):
                                               {
                                                 "meta"            - coarse grain meta information to distinct entries (species)
                                                 ("choices")       - choices (for example, optimizations)
-                                                "features"        - species features (mostly unchanged)
+                                                ("features")      - species features (mostly unchanged)
                                                 "characteristics" - species characteristics (measured)
                                               }
 
@@ -87,7 +87,7 @@ def add(i):
     ft=dd.get('features',{})
 
     if len(dd)==0:
-       return {'return':1, 'error':'no data provided'}
+       return {'return':1, 'error':'no data provided ("dict" key is empty)'}
 
     an=i.get('add_new','')
     euoa=i.get('experiment_uoa','')
@@ -109,7 +109,7 @@ def add(i):
     lock_uid=''
     if an!='yes' and (euoa=='' and euid==''):
        if o=='con':
-          ck.out('Searching species in the repository with given meta info ...')
+          ck.out('Searching existing experiments in the repository with given meta info ...')
           ck.out('')
 
        meta=dd.get('meta',{})
@@ -127,24 +127,33 @@ def add(i):
 
        lst=r['lst']
        if len(lst)>1:
-          return {'return':1, 'error':'more than one meta was returned - ambiguity'}
+          x=''
+          for q in lst:
+              if x!='': x+=', '
+              x+=q['data_uoa']
+          return {'return':1, 'error':'more than one meta was returned ('+x') - ambiguity'}
 
        if len(lst)==1:
           euoa=lst[0]['data_uoa']
           euid=lst[0]['data_uid']
 
           if o=='con': 
-             ck.out('  Species was found: '+euoa+' ('+euid+') ...')
+             ck.out('  Existing experiment was found: '+euoa+' ('+euid+') ...')
 
     # If not found, add entry
-    if an=='yes' or (euoa=='' and euid==''):
+    if an=='yes':
        if o=='con':
-          ck.out('  Species was not found. Adding new entry ...')
+          if euoa=='' and euid=='':
+             ck.out('  Existing experiments were not found. Adding new entry ...')
+          else:
+             ck.out('  Adding or updating an entry ...')
 
-       ii={'action':'add',
+       ii={'action':'update',
            'common_func':'yes',
            'repo_uoa': ruoa,
            'remote_repo_uoa': rruoa,
+           'data_uoa':euoa,
+           'data_uid':euid,
            'module_uoa': work['self_module_uoa'],
            'dict':dd}
        r=ck.access(ii)
@@ -156,7 +165,7 @@ def add(i):
     if o=='con': 
        ck.out('  Loading and locking entry ('+euoa+') ...')
 
-    # Loading species
+    # Loading existing experiment
     ii={'action':'load',
         'common_func':'yes',
         'repo_uoa': ruoa,
@@ -176,7 +185,7 @@ def add(i):
     if o=='con': 
        ck.out('  Loaded and locked successfully (lock UID='+lock_uid+') ...')
 
-    # If species found, check if search point by feature
+    # If existing experiment found, check if search point by feature
     ddfe={}
     if euid!='' and spbf=='yes':
        if len(ft)==0:
