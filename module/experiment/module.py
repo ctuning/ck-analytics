@@ -767,6 +767,7 @@ def get_all_meta(i):
     Input:  {
                (repo_uoa)
                (module_uoa)
+               (new_module_uoa) - if !='', use instead of module_uoa
                (data_uoa)
             }
 
@@ -776,6 +777,7 @@ def get_all_meta(i):
               (error)      - error text if return > 0
 
               all_meta     - each key is a list with all values
+              all_tags     - each key is a tag with a number of occurances
             }
 
     """
@@ -783,10 +785,14 @@ def get_all_meta(i):
     o=i.get('out','')
 
     ameta={}
+    atags={}
 
     ruoa=i.get('repo_uoa','')
     muoa=i.get('module_uoa','')
+    nmuoa=i.get('new_module_uoa','')
     duoa=i.get('data_uoa','')
+
+    if nmuoa!='': muoa=nmuoa
 
     lst=[]
 
@@ -813,8 +819,6 @@ def get_all_meta(i):
 
         # Process meta
         meta=d.get('meta',{})
-
-        print (meta)
         for k in meta:
             v=meta[k]
 
@@ -824,8 +828,27 @@ def get_all_meta(i):
                if v not in ameta[k]:
                   ameta[k].append(v)
 
+        # Process meta
+        tags=d.get('tags',[])
+        for v in tags:
+            if v not in atags:
+               atags[v]=1
+            else:
+               atags[v]+=1
+
+    satags=[key for val, key in sorted(((int(val), key) for key, val in atags.iteritems()), reverse=True)]
+
     if o=='con':
        import json
+
+       ck.out('Meta:')
+       ck.out('')
        ck.out(json.dumps(ameta, indent=2, sort_keys=True))
 
-    return {'return':0, 'all_meta':ameta}
+       ck.out('')
+       ck.out('Tags:')
+       ck.out('')
+       for q in satags:
+           ck.out(q+' = '+str(atags[q]))
+
+    return {'return':0, 'all_meta':ameta, 'all_tags':atags, 'all_tag_keys_sorted':satags}
