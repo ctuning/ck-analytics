@@ -131,7 +131,7 @@ def add(i):
           for q in lst:
               if x!='': x+=', '
               x+=q['data_uoa']
-          return {'return':1, 'error':'more than one meta was returned ('+x') - ambiguity'}
+          return {'return':1, 'error':'more than one meta was returned ('+x+') - ambiguity'}
 
        if len(lst)==1:
           euoa=lst[0]['data_uoa']
@@ -758,3 +758,23 @@ def substitute_x_with_loop(i):
         table[sg]=x
 
     return {'return':0, 'table':table}
+
+##############################################################################
+# Get all meta information from all entries
+
+def get_all_meta(i):
+    """
+    Input:  {
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    print ('Get all meta information from all entries')
+
+    return {'return':0}
