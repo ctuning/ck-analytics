@@ -760,21 +760,72 @@ def substitute_x_with_loop(i):
     return {'return':0, 'table':table}
 
 ##############################################################################
-# Get all meta information from all entries
+# Get all meta information from entries
 
 def get_all_meta(i):
     """
     Input:  {
+               (repo_uoa)
+               (module_uoa)
+               (data_uoa)
             }
 
     Output: {
               return       - return code =  0, if successful
                                          >  0, if error
               (error)      - error text if return > 0
+
+              all_meta     - each key is a list with all values
             }
 
     """
 
-    print ('Get all meta information from all entries')
+    o=i.get('out','')
 
-    return {'return':0}
+    ameta={}
+
+    ruoa=i.get('repo_uoa','')
+    muoa=i.get('module_uoa','')
+    duoa=i.get('data_uoa','')
+
+    lst=[]
+
+    # Check wildcards
+    r=ck.list_data({'repo_uoa':ruoa, 'module_uoa':muoa, 'data_uoa':duoa})
+    if r['return']>0: return r
+    lst=r['lst']
+
+    r={'return':0}
+    for ll in lst:
+        p=ll['path']
+
+        ruid=ll['repo_uid']
+        muid=ll['module_uid']
+        duid=ll['data_uid']
+
+        r=ck.access({'action':'load',
+                     'repo_uoa':ruid,
+                     'module_uoa':muid,
+                     'data_uoa':duid})
+        if r['return']>0: return r
+ 
+        d=r['dict']
+
+        # Process meta
+        meta=d.get('meta',{})
+
+        print (meta)
+        for k in meta:
+            v=meta[k]
+
+            if k not in ameta:
+               ameta[k]=[v]
+            else:
+               if v not in ameta[k]:
+                  ameta[k].append(v)
+
+    if o=='con':
+       import json
+       ck.out(json.dumps(ameta, indent=2, sort_keys=True))
+
+    return {'return':0, 'all_meta':ameta}
