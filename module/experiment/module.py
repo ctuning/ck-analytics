@@ -52,6 +52,7 @@ def add(i):
 
               (experiment_uoa)              - if entry with aggregated experiments is already known
               (experiment_uid)              - if entry with aggregated experiments is already known
+
               (force_new_entry)             - if 'yes', do not search for existing entry,
                                               but add a new one!
 
@@ -60,6 +61,8 @@ def add(i):
               (ignore_update)               - if 'yes', do not record update control info (date, user, etc)
 
               (sort_keys)                   - if 'yes', sort keys in output json
+
+              (skip_flatten)                - if 'yes', skip flattinging and analyzing data ...
 
               (process_multi_keys)          - list of keys (starts with) to perform stat analysis on flat array,
                                               by default ['characteristics', 'features'],
@@ -84,6 +87,7 @@ def add(i):
 
     dd=i.get('dict',{})
 
+    meta=dd.get('meta',{})
     ft=dd.get('features',{})
 
     if len(dd)==0:
@@ -106,6 +110,8 @@ def add(i):
     dpoint={}
     point=0
 
+    ras=i.get('record_all_subpoints','')
+
     # Search for an entry to aggregate, if needed
     lock_uid=''
     if an!='yes' and (euoa=='' and euid==''):
@@ -113,7 +119,6 @@ def add(i):
           ck.out('Searching existing experiments in the repository with given meta info ...')
           ck.out('')
 
-       meta=dd.get('meta',{})
        if len(meta)==0:
           return {'return':1, 'error':'meta is not defined - can\'t aggregate'}
 
@@ -141,7 +146,7 @@ def add(i):
           if o=='con': 
              ck.out('  Existing experiment was found: '+euoa+' ('+euid+') ...')
 
-    # If not found, add entry
+    # If not found, add dummy entry
     if an=='yes' or len(lst)==0:
        ii={'common_func':'yes',
            'repo_uoa': ruoa,
@@ -149,7 +154,7 @@ def add(i):
            'data_uoa':euoa,
            'data_uid':euid,
            'module_uoa': work['self_module_uoa'],
-           'dict':dd}
+           'dict':{}}
 
        if o=='con':
           if euoa=='' and euid=='':
@@ -189,114 +194,119 @@ def add(i):
        ck.out('  Loaded and locked successfully (lock UID='+lock_uid+') ...')
 
     # If existing experiment found, check if search point by feature
-    ddfe={}
+    ddft={'features':ft}
+    fpoint=''
     if euid!='' and spbf=='yes':
        if len(ft)==0:
           return {'return':1, 'error':'can\'t search by features when they are not present'}
 
        if o=='con': ck.out('    Searching points by features ...')
 
-       for q in range(1, ipoints+1):
-           sp=str(q)
-           fp=sp.zfill(8)+'.json'
-           pfp=os.path.join(p,fp)
+       dirList=os.listdir(p)
+       for fn in dirList:
+           if fn.endswith('.features.json'):
+              pfp=os.path.join(p, fn)
 
-           r=ck.load_json_file({'json_file':pfp})
-           if r['return']>0: return r
+              r=ck.load_json_file({'json_file':pfp})
+              if r['return']>0: return r
+              ft1=r['dict']
 
-           dpoint=r['dict']
-           ft1=dpoint.get('features',{})
+              r=ck.compare_dicts({'dict1':ft1.get('features',{}), 'dict2':ft})
+              if r['return']>0: return r
 
-           r=ck.compare_dicts({'dict1':ft1, 'dict2':ft})
-           if r['return']>0: return r
+              if r['equal']=='yes': 
+                 fpoint=fn[:-14]
+                 ddft=ft1
 
-           if r['equal']=='yes': 
-              point=q
-              if o=='con':
-                 ck.out('      Found point by features: '+str(q))
+                 if o=='con': ck.out('      Found point by features: '+str(fpoint))
 
-              break
+                 break
 
     # Add information about user
     ri=ck.prepare_special_info_about_entry({})
     if ri['return']>0: return ri
     dsi=ri['dict']
 
-    dd['added']=dsi
+    if len(dde.get('added',{}))==0:
+       dde['added']=dsi
+    if len(dde.get('meta',{}))==0:
+       dde['meta']=meta
+    if len(dd.get('tags',[]))!=0:
+       dde['tags']=dd['tags']
 
-    # Adding new point (if not found by features)
-    if point==0:
+    # Prepare new point (if not found by features)
+    if fpoint=='':
        ipoints+=1
-       point=ipoints
 
-       sp=str(ipoints)
-       spz=sp.zfill(8)
-       fp=spz+'.json'
-       fp1=os.path.join(p, fp)
+       rx=ck.gen_uid({})
+       if rx['return']>0: return rx
+       uid=rx['data_uid']
+ 
+       fpoint='ckp-'+uid
 
-       if o=='con': ck.out('  Saving point '+sp+' ...')
-       r=ck.save_json_to_file({'json_file':fp1, 'dict':dd, 'sort_keys':sk})
-       if r['return']>0: return r
+       dde['points']=str(ipoints)
 
-       dd['points']=sp
+       if o=='con': ck.out('  Prepared new point '+uid+' ...')
 
-    # Flatten data and perform basic analysis **********************************
-    r=ck.flatten_dict({'dict':dd})
-    if r['return']>0: return r
-    ddf=r['dict']
-
-    # Load flattened data
-    spz=str(point).zfill(8)
-    fpflat=spz+'.flat.json'
-    fpflat1=os.path.join(p, fpflat)
-
-    if os.path.isfile(fpflat1):
-       r=ck.load_json_file({'json_file':fpflat1})
-       if r['return']>0: return r
-       ddfe=r['dict']
-
-    # Process multiple points
-    sak=i.get('process_multi_keys',['characteristics', 'features'])
-
-    r=process_multi({'dict':ddfe, 'dict1':ddf, 'process_multi_keys':sak})
-    if r['return']>0: return r
-    ddfe=r['dict']
-    mdp=r['max_range_percent']
-    mmin=r['min']
-    mmax=r['max']
-
+    # Check if need to flat and basic perform analysis
     mdpt=i.get('max_range_percent_threshold',-1)
+    mmin=''
+    mmax=''
 
-    xx=ddfe.get('added',{})
-    xx1=xx.get('first',{})
-    if len(xx1)==0: 
-       xx['first']=dsi
-    xx['last']=dsi
-    ddfe['added']=xx
+    if i.get('skip_flatten','')!='yes':
+       # Flatten data and perform basic analysis **********************************
+       r=ck.flatten_dict({'dict':dd})
+       if r['return']>0: return r
+       ddf=r['dict']
+
+       # Load flattened data
+       fpflat=fpoint+'.flat.json'
+       fpflat1=os.path.join(p, fpflat)
+
+       ddflat={}
+       if os.path.isfile(fpflat1):
+          r=ck.load_json_file({'json_file':fpflat1})
+          if r['return']>0: return r
+          ddflat=r['dict']
+
+       # Process multiple points
+       sak=i.get('process_multi_keys',['characteristics', 'features'])
+
+       r=process_multi({'dict':ddflat, 'dict1':ddf, 'process_multi_keys':sak})
+       if r['return']>0: return r
+       ddflat=r['dict']
+       mdp=r['max_range_percent']
+       mmin=r['min']
+       mmax=r['max']
 
     # Check if record all points or only with max_range_percent > max_range_percent_threshold
-    sp=ddfe.get('sub_points',-1)
-    if sp==-1:
-       ddfe['sub_points']=0
-
-    if sp!=-1 and (i.get('record_all_subpoints','')=='yes' or ((mdpt!=-1 and mdp>mdpt) or mmin=='yes' or mmax=='yes')):
+    sp=ddft.get('sub_points',0)
+    if sp==0 or ras=='yes' or ((mdpt!=-1 and mdp>mdpt) or mmin=='yes' or mmax=='yes'):
        sp+=1
        if sp>9999:
           return {'return':1, 'error':'max number of subpoints is reached (9999)'}
 
-       ddfe['sub_points']=sp
+       if o=='con': ck.out('      Next subpoint: '+str(sp))
+
+       ddft['sub_points']=sp
        ssp='.'+str(sp).zfill(4)
 
-       fssp=spz+ssp+'.json'
+       fssp=fpoint+ssp+'.json'
        fssp1=os.path.join(p, fssp)
 
        # Save subpoint dict to file
        r=ck.save_json_to_file({'json_file':fssp1, 'dict':dd, 'sort_keys':sk})
        if r['return']>0: return r
 
-    # Save updated flat dict to file
-    r=ck.save_json_to_file({'json_file':fpflat1, 'dict':ddfe, 'sort_keys':sk})
+    # Save features file (that include subpoint)
+    pfp=os.path.join(p, fpoint)+'.features.json'
+    r=ck.save_json_to_file({'json_file':pfp, 'dict':ddft, 'sort_keys':sk})
     if r['return']>0: return r
+
+    # Save updated flat dict to file
+    if i.get('skip_flatten','')!='yes':
+       r=ck.save_json_to_file({'json_file':fpflat1, 'dict':ddflat, 'sort_keys':sk})
+       if r['return']>0: return r
 
     # Adding/updating entry *****************************************************
     if o=='con': 
@@ -308,7 +318,7 @@ def add(i):
         'remote_repo_uoa': rruoa,
         'module_uoa': work['self_module_uoa'],
         'data_uoa':euid,
-        'dict':dd,
+        'dict':dde,
         'ignore_update':i.get('ignore_update',''),
         'sort_keys':sk,
         'unlock_uid':lock_uid
