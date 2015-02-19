@@ -114,6 +114,7 @@ def add(i):
 
     # Search for an entry to aggregate, if needed
     lock_uid=''
+    lst=[]
     if an!='yes' and (euoa=='' and euid==''):
        if o=='con':
           ck.out('Searching existing experiments in the repository with given meta info ...')
