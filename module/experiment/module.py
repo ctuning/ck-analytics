@@ -52,7 +52,7 @@ def add(i):
 
               (experiment_uoa)              - if entry with aggregated experiments is already known
               (experiment_uid)              - if entry with aggregated experiments is already known
-              (add_new)                     - if 'yes', do not search for existing entry,
+              (force_new_entry)             - if 'yes', do not search for existing entry,
                                               but add a new one!
 
               (search_point_by_features)    - if 'yes', add point
@@ -89,7 +89,8 @@ def add(i):
     if len(dd)==0:
        return {'return':1, 'error':'no data provided ("dict" key is empty)'}
 
-    an=i.get('add_new','')
+    an=i.get('force_new_entry','')
+
     euoa=i.get('experiment_uoa','')
     euid=i.get('experiment_uid','')
 
@@ -141,21 +142,23 @@ def add(i):
              ck.out('  Existing experiment was found: '+euoa+' ('+euid+') ...')
 
     # If not found, add entry
-    if an=='yes':
-       if o=='con':
-          if euoa=='' and euid=='':
-             ck.out('  Existing experiments were not found. Adding new entry ...')
-          else:
-             ck.out('  Adding or updating an entry ...')
-
-       ii={'action':'update',
-           'common_func':'yes',
+    if an=='yes' or len(lst)==0:
+       ii={'common_func':'yes',
            'repo_uoa': ruoa,
            'remote_repo_uoa': rruoa,
            'data_uoa':euoa,
            'data_uid':euid,
            'module_uoa': work['self_module_uoa'],
            'dict':dd}
+
+       if o=='con':
+          if euoa=='' and euid=='':
+             ii['action']='add'
+             ck.out('  Existing experiments were not found. Adding new entry ...')
+          else:
+             ii['action']='update'
+             ck.out('  Updating an entry ...')
+
        r=ck.access(ii)
        if r['return']>0: return r
        euoa=r['data_uoa']
