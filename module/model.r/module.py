@@ -62,6 +62,8 @@ def build(i):
     import tempfile
     import os
 
+    o=i.get('out','')
+
     mn=i['model_name']
 
     ftable=i['features_table']
@@ -103,6 +105,11 @@ def build(i):
     os.close(fd1)
     os.remove(fn1)
 
+    if ktf=='yes' and o=='con': 
+       ck.out('')
+       ck.out('  Temporary CSV file = '+fn1)
+       ck.out('')
+
     ii={'action':'convert_table_to_csv',
         'module_uoa':cfg['module_deps']['experiment'],
         'table':dim,
@@ -131,9 +138,20 @@ def build(i):
     cmd='r --vanilla --args '+fn1+' '+fn2+' < '+pmc
     os.system(cmd)
 
+    if ktf=='yes' and o=='con': 
+       ck.out('')
+       ck.out('  Executed command:')
+       ck.out(cmd)
+       ck.out('')
+
     if ktf!='yes' and os.path.isfile(fn1): os.remove(fn1)
 
     if not os.path.isfile(fn2): 
+       if ktf=='yes' and o=='con': 
+          ck.out('')
+          ck.out('  Temporary CSV file = '+fn1)
+          ck.out('')
+
        return {'return':1, 'error':'model was not created'}
 
     return {'return':0, 'model_input_file':fn1, 'model_file':fn2}
@@ -229,7 +247,7 @@ def validate(i):
     for a in c:
         k=list(a.keys())
         if len(k)>0:
-           pr.append([float(a[k[1]])])
+           pr.append([a[k[1]]])
     f.close()
 
     os.remove(fn2)

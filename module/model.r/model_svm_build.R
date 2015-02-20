@@ -27,10 +27,13 @@ x=data.frame(data_set[,1:ncol(data_set)-1])
 y=data_set[,ncol(data_set)]
 
 # model
-model=svm(y~.,data=x,cost=10,gamma=0.1)
+#model=svm(y~.,data=x,cost=10000,gamma=0.0000001)
 
 # Saving model
-save(model, file=paste(foutput,'',sep=''))
+#save(model, file=paste(foutput,'',sep=''))
+
+tuned <- tune.svm(y~., data=x, gamma = 10^(-6:-1), cost = 10^(1:2))
+summary(tuned)
 
 print(model)
 

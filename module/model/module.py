@@ -142,7 +142,8 @@ def build(i):
         'features_keys': fkeys,
         'characteristics_table': ctable,
         'characteristics_keys': ckeys,
-        'keep_temp_files':ktf
+        'keep_temp_files':ktf,
+        'out':o
        }
     r=ck.access(ii)
     if r['return']>0: return r
@@ -267,14 +268,48 @@ def validate(i):
         v=ctable[k][0]
         pv=pt[k][0]
 
-        s+=(v-pv)*(v-pv)
-        diff=abs(pv-v)/v
-        x1=''
-        if diff>0.1: #10%
-           x1=' ***'
+        if type(v)==float:
+           sv="%11.3f" % v
+           pv=float(pv)
+           pt[k][0]=pv
+           spv="%11.3f" % pv
+        else:
+           sv=str(v)
+           spv=str(pv)
+
+        sdiff=''
+        if type(v)==float or type(v)==int:
+           if v==0:
+              if v!=pv:
+                 sdiff='***'
+           else:
+              s+=(v-pv)*(v-pv)
+              diff=abs(pv-v)/v
+              x1=''
+              if diff>0.1: #10%
+                 x1=' ***'
+              sdiff="%7.3f" % diff + x1         
+
+        else:
+           if str(v)!=str(pv):
+              s+=1
+              sdiff='***'
+
+           if type(v)==bool:
+              # hack
+              xfloat=True
+              try: xpv=float(pv)
+              except Exception as e: xfloat=False
+
+              if xfloat:
+                 if xpv<0.5: pv='False'
+                 else: pv='True'
+
+              if str(pv)=='True': pt[k][0]=True
+              else: pt[k][0]=False
 
         if o=='con':
-           line="%11.3f" % v + "%11.3f" % pv + "%7.3f" % diff + x1
+           line=sv+' '+spv+' '+sdiff
            ck.out(line)
 
     rmse=math.sqrt(s/lctable)

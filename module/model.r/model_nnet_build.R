@@ -27,7 +27,7 @@ x=data.frame(data_set[,1:ncol(data_set)-1])
 y=data_set[,ncol(data_set)]
 
 # model
-model=nnet(y~.,data=x,entropy=T,size=10,decay=0,maxit=2000,trace=T)
+model=nnet(y~.,data=x,size=10,decay=0,maxit=2000,trace=T)
 
 # Saving model
 save(model, file=paste(foutput,'',sep=''))
