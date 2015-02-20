@@ -454,57 +454,55 @@ def get(i):
 
            p=r['path']
            dd=r['dict']
-           ipoints=int(dd.get('points','0'))
 
-           for ip in range(1, ipoints+1):
-               sp=str(ip)
-               spz=sp.zfill(8)
-               fpflat=spz+'.flat.json'
-               fpflat1=os.path.join(p, fpflat)
+           dirList=os.listdir(p)
+           for fn in dirList:
+               if fn.endswith('.flat.json'):
+                  fpflat1=os.path.join(p, fn)
 
-               r=ck.load_json_file({'json_file':fpflat1})
-               if r['return']>0: return r
-               df=r['dict']
+                  r=ck.load_json_file({'json_file':fpflat1})
+                  if r['return']>0: return r
+                  df=r['dict']
 
-               # Create final vector (X,Y,Z,...)
-               vect=[]
-               if fki!='' or len(fkl)==0:
-                  # Add all sorted (otherwise there is no order in python dict
-                  for k in sorted(df.keys()):
-                      if (fki=='' or k.startswith(fki)) and (fkie=='' or k.endswith(fkie)):
-                         if len(rfkl)==0:
-                            trfkl.append(k)
-                         v=df[k]
+                  # Create final vector (X,Y,Z,...)
+                  vect=[]
+                  if fki!='' or len(fkl)==0:
+                     # Add all sorted (otherwise there is no order in python dict
+                     for k in sorted(df.keys()):
+                         if (fki=='' or k.startswith(fki)) and (fkie=='' or k.endswith(fkie)):
+                            if len(rfkl)==0:
+                               trfkl.append(k)
+                            v=df[k]
+                            if v!=None and type(v)==list:
+                               if len(v)==0: v=None
+                               else: v=v[0]
+                            vect.append(v)
+
+                            # Check if range
+                            if fkie!='' and fkied!='':
+                               kb=k[:len(k)-len(fkie)]
+                               kbd=kb+fkied
+                               if len(rfkl)==0:
+                                  trfkl.append(kbd)
+                               vd=df.get(kbd, None)
+                               if vd!=None and type(vd)==list:
+                                  if len(vd)==0: vd=None
+                                  else: vd=vd[0]
+                               vect.append(vd)
+
+                     if len(trfkl)!=0:
+                        rfkl=trfkl
+                  else:
+                     for k in fkl:
+                         v=df.get(k,None)
                          if v!=None and type(v)==list:
                             if len(v)==0: v=None
                             else: v=v[0]
                          vect.append(v)
-
-                         # Check if range
-                         if fkie!='' and fkied!='':
-                            kb=k[:len(k)-len(fkie)]
-                            kbd=kb+fkied
-                            if len(rfkl)==0:
-                               trfkl.append(kbd)
-                            vd=df.get(kbd, None)
-                            if vd!=None and type(vd)==list:
-                               if len(vd)==0: vd=None
-                               else: vd=vd[0]
-                            vect.append(vd)
-
-                  if len(trfkl)!=0:
-                     rfkl=trfkl
-               else:
-                  for k in fkl:
-                      v=df.get(k,None)
-                      if v!=None and type(v)==list:
-                         if len(v)==0: v=None
-                         else: v=v[0]
-                      vect.append(v)
-                     
-               # Add vector
-               if sigraph not in table: table[sigraph]=[]
-               table[sigraph].append(vect)
+                        
+                  # Add vector
+                  if sigraph not in table: table[sigraph]=[]
+                  table[sigraph].append(vect)
 
     if len(rfkl)==0 and len(fkl)!=0: rfkl=fkl
 
