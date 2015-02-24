@@ -1,4 +1,4 @@
-#
+#   
 # Collective Knowledge (Universal Experiment)
 #
 # See CK LICENSE.txt for licensing details
@@ -364,6 +364,8 @@ def get(i):
 
               (substitute_x_with_loop)              - if 'yes', substitute first vector dimension with a loop
               (sort_index)                          - if !='', sort by this number within vector (i.e. 0 - X, 1 - Y, etc)
+
+              (ignore_point_if_none)                - if 'yes', ignore points where there is a None
             }
 
     Output: {
@@ -389,6 +391,8 @@ def get(i):
     fkl=i.get('flat_keys_list',[])
     rfkl=[] # real flat keys (if all)
     trfkl=[]
+
+    ipin=i.get('ignore_point_if_none','')
 
     if len(table)==0:
        ruoa=i.get('repo_uoa','')
@@ -466,6 +470,7 @@ def get(i):
 
                   # Create final vector (X,Y,Z,...)
                   vect=[]
+                  has_none=False
                   if fki!='' or len(fkl)==0:
                      # Add all sorted (otherwise there is no order in python dict
                      for k in sorted(df.keys()):
@@ -473,6 +478,7 @@ def get(i):
                             if len(rfkl)==0:
                                trfkl.append(k)
                             v=df[k]
+                            if v==None: has_none=True
                             if v!=None and type(v)==list:
                                if len(v)==0: v=None
                                else: v=v[0]
@@ -485,6 +491,7 @@ def get(i):
                                if len(rfkl)==0:
                                   trfkl.append(kbd)
                                vd=df.get(kbd, None)
+                               if vd==None: has_none=True
                                if vd!=None and type(vd)==list:
                                   if len(vd)==0: vd=None
                                   else: vd=vd[0]
@@ -495,6 +502,7 @@ def get(i):
                   else:
                      for k in fkl:
                          v=df.get(k,None)
+                         if v==None: has_none=True
                          if v!=None and type(v)==list:
                             if len(v)==0: v=None
                             else: v=v[0]
@@ -502,7 +510,8 @@ def get(i):
                         
                   # Add vector
                   if sigraph not in table: table[sigraph]=[]
-                  table[sigraph].append(vect)
+                  if ipin!='yes' or not has_none:
+                     table[sigraph].append(vect)
 
     if len(rfkl)==0 and len(fkl)!=0: rfkl=fkl
 
@@ -736,7 +745,7 @@ def sort_table(i):
     isi=int(si)
     for sg in table:
         x=table[sg]
-        y=sorted(x, key=lambda var: var[isi])
+        y=sorted(x, key=lambda var: 0 if var[isi] is None else var[isi])
         table[sg]=y
 
     return {'return':0, 'table':table}
@@ -772,15 +781,67 @@ def substitute_x_with_loop(i):
     return {'return':0, 'table':table}
 
 ##############################################################################
+# filter function
+
+def get_all_meta_filter(i):
+
+    dd=i.get('dict',{})
+    d=i.get('dict_orig',{})
+    aggr=i.get('aggregation',{})
+
+    ks=aggr.get('keys_start','')
+    ke=aggr.get('keys_end','')
+
+    ameta=aggr.get('meta',{})
+    atags=aggr.get('tags',{})
+    akeys=aggr.get('keys',[])
+
+    # Process meta
+    meta=d.get('meta',{})
+    for k in meta:
+        v=meta[k]
+
+        if k not in ameta:
+           ameta[k]=[v]
+        else:
+           if v not in ameta[k]:
+              ameta[k].append(v)
+
+    # Process keys
+    for k in dd:
+        add=True
+
+        if ks!='' and not k.startswith(ks): add=False
+        if add and ke!='' and not k.endswith(ke): add=False
+
+        if add and k not in akeys:
+           akeys.append(k)
+
+    # Process meta
+    tags=d.get('tags',[])
+    for v in tags:
+        if v not in atags:
+           atags[v]=1
+        else:
+           atags[v]+=1
+
+    aggr['meta']=ameta
+    aggr['tags']=atags
+    aggr['keys']=akeys
+            
+    return {'return':0}
+
+##############################################################################
 # Get all meta information from entries
 
 def get_all_meta(i):
     """
     Input:  {
-               (repo_uoa)
-               (module_uoa)
-               (new_module_uoa) - if !='', use instead of module_uoa
-               (data_uoa)
+               Input for 'filter' function
+
+               (aggregation) - dict with some params
+                               (keys_start) - prune keys
+                               (keys_end)   - prune keys
             }
 
     Output: {
@@ -796,63 +857,29 @@ def get_all_meta(i):
 
     o=i.get('out','')
 
-    ameta={}
-    atags={}
+    import copy
+    ii=copy.deepcopy(i)
 
-    ruoa=i.get('repo_uoa','')
-    muoa=i.get('module_uoa','')
-    nmuoa=i.get('new_module_uoa','')
-    duoa=i.get('data_uoa','')
+    ii['filter_func']='get_all_meta_filter'
 
-    if nmuoa!='': muoa=nmuoa
-
-    lst=[]
-
-    # Check wildcards
-    r=ck.list_data({'repo_uoa':ruoa, 'module_uoa':muoa, 'data_uoa':duoa})
+    r=filter(ii)
     if r['return']>0: return r
-    lst=r['lst']
 
-    r={'return':0}
-    for ll in lst:
-        p=ll['path']
+    aggr=r.get('aggregation',{})
 
-        ruid=ll['repo_uid']
-        muid=ll['module_uid']
-        duid=ll['data_uid']
-
-        r=ck.access({'action':'load',
-                     'repo_uoa':ruid,
-                     'module_uoa':muid,
-                     'data_uoa':duid})
-        if r['return']>0: return r
- 
-        d=r['dict']
-
-        # Process meta
-        meta=d.get('meta',{})
-        for k in meta:
-            v=meta[k]
-
-            if k not in ameta:
-               ameta[k]=[v]
-            else:
-               if v not in ameta[k]:
-                  ameta[k].append(v)
-
-        # Process meta
-        tags=d.get('tags',[])
-        for v in tags:
-            if v not in atags:
-               atags[v]=1
-            else:
-               atags[v]+=1
-
-    satags=[key for val, key in sorted(((int(val), key) for key, val in atags.iteritems()), reverse=True)]
+    ameta=aggr.get('meta',{})
+    atags=aggr.get('tags',{})
+    akeys=aggr.get('keys',{})
 
     if o=='con':
        import json
 
+       ck.out('Keys:')
+       ck.out('')
+       for q in sorted(akeys):
+           ck.out('   "'+q+'",')
+
+       ck.out('')
        ck.out('Meta:')
        ck.out('')
        ck.out(json.dumps(ameta, indent=2, sort_keys=True))
@@ -860,7 +887,135 @@ def get_all_meta(i):
        ck.out('')
        ck.out('Tags:')
        ck.out('')
-       for q in satags:
-           ck.out(q+' = '+str(atags[q]))
 
-    return {'return':0, 'all_meta':ameta, 'all_tags':atags, 'all_tag_keys_sorted':satags}
+       satags=[(k, atags[k]) for k in sorted(atags, key=atags.get, reverse=True)]
+
+       for k,v in satags:
+           ck.out(k+' = '+str(v))
+
+    return {'return':0, 'all_meta':ameta, 'all_tags':atags}
+
+##############################################################################
+# filter / pre-process data
+
+def filter(i):
+    """
+    Input:  {
+              Select entries or table:
+                 (repo_uoa) or (experiment_repo_uoa)     - can be wild cards
+                 (remote_repo_uoa)                       - if remote access, use this as a remote repo UOA
+                 (module_uoa) or (experiment_module_uoa) - can be wild cards
+                 (data_uoa) or (experiment_data_uoa)     - can be wild cards
+
+                 (repo_uoa_list)                       - list of repos to search
+                 (module_uoa_list)                     - list of module to search
+                 (data_uoa_list)                       - list of data to search
+
+                 (search_dict)                         - search dict
+                 (ignore_case)                         - if 'yes', ignore case when searching
+
+                 (filter_func)        - name of filter function
+                 (filter_func_addr)   - address of filter function
+
+              (aggregation)           - dictionary to aggregate information across entries
+
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+
+              (aggregation)           - dictionary to aggregate information across entries
+            }
+
+    """
+
+    o=i.get('out','')
+
+    ruoa=i.get('repo_uoa','')
+    xruoa=i.get('experiment_repo_uoa','')
+    if xruoa!='': ruoa=xruoa
+
+    rruoa=i.get('remote_repo_uoa','')
+
+    muoa=i.get('experiment_module_uoa','')
+    if muoa=='': muoa=i.get('module_uoa','')
+
+    duoa=i.get('experiment_data_uoa','')
+    if duoa=='': duoa=i.get('data_uoa','')
+
+    ruoal=i.get('repo_uoa_list',[])
+    muoal=i.get('module_uoa_list',[])
+    duoal=i.get('data_uoa_list',[])
+
+    sd=i.get('search_dict',{})
+    ic=i.get('ignore_case','')
+
+    sff=i.get('filter_func','')
+    ff=i.get('filter_func_addr',None)
+    if sff!='': 
+       import sys
+       ff=getattr(sys.modules[__name__], sff)
+
+    # Search entries
+    ii={'action':'search',
+        'common_func':'yes',
+        'repo_uoa':ruoa,
+        'remote_repo_uoa': rruoa,
+        'module_uoa':muoa,
+        'data_uoa':duoa,
+        'repo_uoa_list':ruoal,
+        'module_uoa_list':muoal,
+        'data_uoa_list':duoal,
+        'search_dict':sd,
+        'ignore_case':ic}
+    r=ck.access(ii)
+    if r['return']>0: return r
+
+    lst=r['lst']
+
+    aggr=i.get('aggregation',{})
+
+    # Iterate over entries
+    for e in lst:
+        ruid=e['repo_uid']
+        muoa=e['module_uoa']
+        muid=e['module_uid']
+        duoa=e['data_uoa']
+        duid=e['data_uid']
+
+        # Load entry
+        if o=='con':
+           ck.out('Loading entry '+muoa+':'+duoa+' ...')
+
+        ii={'action':'load',
+            'repo_uoa':ruid,
+            'module_uoa':muid,
+            'data_uoa':duid}
+        r=ck.access(ii)
+        if r['return']>0: return r
+
+        p=r['path']
+        dd=r['dict']
+
+        dirList=os.listdir(p)
+        for fn in dirList:
+            if fn.endswith('.flat.json'):
+               fpflat1=os.path.join(p, fn)
+
+               r=ck.load_json_file({'json_file':fpflat1})
+               if r['return']>0: return r
+               df=r['dict']
+
+               rx=ff({'dict':df, 'dict_orig':dd, 'aggregation':aggr})
+               if rx['return']>0: return rx
+
+               changed=rx.get('changed','')
+               df=rx.get('dict',{})
+
+               if changed=='yes':
+                  r=ck.save_json_to_file({'json_file':fpflat1, 'dict':df})
+                  if r['return']>0: return r
+
+    return {'return':0, 'aggregation':aggr}

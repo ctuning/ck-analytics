@@ -38,7 +38,7 @@ def build(i):
 
     Input:  {
               model_name            - model name
-              (model_out_file)      - model output file, otherwise generated as tmp file
+              (model_file)          - model output file, otherwise generated as tmp file
 
               features_table        - features table (in experiment module format)
               features_keys         - features flat keys 
@@ -65,6 +65,8 @@ def build(i):
     o=i.get('out','')
 
     mn=i['model_name']
+    mf=i.get('model_file','')
+    mf1=i['model_file']+'.r.obj'
 
     ftable=i['features_table']
     fkeys=i['features_keys']
@@ -77,8 +79,8 @@ def build(i):
     if lftable!=lctable:
        return {'return':1, 'error':'length of feature table ('+str(lftable)+'is not the same as length of characteristics table ('+str(lctable)+')'}
 
-    if len(ckeys)>1:
-       return {'return':1, 'error':'currently we support only modeling for 1 characteristic'}
+#    if len(ckeys)>1:
+#       return {'return':1, 'error':'currently we support only modeling for 1 characteristic'}
 
     ktf=i.get('keep_temp_files','')
 
@@ -101,9 +103,12 @@ def build(i):
         keys.append(q)
 
     # Prepare temporary CSV file
-    fd1, fn1=tempfile.mkstemp(suffix='.tmp', prefix='ck-')
-    os.close(fd1)
-    os.remove(fn1)
+    if ktf=='yes' and mf!='':
+       fn1=mf+'.build.in.csv'
+    else:
+       fd1, fn1=tempfile.mkstemp(suffix='.tmp', prefix='ck-')
+       os.close(fd1)
+       os.remove(fn1)
 
     if ktf=='yes' and o=='con': 
        ck.out('')
@@ -123,11 +128,14 @@ def build(i):
     if r['return']>0: return r
 
     # Prepare (temporary) out model file
-    fn2=i.get('model_out_file','')
+    fn2=mf
     if fn2=='' or i.get('web','')=='yes':
        fd2, fn2=tempfile.mkstemp(suffix='.tmp', prefix='ck-')
        os.close(fd2)
        os.remove(fn2)
+    else:
+       fn2=mf1
+       if os.path.isfile(fn2): os.remove(fn2)
 
     # Calling R
     p=work['path']
@@ -149,7 +157,7 @@ def build(i):
     if not os.path.isfile(fn2): 
        if ktf=='yes' and o=='con': 
           ck.out('')
-          ck.out('  Temporary CSV file = '+fn1)
+          ck.out('  Temporary input CSV file = '+fn1)
           ck.out('')
 
        return {'return':1, 'error':'model was not created'}
@@ -177,6 +185,7 @@ def validate(i):
               features_table        - features table (in experiment module format)
               features_keys         - features flat keys 
 
+              (keep_temp_files)     - if 'yes', keep temp files 
             }
 
     Output: {
@@ -196,17 +205,23 @@ def validate(i):
 
     mn=i['model_name']
     mf=i['model_file']
+    mf1=i['model_file']+'.r.obj'
 
     ftable=i['features_table']
     fkeys=i['features_keys']
+
+    ktf=i.get('keep_temp_files','')
 
     lftable=len(ftable)
 
     # First convert to CSV for R ***********************************
     # Prepare temporary CSV file
-    fd1, fn1=tempfile.mkstemp(suffix='.tmp', prefix='ck-')
-    os.close(fd1)
-    os.remove(fn1)
+    if ktf=='yes':
+       fn1=mf+'.validate.in.csv'
+    else:
+       fd1, fn1=tempfile.mkstemp(suffix='.tmp', prefix='ck-')
+       os.close(fd1)
+       os.remove(fn1)
 
     ii={'action':'convert_table_to_csv',
         'module_uoa':cfg['module_deps']['experiment'],
@@ -220,10 +235,14 @@ def validate(i):
     r=ck.access(ii)
     if r['return']>0: return r
 
-    # Prepare temporary model file
-    fd2, fn2=tempfile.mkstemp(suffix='.tmp', prefix='ck-')
-    os.close(fd2)
-    os.remove(fn2)
+    # Prepare temporary out file
+    if ktf=='yes':
+       fn2=mf+'.validate.out.csv'
+       if os.path.isfile(fn2): os.remove(fn2)
+    else:
+       fd2, fn2=tempfile.mkstemp(suffix='.tmp', prefix='ck-')
+       os.close(fd2)
+       os.remove(fn2)
 
     # Calling R
     p=work['path']
@@ -231,13 +250,13 @@ def validate(i):
 
     pmc=os.path.join(p, model_code)
     
-    cmd='r --vanilla --args '+mf+' '+fn1+' '+fn2+' < '+pmc
+    cmd='r --vanilla --args '+mf1+' '+fn1+' '+fn2+' < '+pmc
     os.system(cmd)
 
-    if os.path.isfile(fn1): os.remove(fn1)
+    if ktf!='yes' and os.path.isfile(fn1): os.remove(fn1)
 
     if not os.path.isfile(fn2): 
-       return {'return':1, 'error':'prediction file was not created'}
+       return {'return':1, 'error':'output prediction file was not created'}
 
     # Parse CSV and convert to experiment format
     # Read predictions
@@ -250,6 +269,6 @@ def validate(i):
            pr.append([a[k[1]]])
     f.close()
 
-    os.remove(fn2)
+    if ktf!='yes': os.remove(fn2)
 
     return {'return':0, 'prediction_table':pr}

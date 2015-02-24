@@ -84,8 +84,11 @@ def build(i):
               Model:
                 model_module_uoa                        - model module
                 model_name                              - model name
-                (model_out_file)                        - model output file, otherwise generated as tmp file
+                (model_file)                            - model output file, otherwise generated as tmp file
                 (keep_temp_files)                       - if 'yes', keep temp files 
+                (remove_points_with_none)               - if 'yes', remote points with None
+
+              (csv_file)                                - if !='', only record prepared table to CSV ...
             }
 
     Output: {
@@ -97,13 +100,16 @@ def build(i):
     """
 
     import copy
+    import os
 
     o=i.get('out','')
     i['out']=''
 
-    mmuoa=i['model_module_uoa']
-    mn=i['model_name']
     ktf=i.get('keep_temp_files','')
+
+    rpwn=i.get('remove_points_with_none','')
+
+    cf=i.get('csv_file','')
 
     # Get table through experiment module for features
     iif=copy.deepcopy(i)
@@ -133,11 +139,83 @@ def build(i):
     if len(ctable)==0:
        return {'return':1, 'error':'no points found'}
 
+    if rpwn=='yes':
+       ftable1=[]
+       ctable1=[]
+
+       for q in range(0, len(ftable)):
+           fv=ftable[q]
+           cv=ctable[q]
+
+           add=True
+           for k in fv:
+               if k==None:
+                  add=False
+                  break
+
+           if add:
+              for k in cv:
+                  if k==None:
+                     add=False
+                     break
+
+           if add:
+              ftable1.append(fv)
+              ctable1.append(cv)
+
+       ftable=ftable1
+       ctable=ctable1
+
+    if cf!='':
+       # Prepare common table from features and characteristics
+
+       lftable=len(ftable)
+       lctable=len(ctable)
+
+       if lftable!=lctable:
+          return {'return':1, 'error':'length of feature table ('+str(lftable)+'is not the same as length of characteristics table ('+str(lctable)+')'}
+
+       dim=[]
+       for q in range(0, lftable): 
+           vv=[]
+           for v in ftable[q]:
+               vv.append(v)
+           for v in ctable[q]:
+               vv.append(v)
+           dim.append(vv)
+
+       # Prepare common keys
+       keys=[]
+       for q in fkeys:
+           keys.append(q)
+       for q in ckeys:
+           keys.append(q)
+
+       # Prepare temporary CSV file
+       ii={'action':'convert_table_to_csv',
+           'module_uoa':cfg['module_deps']['experiment'],
+           'table':dim,
+           'keys':keys,
+           'file_name':cf,
+           'csv_no_header':'no',
+           'csv_separator':';',
+           'csv_decimal_mark':'.'
+          }
+       r=ck.access(ii)
+       if r['return']>0: return r
+
+       return {'return':0}
+
+    mmuoa=i['model_module_uoa']
+    mn=i['model_name']
+    mof=i.get('model_file','')
+    if mof!='' and os.path.isfile(mof): os.remove(mof)
+
     # Calling model
     ii={'action':'build',
         'module_uoa':mmuoa,
         'model_name':mn,
-        'model_out_file':i.get('model_out_file',''),
+        'model_file':mof,
         'features_table': ftable,
         'features_keys': fkeys,
         'characteristics_table': ctable,
@@ -195,12 +273,18 @@ def validate(i):
                 model_module_uoa                        - model module
                 model_name                              - model name
                 model_file                              - model file
+                (keep_temp_files)                       - if 'yes', keep temp files 
             }
 
     Output: {
               return       - return code =  0, if successful
                                          >  0, if error
               (error)      - error text if return > 0
+
+              rmse
+              prediction_rate
+              observations
+              mispredictions
             }
 
     """
@@ -214,6 +298,8 @@ def validate(i):
     mmuoa=i['model_module_uoa']
     mn=i['model_name']
     mf=i['model_file']
+
+    ktf=i.get('keep_temp_files','')
 
     # Get table through experiment module for features
     iif=copy.deepcopy(i)
@@ -250,7 +336,9 @@ def validate(i):
         'model_name':mn,
         'model_file':mf,
         'features_table': ftable,
-        'features_keys': fkeys
+        'features_keys': fkeys,
+        'keep_temp_files':ktf,
+        'out':o
        }
     r=ck.access(ii)
     if r['return']>0: return r
@@ -264,6 +352,7 @@ def validate(i):
     # Checking model
     s=0.0
 
+    imispredictions=0
     for k in range(0, lctable):
         v=ctable[k][0]
         pv=pt[k][0]
@@ -282,19 +371,17 @@ def validate(i):
            if v==0:
               if v!=pv:
                  sdiff='***'
+                 imispredictions+=1
            else:
               s+=(v-pv)*(v-pv)
               diff=abs(pv-v)/v
               x1=''
               if diff>0.1: #10%
                  x1=' ***'
+                 imispredictions+=1
               sdiff="%7.3f" % diff + x1         
 
         else:
-           if str(v)!=str(pv):
-              s+=1
-              sdiff='***'
-
            if type(v)==bool:
               # hack
               xfloat=True
@@ -302,21 +389,36 @@ def validate(i):
               except Exception as e: xfloat=False
 
               if xfloat:
-                 if xpv<0.5: pv='False'
-                 else: pv='True'
+                 if xpv<0.5: 
+                    spv='False ('+("%11.3f" % xpv)+')'
+                    pv='False'
+                 else: 
+                    spv='True ('+("%11.3f" % xpv)+')'
+                    pv='True'
 
               if str(pv)=='True': pt[k][0]=True
               else: pt[k][0]=False
 
+           if str(v)!=str(pv):
+              s+=1
+              sdiff='***'
+              imispredictions+=1
+
         if o=='con':
-           line=sv+' '+spv+' '+sdiff
+           import json
+           x=json.dumps(ftable[k])
+           line=str(1+k)+') '+x+' => '+sv+' '+spv+' '+sdiff
            ck.out(line)
 
     rmse=math.sqrt(s/lctable)
+    rate=float(lctable-imispredictions)/float(lctable)
 
     if o=='con':
        ck.out('')      
-       ck.out('Model RMSE='+str(rmse))
+
+       ck.out('Model RMSE =      '+str(rmse))
+       ck.out('Prediction rate = '+("%4.3f" % (rate*100))+'%')
+       ck.out('Mispredictions =  '+str(imispredictions)+' out of '+str(lctable))
 
     # Visualize?
     if i.get('visualize','')=='yes':
@@ -338,4 +440,25 @@ def validate(i):
        if r['return']>0: return r
 
     i['out']=o
-    return {'return':0}
+    return {'return':0, 'rmse':rmse, 'prediction_rate':rate, 'observations':lctable, 'mispredictions':imispredictions}
+
+##############################################################################
+# convert table to CSV
+
+def convert_to_csv(i):
+    """
+    Input:  {
+              Input from 'build' function
+
+              csv_file - CSV file to record
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    return build(i)
