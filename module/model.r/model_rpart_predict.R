@@ -27,8 +27,12 @@ x=data.frame(data_set)
 # loading saved prediction model
 load(fmodel)
 
+print (x)
+
 # Predicting
-p=predict(model, data=x)
+p=predict(model, x)
+
+print (p)
 
 # Saving results
 write.csv(p, file=foutput)

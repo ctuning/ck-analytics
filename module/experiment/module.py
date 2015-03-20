@@ -366,6 +366,7 @@ def get(i):
               (sort_index)                          - if !='', sort by this number within vector (i.e. 0 - X, 1 - Y, etc)
 
               (ignore_point_if_none)                - if 'yes', ignore points where there is a None
+              (ignore_graph_separation)             - if 'yes', ignore separating different entries into graphs 
             }
 
     Output: {
@@ -393,6 +394,7 @@ def get(i):
     trfkl=[]
 
     ipin=i.get('ignore_point_if_none','')
+    igs=i.get('ignore_graph_separation','')
 
     if len(table)==0:
        ruoa=i.get('repo_uoa','')
@@ -435,10 +437,11 @@ def get(i):
 
        table={}
        igraph=0
-       sigraph=str(igraph)
 
        # Iterate over entries
        for e in lst:
+           sigraph=str(igraph)
+
            ruid=e['repo_uid']
            muoa=e['module_uoa']
            muid=e['module_uid']
@@ -512,6 +515,9 @@ def get(i):
                   if sigraph not in table: table[sigraph]=[]
                   if ipin!='yes' or not has_none:
                      table[sigraph].append(vect)
+
+           if igs!='yes':
+              igraph+=1
 
     if len(rfkl)==0 and len(fkl)!=0: rfkl=fkl
 

@@ -251,6 +251,7 @@ def validate(i):
     pmc=os.path.join(p, model_code)
     
     cmd='r --vanilla --args '+mf1+' '+fn1+' '+fn2+' < '+pmc
+    print (cmd)
     os.system(cmd)
 
     if ktf!='yes' and os.path.isfile(fn1): os.remove(fn1)

@@ -62,6 +62,8 @@ def plot(i):
 
               Graphical parameters:
                 plot_type                  - mpl_2d_scatter
+                point_style                - dict, setting point style for each separate graph {"0", "1", etc}
+
 
             }
 
@@ -75,6 +77,8 @@ def plot(i):
 
 
     o=i.get('out','')
+
+    pst=i.get('point_style',{})
 
     # Check if table already there
     table=i.get('table',[])
@@ -175,7 +179,8 @@ def plot(i):
 
        # Add points
        s=0
-       for g in table:
+
+       for g in sorted(table, key=int):
            gt=table[g]
 
            if pt=='mpl_2d_scatter':
@@ -209,14 +214,21 @@ def plot(i):
                         myerr.append(u[iu])
                         iu+=1 
 
+              xpst=pst.get(g,{})
+
+              elw=int(xpst.get('elinewidth',0))
+
+              cl=xpst.get('color','')
+              if cl=='': cl=gs[s]['color']
+
               if xerr=='yes' and yerr=='yes':
-                 sp.errorbar(mx, my, xerr=mxerr, yerr=myerr, ls='none', c=gs[s]['color'])
+                 sp.errorbar(mx, my, xerr=mxerr, yerr=myerr, ls='none', c=cl, elinewidth=elw)
               elif xerr=='yes' and yerr!='yes':
-                 sp.errorbar(mx, my, xerr=mxerr, ls='none', c=gs[s]['color'])
+                 sp.errorbar(mx, my, xerr=mxerr, ls='none',  c=cl, elinewidth=elw)
               elif yerr=='yes' and xerr!='yes':
-                  sp.errorbar(mx, my, yerr=myerr, ls='none', c=gs[s]['color'])
+                  sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw)
               else:
-                 sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=gs[s]['color'], marker=gs[s]['marker'])
+                 sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=cl, elinewidth=elw, marker=gs[s]['marker'])
 
            s+=1
            if s>=len(gs):s=0
