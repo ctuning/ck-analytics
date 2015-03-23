@@ -228,7 +228,7 @@ def plot(i):
               elif yerr=='yes' and xerr!='yes':
                   sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw)
               else:
-                 sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=cl, elinewidth=elw, marker=gs[s]['marker'])
+                 sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=cl, marker=gs[s]['marker'])
 
            s+=1
            if s>=len(gs):s=0
