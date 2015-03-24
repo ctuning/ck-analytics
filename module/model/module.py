@@ -274,6 +274,7 @@ def validate(i):
                 model_name                              - model name
                 model_file                              - model file
                 (keep_temp_files)                       - if 'yes', keep temp files 
+                (remove_points_with_none)               - if 'yes', remote points with None
             }
 
     Output: {
@@ -294,6 +295,8 @@ def validate(i):
 
     o=i.get('out','')
     i['out']=''
+
+    rpwn=i.get('remove_points_with_none','')
 
     mmuoa=i['model_module_uoa']
     mn=i['model_name']
@@ -325,6 +328,33 @@ def validate(i):
     if r['return']>0: return r
     ctable=r['table'].get('0',[])
     ckeys=r['real_keys']
+
+    if rpwn=='yes':
+       ftable1=[]
+       ctable1=[]
+
+       for q in range(0, len(ftable)):
+           fv=ftable[q]
+           cv=ctable[q]
+
+           add=True
+           for k in fv:
+               if k==None:
+                  add=False
+                  break
+
+           if add:
+              for k in cv:
+                  if k==None:
+                     add=False
+                     break
+
+           if add:
+              ftable1.append(fv)
+              ctable1.append(cv)
+
+       ftable=ftable1
+       ctable=ctable1
 
     lctable=len(ctable)
     if lctable==0:
