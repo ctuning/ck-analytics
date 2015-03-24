@@ -76,6 +76,16 @@ def build(i):
     lftable=len(ftable)
     lctable=len(ctable)
 
+    if o=='con':
+       ck.out('*******************************************************')
+       ck.out('Feature key convertion:')
+       ck.out('')
+
+       fk=1
+       for fx in fkeys:
+           ck.out('V'+str(fk)+') '+fx)
+           fk+=1
+
     if lftable!=lctable:
        return {'return':1, 'error':'length of feature table ('+str(lftable)+'is not the same as length of characteristics table ('+str(lctable)+')'}
 
@@ -143,7 +153,7 @@ def build(i):
 
     pmc=os.path.join(p, model_code)
     
-    cmd='r --vanilla --args '+fn1+' '+fn2+' < '+pmc
+    cmd='R --vanilla --args '+fn1+' '+fn2+' < '+pmc
     os.system(cmd)
 
     if ktf=='yes' and o=='con': 
@@ -250,7 +260,7 @@ def validate(i):
 
     pmc=os.path.join(p, model_code)
     
-    cmd='r --vanilla --args '+mf1+' '+fn1+' '+fn2+' < '+pmc
+    cmd='R --vanilla --args '+mf1+' '+fn1+' '+fn2+' < '+pmc
     print (cmd)
     os.system(cmd)
 
