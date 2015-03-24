@@ -60,6 +60,8 @@ def plot(i):
               (flat_keys_index)                     - add all flat keys starting from this index 
               (flat_keys_index_end)                 - add all flat keys ending with this index (default #min)
 
+              (out_to_file)                         - save picture to file, if supported
+
               Graphical parameters:
                 plot_type                  - mpl_2d_scatter
                 point_style                - dict, setting point style for each separate graph {"0", "1", etc}
@@ -75,10 +77,11 @@ def plot(i):
 
     """
 
-
     o=i.get('out','')
 
     pst=i.get('point_style',{})
+
+    otf=i.get('out_to_file','')
 
     # Check if table already there
     table=i.get('table',[])
@@ -243,9 +246,37 @@ def plot(i):
        atitle=i.get('title','')
        if atitle!='': plt.title(atitle)
 
-       plt.show()
+       if otf=='':
+          plt.show()
+       else:
+          plt.savefig(otf)
 
     else:
        return {'return':1, 'error':'this type of plot ('+pt+') is not supported'}
+
+    return {'return':0}
+
+##############################################################################
+# Continuously updated plot
+
+def continuous_plot(i):
+    """
+    Input:  {
+
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    for q in range(0, 1000):
+        r=plot(i)
+        if r['return']>0: return r
+
+        x=ck.inp({'text':'Press any key'})
 
     return {'return':0}
