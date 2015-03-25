@@ -1,8 +1,9 @@
 {
+  "license": "See CK LICENSE.txt for licensing details", 
+  "copyright": "See CK Copyright.txt for copyright details", 
+  "author": "Grigori Fursin", 
+  "author_email": "Grigori.Fursin@cTuning.org", 
   "actions": {
-    "build": {
-      "desc": "build model"
-    }, 
     "convert_to_csv": {
       "desc": "convert table to CSV"
     }, 
@@ -10,18 +11,17 @@
       "desc": "use model"
     }, 
     "validate": {
-      "desc": "validate model", 
-      "for_web": "yes"
+      "for_web": "yes", 
+      "desc": "validate model"
+    }, 
+    "build": {
+      "desc": "build model"
     }
   }, 
-  "author": "Grigori Fursin", 
-  "author_email": "Grigori.Fursin@cTuning.org", 
-  "author_webpage": "http://cTuning.org/lab/people/gfursin", 
-  "copyright": "See CK Copyright.txt for copyright details", 
-  "desc": "Universal predictive model", 
-  "license": "See CK LICENSE.txt for licensing details", 
   "module_deps": {
     "experiment": "bc0409fb61f0aa82", 
     "experiment.graph": "2d41f89bcf32d4d4"
-  }
+  }, 
+  "author_webpage": "http://cTuning.org/lab/people/gfursin", 
+  "desc": "Universal predictive model"
 }
