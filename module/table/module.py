@@ -68,7 +68,7 @@ def draw(i):
        if o=='txt':
           for t in table:
               for l in range(0, lx):
-                  sx=t[l]
+                  sx=str(t[l])
                   lw=lwidth[l]
                   if lw==-1 or len(sx)>lw: 
                      lwidth[l]=len(sx)
@@ -76,7 +76,7 @@ def draw(i):
 
           for t in table:
               for l in range(0, lx):
-                  sx=t[l]
+                  sx=str(t[l])
                   lw=lwidth[l]
 
                   s+=sx.ljust(lw+2)
@@ -84,11 +84,11 @@ def draw(i):
        else:
           s='<html>\n'
           s+=' <body>\n'
-          s+='  <table>\n'
+          s+='  <table border="1">\n'
           for t in table:
               s+='  <tr>\n'
               for l in range(0, lx):
-                  sx=t[l]
+                  sx=str(t[l])
                   s+='    <td>'+sx+'</td>\n'
               s+='   </tr>\n'
           s+='  </table>\n'
