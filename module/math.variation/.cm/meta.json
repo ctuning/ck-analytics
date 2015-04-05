@@ -1,0 +1,13 @@
+{
+  "actions": {
+    "analyze": {
+      "desc": "analyze variation of experimental results"
+    }
+  }, 
+  "copyright": "See CK Copyright.txt for copyright details", 
+  "desc": "analysis of variation of experimental results", 
+  "developer": "Grigori Fursin", 
+  "developer_email": "Grigori.Fursin@cTuning.org", 
+  "developer_webpage": "http://cTuning.org/lab/people/gfursin", 
+  "license": "See CK LICENSE.txt for licensing details"
+}

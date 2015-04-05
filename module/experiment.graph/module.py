@@ -180,6 +180,18 @@ def plot(i):
        xerr=i.get('display_x_error_bar','')
        yerr=i.get('display_y_error_bar','')
 
+       # If density, find min and max for both graphs:
+       if pt=='mpl_1d_density':
+          dmin=-1.0
+          dmax=-1.0
+          for g in table:
+              gt=table[g]
+              if len(gt)>0:
+                 if dmin==-1.0: dmin=min(gt)
+                 else: dmin=min(dmin, min(gt))
+                 if dmax==-1.0: dmax=max(gt)
+                 else: dmax=max(dmax, max(gt))
+
        # Add points
        s=0
 
@@ -232,6 +244,35 @@ def plot(i):
                   sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw)
               else:
                  sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=cl, marker=gs[s]['marker'])
+
+           elif pt=='mpl_1d_density':
+              if dmin!=-1 and dmax!=-1: # I.e. we got non empty points
+                 mx=[]
+                 for u in gt:
+                     mx.append(u)
+
+                 ii={'action':'analyze',
+                     'module_uoa':cfg['module_deps']['math.variation'],
+                     'characteristics_table':mx}
+
+                 r=ck.access(ii)
+                 if r['return']>0: return r
+
+                 xs=r['xlist']
+                 dxs=r['ylist']
+
+                 pxs=r['xlist2']
+                 dpxs=r['ylist2']
+
+                 xpst=pst.get(g,{})
+
+                 cl=xpst.get('color','')
+                 if cl=='': cl=gs[s]['color']
+
+                 sp.plot(xs,dxs)
+
+                 print pxs, dpxs
+                 sp.plot(pxs, dpxs, 'x', mec='r', mew=2, ms=8) #, mfc=None, mec='r', mew=2, ms=8)
 
            s+=1
            if s>=len(gs):s=0

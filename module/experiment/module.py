@@ -367,6 +367,8 @@ def get(i):
 
               (ignore_point_if_none)                - if 'yes', ignore points where there is a None
               (ignore_graph_separation)             - if 'yes', ignore separating different entries into graphs 
+
+              (expand_list)                         - if 'yes', expand list to separate values (useful histogram)
             }
 
     Output: {
@@ -395,6 +397,8 @@ def get(i):
 
     ipin=i.get('ignore_point_if_none','')
     igs=i.get('ignore_graph_separation','')
+
+    el=i.get('expand_list','') # useful for histograms
 
     if len(table)==0:
        ruoa=i.get('repo_uoa','')
@@ -484,8 +488,14 @@ def get(i):
                             if v==None: has_none=True
                             if v!=None and type(v)==list:
                                if len(v)==0: v=None
-                               else: v=v[0]
-                            vect.append(v)
+                               else: 
+                                  if el!='yes':
+                                     v=v[0]
+                            if type(v)==list and el=='yes':
+                               for h in v:
+                                   vect.append(h)
+                            else:
+                               vect.append(v)
 
                             # Check if range
                             if fkie!='' and fkied!='':
@@ -497,8 +507,15 @@ def get(i):
                                if vd==None: has_none=True
                                if vd!=None and type(vd)==list:
                                   if len(vd)==0: vd=None
-                                  else: vd=vd[0]
-                               vect.append(vd)
+                                  else: 
+                                     if el!='yes':
+                                        vd=vd[0]
+
+                               if type(vd)==list and el=='yes':
+                                  for h in vd:
+                                      vect.append(h)
+                               else:
+                                  vect.append(vd)
 
                      if len(trfkl)!=0:
                         rfkl=trfkl
@@ -508,13 +525,24 @@ def get(i):
                          if v==None: has_none=True
                          if v!=None and type(v)==list:
                             if len(v)==0: v=None
-                            else: v=v[0]
-                         vect.append(v)
+                            else: 
+                               if el!='yes':
+                                  v=v[0]
+                         if type(v)==list and el=='yes':
+                            for h in v:
+                                vect.append(h)
+                         else:
+                            vect.append(v)
                         
                   # Add vector
                   if sigraph not in table: table[sigraph]=[]
                   if ipin!='yes' or not has_none:
-                     table[sigraph].append(vect)
+                     if el=='yes' and type(v)==list:
+                        for h in v:
+                            table[sigraph].append(h)
+
+                     else:
+                        table[sigraph].append(vect)
 
            if igs!='yes':
               igraph+=1
