@@ -181,7 +181,7 @@ def plot(i):
        yerr=i.get('display_y_error_bar','')
 
        # If density, find min and max for both graphs:
-       if pt=='mpl_1d_density':
+       if pt=='mpl_1d_density' or pt=='mpl_1d_histogram':
           dmin=-1.0
           dmax=-1.0
           for g in table:
@@ -245,14 +245,19 @@ def plot(i):
               else:
                  sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=cl, marker=gs[s]['marker'])
 
-           elif pt=='mpl_1d_density':
+           elif pt=='mpl_1d_density' or pt=='mpl_1d_histogram':
               if dmin!=-1 and dmax!=-1: # I.e. we got non empty points
+                 xbins=i.get('bins', 100)
+
                  mx=[]
                  for u in gt:
                      mx.append(u)
 
                  ii={'action':'analyze',
+                     'min':dmin,
+                     'max':dmax,
                      'module_uoa':cfg['module_deps']['math.variation'],
+                     'bins':xbins,
                      'characteristics_table':mx}
 
                  r=ck.access(ii)
@@ -269,11 +274,11 @@ def plot(i):
                  cl=xpst.get('color','')
                  if cl=='': cl=gs[s]['color']
 
-                 sp.plot(xs,dxs)
-
-                 print pxs, dpxs
-                 sp.plot(pxs, dpxs, 'x', mec='r', mew=2, ms=8) #, mfc=None, mec='r', mew=2, ms=8)
-
+                 if pt=='mpl_1d_density':
+                    sp.plot(xs,dxs)
+                    sp.plot(pxs, dpxs, 'x', mec='r', mew=2, ms=8) #, mfc=None, mec='r', mew=2, ms=8)
+                 else:
+                    plt.hist(mx, bins=xbins, normed=True)
            s+=1
            if s>=len(gs):s=0
 

@@ -636,7 +636,7 @@ def convert_table_to_csv(i):
     return {'return':0}
 
 ##############################################################################
-# Process multiple experiments
+# Process multiple experiments (flatten array + apply statistics)
 
 def process_multi(i):
     """
@@ -743,6 +743,30 @@ def process_multi(i):
               va=sum(d[k_all])/float(vr)
               d[k_mean]=va
 
+              # Check density, expected value and peaks
+              rx=ck.access({'action':'analyze',
+                            'module_uoa':cfg['module_deps']['math.variation'],
+                            'characteristics_table':d[k_all],
+                            'skip_fail':'yes'})
+              if rx['return']>0: return rx
+
+              valx=rx['xlist2s']
+              valy=rx['ylist2s']
+
+              if len(valx)>0:
+                 k_exp=k+'#exp'
+                 d[k_exp]=valx[0]
+
+                 k_exp_allx=k+'#exp_allx'
+                 d[k_exp_allx]=valx
+
+                 k_exp_ally=k+'#exp_ally'
+                 d[k_exp_ally]=valy
+
+                 warning='no'
+                 if len(valx)>1: warning='yes'
+                 k_exp_war=k+'#exp_warning'
+                 d[k_exp_war]=warning
            else:
               # Add first value to min 
               k_min=k+'#min'
