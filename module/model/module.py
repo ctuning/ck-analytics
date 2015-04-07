@@ -84,6 +84,7 @@ def build(i):
               Model:
                 model_module_uoa                        - model module
                 model_name                              - model name
+                (model_params)                          - dict with model params
                 (model_file)                            - model output file, otherwise generated as tmp file
                 (keep_temp_files)                       - if 'yes', keep temp files 
                 (remove_points_with_none)               - if 'yes', remote points with None
@@ -215,6 +216,7 @@ def build(i):
     ii={'action':'build',
         'module_uoa':mmuoa,
         'model_name':mn,
+        'model_params':i.get('model_params',{}),
         'model_file':mof,
         'features_table': ftable,
         'features_keys': fkeys,
@@ -226,11 +228,11 @@ def build(i):
     r=ck.access(ii)
     if r['return']>0: return r
 
-    mif=r['model_input_file']
+    mif=r.get('model_input_file','')
     mf=r['model_file']
 
     if o=='con':
-       if ktf=='yes':
+       if ktf=='yes' and mif!='':
          ck.out('Temp model input file '+mif)
        ck.out('Generated model was saved into file '+mf)
 
