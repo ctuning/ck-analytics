@@ -16,5 +16,15 @@ machine learning).
 Dependencies
 ============
 
-* R
-* Python matplotlib
+* Python:
+** matplotlib
+** Scipy
+** Numpy
+
+On Ubuntu, you can install packages using:
+> sudo apt-get install python-numpy python-scipy python-matplotlib python-pandas
+
+Useful:
+
+* Graphviz
+* R (for statistical analysis and machine learning, though Python may be enough)

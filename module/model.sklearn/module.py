@@ -134,14 +134,19 @@ def build(i):
     if os.path.isfile(mf3): os.remove(mf3)
 
     #############################################################
-    if mn=='dtc':
+    if mn=='dtc' or mn=='dtr':
        # http://scikit-learn.org/stable/modules/tree.html
        # http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
        from sklearn import tree
+
        pmd=mp.get('max_depth',None)
        pmln=mp.get('max_leaf_nodes',None)
 
-       clf = tree.DecisionTreeClassifier(max_depth=pmd, max_leaf_nodes=pmln)
+       if mn=='dtc':
+          clf = tree.DecisionTreeClassifier(max_depth=pmd, max_leaf_nodes=pmln)
+       else:
+          clf = tree.DecisionTreeRegressor(max_depth=pmd, max_leaf_nodes=pmln)
+
        clf = clf.fit(ftable1, ctable)
 
        # Save as Graphviz dot
@@ -153,6 +158,24 @@ def build(i):
        # Save as pdf
        s='dot -Tpdf '+mf2+' -o '+mf3
        os.system(s)
+    #############################################################
+    elif mn=='dtr':
+       # http://scikit-learn.org/stable/modules/tree.html
+       # http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
+       from sklearn import tree
+       clf = tree.DecisionTreeRegressor()
+       clf = clf.fit(ftable1, ctable)
+
+       # Save as Graphviz dot
+       # dot -Tpdf iris.dot -o iris.pdf.
+       from sklearn.externals.six import StringIO
+       with open(mf2, 'w') as f:
+          f=tree.export_graphviz(clf, out_file=f)
+
+       # Save as pdf
+       s='dot -Tpdf '+mf2+' -o '+mf3
+       os.system(s)
+
     else:
        return {'return':1, 'error':'model name '+mn+' is not found in module model.sklearn'}
 
@@ -225,7 +248,7 @@ def validate(i):
     f.close()
 
     #############################################################
-    if mn=='dtc':
+    if mn=='dtc' or mn=='dtr':
        from sklearn import tree
        pr=clf.predict(ftable1)
     else:
