@@ -163,7 +163,7 @@ def add(i):
              ck.out('  Existing experiments were not found. Adding new entry ...')
           else:
              ii['action']='update'
-             ck.out('  Updating an entry ...')
+             ck.out('  Updating entry ...')
 
        r=ck.access(ii)
        if r['return']>0: return r
