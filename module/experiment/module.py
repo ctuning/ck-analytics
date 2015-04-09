@@ -157,13 +157,14 @@ def add(i):
            'module_uoa': work['self_module_uoa'],
            'dict':{}}
 
-       if o=='con':
-          if euoa=='' and euid=='':
-             ii['action']='add'
-             ck.out('  Existing experiments were not found. Adding new entry ...')
-          else:
-             ii['action']='update'
-             ck.out('  Updating entry ...')
+       if euoa=='' and euid=='':
+          ii['action']='add'
+          x='  Existing experiments were not found. Adding new entry ...'
+       else:
+          ii['action']='update'
+          x='  Updating entry ...'
+
+       if o=='con': ck.out(x)
 
        r=ck.access(ii)
        if r['return']>0: return r
