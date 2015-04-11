@@ -81,6 +81,8 @@ def add(i):
     """
 
     import time
+    import copy
+
     start_time = time.time()
 
     o=i.get('out','')
@@ -256,11 +258,6 @@ def add(i):
     mmax=''
 
     if i.get('skip_flatten','')!='yes':
-       # Flatten data and perform basic analysis **********************************
-       r=ck.flatten_dict({'dict':dd})
-       if r['return']>0: return r
-       ddf=r['dict']
-
        # Load flattened data
        fpflat=fpoint+'.flat.json'
        fpflat1=os.path.join(p, fpflat)
@@ -271,22 +268,54 @@ def add(i):
           if r['return']>0: return r
           ddflat=r['dict']
 
+       # Check if characteristics lits (to add a number of experimental results at the same time,
+       #   otherwise point by point processing can become very slow
+       ch=dd.get('characteristics',{})
+       chl=dd.get('characteristics_list',[])
+       if len(ch)>0: chl.append(ch)
+
+       ddx=copy.deepcopy(dd)
+
+       if 'characteristics' in dd: del(dd['characteristics'])
+       if 'characteristics_list' in dd: del(dd['characteristics_list'])
+
+       # Flatten data and perform basic analysis **********************************
+       r=ck.flatten_dict({'dict':dd})
+       if r['return']>0: return r
+       ddf=r['dict']
+
        # Process multiple points
        sak=i.get('process_multi_keys',['characteristics', 'features'])
 
-       r=process_multi({'dict':ddflat, 'dict1':ddf, 'process_multi_keys':sak})
-       if r['return']>0: return r
-       ddflat=r['dict']
-       mdp=r['max_range_percent']
-       mmin=r['min']
-       mmax=r['max']
+#       ck.out('')
+       ich=0
+       for cx in chl:
+           ich+=1
+
+#           ck.out('      Processing characteristic point '+str(ich)+' out of '+str(len(chl))+' ...')
+
+           cddf=copy.deepcopy(ddf)
+
+           # Flatten data and perform basic analysis **********************************
+           r=ck.flatten_dict({'dict':{'characteristics':cx}})
+           if r['return']>0: return r
+           cddf.update(r['dict'])
+
+           r=process_multi({'dict':ddflat, 'dict1':cddf, 'process_multi_keys':sak})
+           if r['return']>0: return r
+           ddflat=r['dict']
+           mdp=r['max_range_percent']
+           mmin=r['min']
+           mmax=r['max']
+
+       dd=ddx # To record original to point
 
     # Check if record all points or only with max_range_percent > max_range_percent_threshold
     sp=ddft.get('sub_points',0)
     if sp==0 or ras=='yes' or ((mdpt!=-1 and mdp>mdpt) or mmin=='yes' or mmax=='yes'):
        sp+=1
-       if sp>9999:
-          return {'return':1, 'error':'max number of subpoints is reached (9999)'}
+#       if sp>9999:
+#          return {'return':1, 'error':'max number of subpoints is reached (9999)'}
 
        if o=='con': ck.out('      Next subpoint: '+str(sp))
 
