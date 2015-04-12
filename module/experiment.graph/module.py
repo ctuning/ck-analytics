@@ -275,7 +275,11 @@ def plot(i):
                  for q in mx:
                      mx1.append(q+width*s)
 
-                 sp.bar(mx1, my, width=0.1, edgecolor=gs[s]['color'], facecolor=gs[s]['color'], align='center')
+                 if yerr=='yes':
+                    sp.bar(mx1, my, width=width, edgecolor=gs[s]['color'], facecolor=gs[s]['color'], align='center', yerr=myerr) # , error_kw=dict(lw=2))
+                 else:
+                    sp.bar(mx1, my, width=width, edgecolor=gs[s]['color'], facecolor=gs[s]['color'], align='center')
+
 
               else:
                  if xerr=='yes' and yerr=='yes':
@@ -286,19 +290,6 @@ def plot(i):
                      sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw)
                  else:
                     sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=cl, marker=gs[s]['marker'])
-
-#
-#
-#    for p in range(0,len(cta)):
-#        x=[]
-#        for q in cta[p][0]:
-#            x.append(q+width*n) #-width+(q-1)*width+width*n)
-#
-#        sp.bar(x, cta[p][1], width=width, edgecolor=gs[s]['color'], facecolor=gs[s]['color'], align='center')
-#
-#        n+=1
-
-
 
            elif pt=='mpl_1d_density' or pt=='mpl_1d_histogram':
               if not start: # I.e. we got non empty points
