@@ -411,6 +411,7 @@ def get(i):
 
               (ignore_point_if_none)                - if 'yes', ignore points where there is a None
               (ignore_graph_separation)             - if 'yes', ignore separating different entries into graphs 
+              (separate_subpoints_to_graphs)        - if 'yes', separate each subpoint of entry into a new graph
 
               (expand_list)                         - if 'yes', expand list to separate values (useful for histogram)
             }
@@ -441,6 +442,7 @@ def get(i):
 
     ipin=i.get('ignore_point_if_none','')
     igs=i.get('ignore_graph_separation','')
+    sstg=i.get('separate_subpoints_to_graphs','')
 
     el=i.get('expand_list','') # useful for histograms
 
@@ -597,35 +599,38 @@ def get(i):
                   sigraph=str(igraph)
 
                   if sigraph not in table: table[sigraph]=[]
-                  if ipin!='yes' or not has_none:
-                     if el=='yes':
-                        ei=-1 # find index with list to expand
-                        lei=0 # length of vector to expand
-                        for ih in range(0, len(vect)):
-                            h=vect[ih]
-                            if type(h)==list:
-                               if ei!=-1:
-                                  return {'return':1, 'error':'can\'t expand vectors with more than one list dimension'}
-                               ei=ih
-                               lei=len(h)
-                        
-                        if ei==-1:
-                           table[sigraph].append(vect)
-                        else:
-                           for q in range(0, lei):
-                               vect1=[]
-                               for k in range(0, len(vect)):
-                                   h=vect[k]
-                                   if k==ei:
-                                      v=h[q]
-                                   else:
-                                      v=h
-                                   vect1.append(v)
-                               table[sigraph].append(vect1)
+                  if el=='yes':
+                     ei=-1 # find index with list to expand
+                     lei=0 # length of vector to expand
+                     for ih in range(0, len(vect)):
+                         h=vect[ih]
+                         if type(h)==list:
+                            if ei!=-1:
+                               return {'return':1, 'error':'can\'t expand vectors with more than one list dimension'}
+                            ei=ih
+                            lei=len(h)
+                     
+                     if ei==-1:
+                        table[sigraph].append(vect)
                      else:
+                        for q in range(0, lei):
+                            vect1=[]
+                            for k in range(0, len(vect)):
+                                h=vect[k]
+                                if k==ei:
+                                   v=h[q]
+                                else:
+                                   v=h
+                                vect1.append(v)
+                            table[sigraph].append(vect1)
+                  else:
+                     if ipin!='yes' or not has_none:
                         table[sigraph].append(vect)
 
-           if added and igs!='yes':
+                  if sstg=='yes':
+                     igraph+=1
+
+           if sstg!='yes' and added and igs!='yes':
               igraph+=1
 
     if len(rfkl)==0 and len(fkl)!=0: rfkl=fkl

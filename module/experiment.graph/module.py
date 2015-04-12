@@ -215,13 +215,24 @@ def plot(i):
        xerr=i.get('display_x_error_bar','')
        yerr=i.get('display_y_error_bar','')
 
+       if pt=='mpl_2d_bars':
+          ind=[]
+          gt=table['0']
+          for q in gt:
+              ind.append(q[0])
+
+          sp.set_xticks(ind)
+          sp.set_xticklabels(ind, rotation=-20)
+
+          width=0.9/len(table)
+
        # Add points
        s=0
 
        for g in sorted(table, key=int):
            gt=table[g]
 
-           if pt=='mpl_2d_scatter':
+           if pt=='mpl_2d_scatter' or pt=='mpl_2d_bars':
               mx=[]
               mxerr=[]
               my=[]
@@ -259,14 +270,35 @@ def plot(i):
               cl=xpst.get('color','')
               if cl=='': cl=gs[s]['color']
 
-              if xerr=='yes' and yerr=='yes':
-                 sp.errorbar(mx, my, xerr=mxerr, yerr=myerr, ls='none', c=cl, elinewidth=elw)
-              elif xerr=='yes' and yerr!='yes':
-                 sp.errorbar(mx, my, xerr=mxerr, ls='none',  c=cl, elinewidth=elw)
-              elif yerr=='yes' and xerr!='yes':
-                  sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw)
+              if pt=='mpl_2d_bars':
+                 mx1=[]
+                 for q in mx:
+                     mx1.append(q+width*s)
+
+                 sp.bar(mx1, my, width=0.1, edgecolor=gs[s]['color'], facecolor=gs[s]['color'], align='center')
+
               else:
-                 sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=cl, marker=gs[s]['marker'])
+                 if xerr=='yes' and yerr=='yes':
+                    sp.errorbar(mx, my, xerr=mxerr, yerr=myerr, ls='none', c=cl, elinewidth=elw)
+                 elif xerr=='yes' and yerr!='yes':
+                    sp.errorbar(mx, my, xerr=mxerr, ls='none',  c=cl, elinewidth=elw)
+                 elif yerr=='yes' and xerr!='yes':
+                     sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw)
+                 else:
+                    sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=cl, marker=gs[s]['marker'])
+
+#
+#
+#    for p in range(0,len(cta)):
+#        x=[]
+#        for q in cta[p][0]:
+#            x.append(q+width*n) #-width+(q-1)*width+width*n)
+#
+#        sp.bar(x, cta[p][1], width=width, edgecolor=gs[s]['color'], facecolor=gs[s]['color'], align='center')
+#
+#        n+=1
+
+
 
            elif pt=='mpl_1d_density' or pt=='mpl_1d_histogram':
               if not start: # I.e. we got non empty points
@@ -303,6 +335,7 @@ def plot(i):
                     sp.plot([dmean,dmean],[0,dpxs[0]],'g--',lw=2)
                  else:
                     plt.hist(mx, bins=xbins, normed=True)
+
            s+=1
            if s>=len(gs):s=0
 
