@@ -406,12 +406,13 @@ def get(i):
               (flat_keys_index_end_range)           - add range after key (+-)
 
               (substitute_x_with_loop)              - if 'yes', substitute first vector dimension with a loop
+              (add_x_loop)                          - if 'yes', insert first vector dimension with a loop
               (sort_index)                          - if !='', sort by this number within vector (i.e. 0 - X, 1 - Y, etc)
 
               (ignore_point_if_none)                - if 'yes', ignore points where there is a None
               (ignore_graph_separation)             - if 'yes', ignore separating different entries into graphs 
 
-              (expand_list)                         - if 'yes', expand list to separate values (useful histogram)
+              (expand_list)                         - if 'yes', expand list to separate values (useful for histogram)
             }
 
     Output: {
@@ -493,8 +494,6 @@ def get(i):
 
        # Iterate over entries
        for e in lst:
-           sigraph=str(igraph)
-
            ruid=e['repo_uid']
            muoa=e['module_uoa']
            muid=e['module_uid']
@@ -517,6 +516,7 @@ def get(i):
 
            dirList=os.listdir(p)
            features=i.get('features',{})
+           added=False
            for fn in sorted(dirList):
                if fn.endswith('.flat.json'):
                   skip=False
@@ -537,6 +537,8 @@ def get(i):
                            ck.out('     Found point with searched features ...')
                   if skip:
                      continue
+
+                  added=True
 
                   fpflat1=os.path.join(p, fn)
 
@@ -560,11 +562,7 @@ def get(i):
                                else: 
                                   if el!='yes':
                                      v=v[0]
-                            if type(v)==list and el=='yes':
-                               for h in v:
-                                   vect.append(h)
-                            else:
-                               vect.append(v)
+                            vect.append(v)
 
                             # Check if range
                             if fkie!='' and fkied!='':
@@ -580,11 +578,7 @@ def get(i):
                                      if el!='yes':
                                         vd=vd[0]
 
-                               if type(vd)==list and el=='yes':
-                                  for h in vd:
-                                      vect.append(h)
-                               else:
-                                  vect.append(vd)
+                               vect.append(vd)
 
                      if len(trfkl)!=0:
                         rfkl=trfkl
@@ -597,22 +591,41 @@ def get(i):
                             else: 
                                if el!='yes':
                                   v=v[0]
-                         if type(v)==list and el=='yes':
-                            for h in v:
-                                vect.append(h)
-                         else:
-                            vect.append(v)
-                        
+                         vect.append(v)
+
                   # Add vector
+                  sigraph=str(igraph)
+
                   if sigraph not in table: table[sigraph]=[]
                   if ipin!='yes' or not has_none:
-                     if el=='yes' and type(v)==list:
-                        for h in v:
-                            table[sigraph].append(h)
+                     if el=='yes':
+                        ei=-1 # find index with list to expand
+                        lei=0 # length of vector to expand
+                        for ih in range(0, len(vect)):
+                            h=vect[ih]
+                            if type(h)==list:
+                               if ei!=-1:
+                                  return {'return':1, 'error':'can\'t expand vectors with more than one list dimension'}
+                               ei=ih
+                               lei=len(h)
+                        
+                        if ei==-1:
+                           table[sigraph].append(vect)
+                        else:
+                           for q in range(0, lei):
+                               vect1=[]
+                               for k in range(0, len(vect)):
+                                   h=vect[k]
+                                   if k==ei:
+                                      v=h[q]
+                                   else:
+                                      v=h
+                                   vect1.append(v)
+                               table[sigraph].append(vect1)
                      else:
                         table[sigraph].append(vect)
 
-           if igs!='yes':
+           if added and igs!='yes':
               igraph+=1
 
     if len(rfkl)==0 and len(fkl)!=0: rfkl=fkl
@@ -625,10 +638,14 @@ def get(i):
        table=rx['table']
 
     # Substitute all X with a loop (usually to sort Y and compare with predictions in scatter graphs, etc)
-    if i.get('substitute_x_with_loop','')=='yes':
-       rx=substitute_x_with_loop({'table':table})
+    ii={'table':table}
+    if i.get('substitute_x_with_loop','')=='yes' or i.get('add_x_loop','')=='yes':
+       if i.get('add_x_loop','')=='yes':
+          ii['add_x_loop']='yes'
+       rx=substitute_x_with_loop(ii)
        if rx['return']>0: return rx
        table=rx['table']
+
 
     return {'return':0, 'table':table, 'real_keys':rfkl}
 
@@ -889,6 +906,7 @@ def substitute_x_with_loop(i):
     """
     Input:  {
               table        - experiment table
+              (add_x_loop) - if 'yes', insert first vector dimension with a loop
             }
 
     Output: {
@@ -901,6 +919,15 @@ def substitute_x_with_loop(i):
     """
 
     table=i['table']
+
+    axl=i.get('add_x_loop','')
+
+    if axl=='yes':
+       for q in table:
+           tq=table[q]
+           for iv in range(0, len(tq)):
+               v=tq[iv]
+               v.insert(0, 0.0)
 
     for sg in table:
         h=0

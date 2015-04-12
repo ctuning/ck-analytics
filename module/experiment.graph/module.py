@@ -167,19 +167,6 @@ def plot(i):
        sp=fig.add_subplot(111)
    #    sp.set_yscale('log')
 
-       xmin=i.get('xmin','')
-       xmax=i.get('xmax','')
-       ymin=i.get('ymin','')
-       ymax=i.get('ymax','')
-
-       if xmin!='' and xmax!='':
-          sp.set_xlim(float(xmin), float(xmax))
-       if ymin!='' and ymax!='':
-          sp.set_ylim(float(ymin), float(ymax))
-
-       xerr=i.get('display_x_error_bar','')
-       yerr=i.get('display_y_error_bar','')
-
        # If density, find min and max for both graphs:
        if pt=='mpl_1d_density' or pt=='mpl_1d_histogram':
           dmean=0.0
@@ -191,24 +178,42 @@ def plot(i):
           for g in table:
               gt=table[g]
 
-              if len(gt)>0:
-                 if start: 
-                    dmin=min(gt)
-                    start=False
-                 else: 
-                    dmin=min(dmin, min(gt))
+              for k in gt:
+                  v=k[0]
 
-                 if start: 
-                    dmax=max(gt)
-                    start=False
-                 else: 
-                    dmax=max(dmax, max(gt))
+                  if start: 
+                     dmin=v
+                     start=False
+                  else: 
+                     dmin=min(dmin, v)
 
-                 for q in gt:
-                     it+=1
-                     dt+=q
+                  if start: 
+                     dmax=v
+                     start=False
+                  else: 
+                     dmax=max(dmax, v)
+
+                  it+=1
+                  dt+=v
 
           if it!=0: dmean=dt/it
+
+       xmin=i.get('xmin','')
+       xmax=i.get('xmax','')
+       ymin=i.get('ymin','')
+       ymax=i.get('ymax','')
+
+       if xmin!='':
+          sp.set_xlim(left=float(xmin))
+       if xmax!='':
+          sp.set_xlim(right=float(xmax))
+       if ymin!='':
+          sp.set_ylim(bottom=float(ymin))
+       if ymax!='':
+          sp.set_ylim(top=float(ymax))
+
+       xerr=i.get('display_x_error_bar','')
+       yerr=i.get('display_y_error_bar','')
 
        # Add points
        s=0
@@ -269,7 +274,7 @@ def plot(i):
 
                  mx=[]
                  for u in gt:
-                     mx.append(u)
+                     mx.append(u[0])
 
                  ii={'action':'analyze',
                      'min':dmin,
