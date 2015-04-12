@@ -182,15 +182,33 @@ def plot(i):
 
        # If density, find min and max for both graphs:
        if pt=='mpl_1d_density' or pt=='mpl_1d_histogram':
-          dmin=-1.0
-          dmax=-1.0
+          dmean=0.0
+          start=True
+          dmin=0.0
+          dmax=0.0
+          it=0
+          dt=0
           for g in table:
               gt=table[g]
+
               if len(gt)>0:
-                 if dmin==-1.0: dmin=min(gt)
-                 else: dmin=min(dmin, min(gt))
-                 if dmax==-1.0: dmax=max(gt)
-                 else: dmax=max(dmax, max(gt))
+                 if start: 
+                    dmin=min(gt)
+                    start=False
+                 else: 
+                    dmin=min(dmin, min(gt))
+
+                 if start: 
+                    dmax=max(gt)
+                    start=False
+                 else: 
+                    dmax=max(dmax, max(gt))
+
+                 for q in gt:
+                     it+=1
+                     dt+=q
+
+          if it!=0: dmean=dt/it
 
        # Add points
        s=0
@@ -246,7 +264,7 @@ def plot(i):
                  sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=cl, marker=gs[s]['marker'])
 
            elif pt=='mpl_1d_density' or pt=='mpl_1d_histogram':
-              if dmin!=-1 and dmax!=-1: # I.e. we got non empty points
+              if not start: # I.e. we got non empty points
                  xbins=i.get('bins', 100)
 
                  mx=[]
@@ -266,8 +284,8 @@ def plot(i):
                  xs=r['xlist']
                  dxs=r['ylist']
 
-                 pxs=r['xlist2']
-                 dpxs=r['ylist2']
+                 pxs=r['xlist2s']
+                 dpxs=r['ylist2s']
 
                  xpst=pst.get(g,{})
 
@@ -277,6 +295,7 @@ def plot(i):
                  if pt=='mpl_1d_density':
                     sp.plot(xs,dxs)
                     sp.plot(pxs, dpxs, 'x', mec='r', mew=2, ms=8) #, mfc=None, mec='r', mew=2, ms=8)
+                    sp.plot([dmean,dmean],[0,dpxs[0]],'g--',lw=2)
                  else:
                     plt.hist(mx, bins=xbins, normed=True)
            s+=1

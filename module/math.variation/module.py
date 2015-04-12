@@ -69,6 +69,8 @@ def analyze(i):
 
     """
 
+    import copy
+
     has_deps=True
     try:
        from scipy.stats import gaussian_kde
@@ -93,16 +95,24 @@ def analyze(i):
     xlist2s=[]
     ylist2s=[]
 
+
+    dmin=i.get('min',-1.0)
+    dmax=i.get('max',-1.0)
+
     if has_deps:
        if len(ctable)>0:
           xlistx=[]
           if len(ctable)>1:
              bins=i.get('bins',100)
 
-             if dmin==-1: dmin=min(ctable)
-             if dmax==-1: dmax=max(ctable)
+             if dmin==dmax:
+                dmin=min(ctable)
+                dmax=max(ctable)
 
              cf=i.get('cov_factor',-1)
+
+             ctable.insert(0,0.0)
+             ctable.append(0.0)
 
              try:
                 density = gaussian_kde(ctable)
@@ -114,7 +124,21 @@ def analyze(i):
 
                 ylist=density(xlist)
 
-                xlistx=argrelextrema(ylist, np.greater)[0] # np.less for local minima
+                ylist5=[0.0]
+                for q in ylist:
+                    ylist5.append(q)
+                ylist5.append(0.0)
+
+                ylist6=np.array(ylist5)
+
+                xlistx=argrelextrema(ylist6, np.greater)[0] # np.less for local minima
+
+                xlistxx=[]
+                for q in xlistx:
+                    xlistxx.append(q-1)
+
+                xlistx=xlistxx
+
              except Exception as e:
                 pass
 

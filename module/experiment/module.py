@@ -42,8 +42,8 @@ def add(i):
                                               {
                                                 "meta"            - coarse grain meta information to distinct entries (species)
                                                 ("choices")       - choices (for example, optimizations)
-                                                ("features")      - species features (mostly unchanged)
-                                                "characteristics" - species characteristics (measured)
+                                                ("features")      - species features in points inside entries (mostly unchanged)
+                                                "characteristics" - species characteristics in points inside entries (measured)
                                               }
 
               (experiment_repo_uoa)         - if defined, use it instead of repo_uoa
@@ -184,8 +184,9 @@ def add(i):
         'remote_repo_uoa': rruoa,
         'module_uoa': work['self_module_uoa'],
         'data_uoa':euid,
-        'get_lock':'yes'
-        }
+        'get_lock':'yes',
+        'lock_expire_time':120
+       }
     r=ck.access(ii)
     if r['return']>0: return r
 
@@ -301,8 +302,15 @@ def add(i):
            if r['return']>0: return r
            cddf.update(r['dict'])
 
-           r=process_multi({'dict':ddflat, 'dict1':cddf, 'process_multi_keys':sak})
+           ii={'dict':ddflat, 'dict1':cddf, 'process_multi_keys':sak}
+
+           if ich!=len(chl):
+              ii['skip_expected_value']='yes'
+              ii['skip_min_max']='yes'
+
+           r=process_multi(ii)
            if r['return']>0: return r
+
            ddflat=r['dict']
            mdp=r['max_range_percent']
            mmin=r['min']
@@ -381,6 +389,11 @@ def get(i):
                  (search_dict)                         - search dict
                  (ignore_case)                         - if 'yes', ignore case when searching
 
+                       OR
+                 (meta)                             - meta in the entry (adds search_dict['meta'])
+                 (tags)                             - tags in the entry
+                 (features)                         - features in the entry
+
                        OR 
 
                  table                                 - experiment table (if drawing from other functions)
@@ -452,6 +465,11 @@ def get(i):
        sd=i.get('search_dict',{})
        ic=i.get('ignore_case','')
 
+       meta=i.get('meta',{})
+       if len(meta)>0: sd['meta']=meta
+
+       tags=i.get('tags','')
+
        # Search entries
        ii={'action':'search',
            'common_func':'yes',
@@ -463,7 +481,8 @@ def get(i):
            'module_uoa_list':muoal,
            'data_uoa_list':duoal,
            'search_dict':sd,
-           'ignore_case':ic}
+           'ignore_case':ic,
+           'tags':tags}
        r=ck.access(ii)
        if r['return']>0: return r
 
@@ -497,8 +516,28 @@ def get(i):
            dd=r['dict']
 
            dirList=os.listdir(p)
-           for fn in dirList:
+           features=i.get('features',{})
+           for fn in sorted(dirList):
                if fn.endswith('.flat.json'):
+                  skip=False
+                  if len(features)>0: 
+                     fpf1=os.path.join(p, fn[:-10]+'.features.json')
+                     rz=ck.load_json_file({'json_file':fpf1})
+                     if rz['return']>0: 
+                        skip=True
+                     else:
+                        drz=rz['dict']
+
+                        rx=ck.compare_dicts({'dict1':drz.get('features',{}), 'dict2':features, 'ignore_case':'yes'})
+                        if rx['return']>0: return rx
+                        equal=rx['equal']
+                        if equal!='yes': skip=True
+
+                        if o=='con' and not skip:
+                           ck.out('     Found point with searched features ...')
+                  if skip:
+                     continue
+
                   fpflat1=os.path.join(p, fn)
 
                   r=ck.load_json_file({'json_file':fpflat1})
@@ -570,7 +609,6 @@ def get(i):
                      if el=='yes' and type(v)==list:
                         for h in v:
                             table[sigraph].append(h)
-
                      else:
                         table[sigraph].append(vect)
 
@@ -677,6 +715,8 @@ def process_multi(i):
               (process_multi_keys)  - list of keys (starts with) to perform stat analysis on flat array,
                                       by default ['characteristics', 'features'],
                                       if empty, no stat analysis
+              (skip_expected_value) - if 'yes', do not calculute expected value
+              (skip_min_max)        - if 'yes', do not calculate min, max, mean, etc
             }
 
     Output: {
@@ -700,6 +740,9 @@ def process_multi(i):
     max_range_percent=0
     mmin=''
     mmax=''
+
+    sev=i.get('skip_expected_value','')
+    smm=i.get('skip_min_max','')
 
     for k in d1:
         process=False
@@ -730,7 +773,7 @@ def process_multi(i):
            d[k_all_u]=v
 
            # If float or int, perform basic analysis
-           if type(v1)==float or type(v1)==int:
+           if smm!='yes' and (type(v1)==float or type(v1)==int):
               # Calculate min
               k_min=k+'#min'
               vmin=d.get(k_min,v1)
@@ -773,30 +816,31 @@ def process_multi(i):
               va=sum(d[k_all])/float(vr)
               d[k_mean]=va
 
-              # Check density, expected value and peaks
-              rx=ck.access({'action':'analyze',
-                            'module_uoa':cfg['module_deps']['math.variation'],
-                            'characteristics_table':d[k_all],
-                            'skip_fail':'yes'})
-              if rx['return']>0: return rx
+              if sev!='yes':
+                 # Check density, expected value and peaks
+                 rx=ck.access({'action':'analyze',
+                               'module_uoa':cfg['module_deps']['math.variation'],
+                               'characteristics_table':d[k_all],
+                               'skip_fail':'yes'})
+                 if rx['return']>0: return rx
 
-              valx=rx['xlist2s']
-              valy=rx['ylist2s']
+                 valx=rx['xlist2s']
+                 valy=rx['ylist2s']
 
-              if len(valx)>0:
-                 k_exp=k+'#exp'
-                 d[k_exp]=valx[0]
+                 if len(valx)>0:
+                    k_exp=k+'#exp'
+                    d[k_exp]=valx[0]
 
-                 k_exp_allx=k+'#exp_allx'
-                 d[k_exp_allx]=valx
+                    k_exp_allx=k+'#exp_allx'
+                    d[k_exp_allx]=valx
 
-                 k_exp_ally=k+'#exp_ally'
-                 d[k_exp_ally]=valy
+                    k_exp_ally=k+'#exp_ally'
+                    d[k_exp_ally]=valy
 
-                 warning='no'
-                 if len(valx)>1: warning='yes'
-                 k_exp_war=k+'#exp_warning'
-                 d[k_exp_war]=warning
+                    warning='no'
+                    if len(valx)>1: warning='yes'
+                    k_exp_war=k+'#exp_warning'
+                    d[k_exp_war]=warning
            else:
               # Add first value to min 
               k_min=k+'#min'
