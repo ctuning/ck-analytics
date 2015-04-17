@@ -73,8 +73,9 @@ def build(i):
 
                 (features_flat_keys_list)               - list of flat keys to extract from points into table
                                                           (order is important: for example, for plot -> X,Y,Z)
-                (features_flat_keys_index)              - add all flat keys starting from this index 
+                (features_flat_keys_list)               - list of flat keys to extract from points into table
                                                           (for example, ##features#)
+                (features_flat_keys_desc)               - list of flat key descriptions (not stable!)
 
                 (characteristics_flat_keys_list)        - list of flat keys to extract from points into table
                                                           (order is important: for example, for plot -> X,Y,Z)
@@ -113,10 +114,26 @@ def build(i):
     cf=i.get('csv_file','')
 
     # Get table through experiment module for features
+    ffkl=i.get('features_flat_keys_list',[])
+    fdesc=i.get('features_flat_keys_desc',{})
+
+    ffke=i.get('features_flat_keys_ext','')
+    if ffke!='':
+       ffkl1=[]
+       for q in ffkl:
+           q+=ffke
+           ffkl1.append(q)
+       ffkl=ffkl1
+
+       fdesc1={}
+       for q in fdesc:
+           fdesc1[q+ffke]=fdesc[q]
+       fdesc=fdesc1
+
     iif=copy.deepcopy(i)
     iif['action']='get'
     iif['module_uoa']=cfg['module_deps']['experiment']
-    iif['flat_keys_list']=i.get('features_flat_keys_list',[])
+    iif['flat_keys_list']=ffkl
     iif['flat_keys_index']=i.get('features_flat_keys_index','')
     r=ck.access(iif)
     if r['return']>0: return r
@@ -220,6 +237,7 @@ def build(i):
         'model_file':mof,
         'features_table': ftable,
         'features_keys': fkeys,
+        'features_desc': fdesc,
         'characteristics_table': ctable,
         'characteristics_keys': ckeys,
         'keep_temp_files':ktf,
@@ -306,11 +324,27 @@ def validate(i):
 
     ktf=i.get('keep_temp_files','')
 
+    ffkl=i.get('features_flat_keys_list',[])
+    fdesc=i.get('features_flat_keys_desc',{})
+
+    ffke=i.get('features_flat_keys_ext','')
+    if ffke!='':
+       ffkl1=[]
+       for q in ffkl:
+           q+=ffke
+           ffkl1.append(q)
+       ffkl=ffkl1
+
+       fdesc1={}
+       for q in fdesc:
+           fdesc1[q+ffke]=fdesc[q]
+       fdesc=fdesc1
+
     # Get table through experiment module for features
     iif=copy.deepcopy(i)
     iif['action']='get'
     iif['module_uoa']=cfg['module_deps']['experiment']
-    iif['flat_keys_list']=i.get('features_flat_keys_list',[])
+    iif['flat_keys_list']=ffkl
     iif['flat_keys_index']=i.get('features_flat_keys_index','')
     r=ck.access(iif)
     if r['return']>0: return r
@@ -320,6 +354,8 @@ def validate(i):
     if len(ftable)==0:
        return {'return':1, 'error':'no points found'}
 
+    mtable=r['mtable'].get('0',[])
+
     # Get table through experiment module for characteristics
     iic=copy.deepcopy(i)
     iic['action']='get'
@@ -328,6 +364,7 @@ def validate(i):
     iic['flat_keys_index']=i.get('characteristics_flat_keys_index','')
     r=ck.access(iic)
     if r['return']>0: return r
+
     ctable=r['table'].get('0',[])
     ckeys=r['real_keys']
 
@@ -369,6 +406,7 @@ def validate(i):
         'model_file':mf,
         'features_table': ftable,
         'features_keys': fkeys,
+        'mtable': mtable,
         'keep_temp_files':ktf,
         'out':o
        }

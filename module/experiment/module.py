@@ -390,13 +390,15 @@ def get(i):
                  (ignore_case)                         - if 'yes', ignore case when searching
 
                        OR
-                 (meta)                             - meta in the entry (adds search_dict['meta'])
-                 (tags)                             - tags in the entry
-                 (features)                         - features in the entry
+                 (meta)                                - meta in the entry (adds search_dict['meta'])
+                 (tags)                                - tags in the entry
+                 (features)                            - features in the entry
 
                        OR 
 
-                 table                                 - experiment table (if drawing from other functions)
+                 (table)                               - experiment table (if drawing from other functions)
+                 (mtable)                              - misc or meta table related to above table
+                                                         may be useful, when doing labeling for machine learning
 
 
               (flat_keys_list)                      - list of flat keys to extract from points into table
@@ -424,6 +426,9 @@ def get(i):
               table        - first dimension is for different graphs on one plot
                              Second dimension: list of vectors [X,Y,Z,...]
 
+              mtable       - misc table - misc info related to above table (UOA, point, etc)
+                             may be useful, when doing labeling for machine learning
+
               real_keys    - all added keys (useful when flat_keys_index is used)
             }
 
@@ -432,6 +437,7 @@ def get(i):
     o=i.get('out','')
 
     table=i.get('table',{})
+    mtable=i.get('mtable',{})
 
     fki=i.get('flat_keys_index','')
     fkie=i.get('flat_keys_index_end','#min')
@@ -492,10 +498,12 @@ def get(i):
        lst=r['lst']
 
        table={}
+       mtable={}
        igraph=0
 
        # Iterate over entries
        for e in lst:
+           ruoa=e['repo_uoa']
            ruid=e['repo_uid']
            muoa=e['module_uoa']
            muid=e['module_uid']
@@ -516,27 +524,33 @@ def get(i):
            p=r['path']
            dd=r['dict']
 
+           meta=dd.get('meta',{})
+
            dirList=os.listdir(p)
            features=i.get('features',{})
            added=False
            for fn in sorted(dirList):
                if fn.endswith('.flat.json'):
                   skip=False
-                  if len(features)>0: 
-                     fpf1=os.path.join(p, fn[:-10]+'.features.json')
-                     rz=ck.load_json_file({'json_file':fpf1})
-                     if rz['return']>0: 
-                        skip=True
-                     else:
-                        drz=rz['dict']
+                  pp1=fn[:-10]
+                  pp2=pp1[4:]
+                  drz={}
 
-                        rx=ck.compare_dicts({'dict1':drz.get('features',{}), 'dict2':features, 'ignore_case':'yes'})
-                        if rx['return']>0: return rx
-                        equal=rx['equal']
-                        if equal!='yes': skip=True
+                  fpf1=os.path.join(p, fn[:-10]+'.features.json')
+                  rz=ck.load_json_file({'json_file':fpf1})
+                  if rz['return']>0: 
+                     skip=True
+                  else:
+                     drz=rz['dict']
 
-                        if o=='con' and not skip:
-                           ck.out('     Found point with searched features ...')
+                  if not skip and len(features)>0: 
+                     rx=ck.compare_dicts({'dict1':drz.get('features',{}), 'dict2':features, 'ignore_case':'yes'})
+                     if rx['return']>0: return rx
+                     equal=rx['equal']
+                     if equal!='yes': skip=True
+
+                     if o=='con' and not skip:
+                        ck.out('     Found point with searched features ...')
                   if skip:
                      continue
 
@@ -552,7 +566,7 @@ def get(i):
                   vect=[]
                   has_none=False
                   if fki!='' or len(fkl)==0:
-                     # Add all sorted (otherwise there is no order in python dict
+                     # Add all sorted (otherwise there is no order in python dict)
                      for k in sorted(df.keys()):
                          if (fki=='' or k.startswith(fki)) and (fkie=='' or k.endswith(fkie)):
                             if len(rfkl)==0:
@@ -598,7 +612,9 @@ def get(i):
                   # Add vector
                   sigraph=str(igraph)
 
-                  if sigraph not in table: table[sigraph]=[]
+                  if sigraph not in table: 
+                     table[sigraph]=[]
+                     mtable[sigraph]=[]
                   if el=='yes':
                      ei=-1 # find index with list to expand
                      lei=0 # length of vector to expand
@@ -627,6 +643,12 @@ def get(i):
                      if ipin!='yes' or not has_none:
                         table[sigraph].append(vect)
 
+                  # Add misc info:
+                  mi={'repo_uoa':ruid, 'module_uoa':muid, 'data_uoa':duid,
+                      'point_uid':pp2, 'features':drz}
+
+                  mtable[sigraph].append(mi)
+
                   if sstg=='yes':
                      igraph+=1
 
@@ -652,7 +674,7 @@ def get(i):
        table=rx['table']
 
 
-    return {'return':0, 'table':table, 'real_keys':rfkl}
+    return {'return':0, 'table':table, 'mtable':mtable, 'real_keys':rfkl}
 
 ##############################################################################
 # Convert experiment table to CSV

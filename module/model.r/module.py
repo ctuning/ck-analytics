@@ -81,7 +81,7 @@ def build(i):
     s=''
 
     fk=1
-    for fx in fkeys:
+    for fx in sorted(fkeys): # Needed to be sorted
         s+='V'+str(fk)+') '+fx
         s+='\n'
         fk+=1
