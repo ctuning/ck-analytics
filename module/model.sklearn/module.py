@@ -251,7 +251,6 @@ def validate(i):
     mf=i['model_file']
     mf1=i['model_file']+'.model.obj'
     mf7=i['model_file']+'.model.decision_tree.json'
-    mf8=i['model_file']+'.labels.csv'
 
     ftable=i['features_table']
     fkeys=i['features_keys']
@@ -267,6 +266,8 @@ def validate(i):
     fconv=r['conv']
     fconv1=r['conv1']
     ftable1=r['table']
+
+    lt=[]
 
     # Load model object
     f=open(mf1, 'rb')
@@ -288,7 +289,6 @@ def validate(i):
 
           prx=[]
           q=-1
-          mtable=i.get('mtable',[])
           for ft in ftable1:
               q+=1
               found=False
@@ -323,31 +323,13 @@ def validate(i):
               if not found:
                  return {'return':1, 'error':'decision tree is incomplete'}
 
+              lt.append(label)
+
 #              print '**********'
 #              for z in range(0, len(ftable1[q])):
 #                  zx=ftable1[q][z]
 #                  print 'X['+str(z)+']='+str(zx)
 
-
-              kk=mtable[q].get('features',{}).get('features',{})
-
-              sx+=label+';'+str(dv)
-              sx+=';'+str(kk["derived_type_of_prog"])
-              sx+=';'+str(kk["type"])
-              sx+=';'+str(kk["test"])
-              sx+=';'+str(kk["test_id"])
-              sx+=';'+str(kk["version"])
-              sx+=';'+str(kk["compression"])
-              sx+=';'+str(kk["derived_samples_by_primitives"])
-              sx+=';'+str(kk["resolution"])
-              sx+=';'+str(kk["resw"])
-              sx+=';'+str(kk["resx"])
-              sx+=';'+str(kk["resy"])
-
-              sx+='\n'
-
-       r=ck.save_text_file({'text_file':mf8, 'string':sx})
-       if r['return']>0: return r
     else:
        return {'return':1, 'error':'model name '+mn+' is not found in module model.sklearn'}
 
@@ -355,7 +337,11 @@ def validate(i):
     for q in pr:
         pr1.append([q])
 
-    return {'return':0, 'prediction_table':pr1}
+    lt1=[]
+    for q in lt:
+        lt1.append([q])
+
+    return {'return':0, 'prediction_table':pr1, 'label_table':lt1}
 
 ##############################################################################
 # Convert categorical values to floats

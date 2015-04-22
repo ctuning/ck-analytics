@@ -312,6 +312,7 @@ def validate(i):
 
     import copy
     import math
+    import os
 
     o=i.get('out','')
     i['out']=''
@@ -321,6 +322,9 @@ def validate(i):
     mmuoa=i['model_module_uoa']
     mn=i['model_name']
     mf=i['model_file']
+
+    mf8=mf+'.model.validation-with-labels.csv'
+    if os.path.isfile(mf8): os.remove(mf8)
 
     ktf=i.get('keep_temp_files','')
 
@@ -406,7 +410,6 @@ def validate(i):
         'model_file':mf,
         'features_table': ftable,
         'features_keys': fkeys,
-        'mtable': mtable,
         'keep_temp_files':ktf,
         'out':o
        }
@@ -414,6 +417,7 @@ def validate(i):
     if r['return']>0: return r
 
     pt=r['prediction_table']
+    lt=r['label_table']
     lpt=len(pt)
 
     if lctable!=lpt:
@@ -422,10 +426,20 @@ def validate(i):
     # Checking model
     s=0.0
 
+    sx='Label:;Original value;predicted value'
+    kk=mtable[0].get('features',{}).get('features',{})
+    for a in kk:
+        sx+=';'+a
+    sx+='\n'
+
     imispredictions=0
     for k in range(0, lctable):
         v=ctable[k][0]
         pv=pt[k][0]
+
+        label=lt[k][0]
+
+        kk=mtable[k].get('features',{}).get('features',{})
 
         if type(v)==float:
            sv="%11.3f" % v
@@ -435,6 +449,23 @@ def validate(i):
         else:
            sv=str(v)
            spv=str(pv)
+
+        sx+=label+';'+sv+';'+spv
+        for a in kk:
+            sx+=';'+str(kk[a])
+        sx+='\n'
+
+#              sx+=';'+str(kk["derived_type_of_prog"])
+#              sx+=';'+str(kk["type"])
+#              sx+=';'+str(kk["test"])
+#              sx+=';'+str(kk["test_id"])
+#              sx+=';'+str(kk["version"])
+#              sx+=';'+str(kk["compression"])
+#              sx+=';'+str(kk["derived_samples_by_primitives"])
+#              sx+=';'+str(kk["resolution"])
+#              sx+=';'+str(kk["resw"])
+#              sx+=';'+str(kk["resx"])
+#              sx+=';'+str(kk["resy"])
 
         sdiff=''
         if type(v)==float or type(v)==int:
@@ -482,6 +513,9 @@ def validate(i):
 
     rmse=math.sqrt(s/lctable)
     rate=float(lctable-imispredictions)/float(lctable)
+
+    r=ck.save_text_file({'text_file':mf8, 'string':sx})
+    if r['return']>0: return r
 
     if o=='con':
        ck.out('')      

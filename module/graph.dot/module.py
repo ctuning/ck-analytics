@@ -135,7 +135,33 @@ def convert_to_decision_tree(i):
                  link[ll]='+'
                  link_yes[ll2]=ll
 
-        s+=lst[j]+'\n'
+        # Remove gini (difficult to interpret)
+        q=lst[j]
+
+        qq=''
+
+        j1=q.find('value = [')
+        if j1>0:
+           j2=q.find(']',j1)
+           if j2>0:
+              qx=q[j1+9:j2].strip()
+              qa=qx.split(' ')
+              qb=[]
+              for a in qa:
+                  if a.endswith('.'): a=a[:-1]
+                  if a!='': qb.append(int(a))
+
+              if len(qb)==2:
+                 q=q[:j1]+'True ('+str(qb[0])+') / False ('+str(qb[1])+')'+q[j2+1:]
+
+
+        j1=q.find('gini = ')
+        if j1>0:
+           j2=q.find('\\n',j1)
+           if j2>0:
+              q=q[:j1]+qq+q[j2+2:]
+
+        s+=q+'\n'
 
     # Finding path to a given leaf
     for ll in labels:
