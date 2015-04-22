@@ -48,6 +48,7 @@ def build(i):
               characteristics_keys  - characteristics flat keys
 
               (keep_temp_files)     - if 'yes', keep temp files 
+              (caption)             - add caption to graphs, if needed
             }
 
     Output: {
@@ -68,6 +69,8 @@ def build(i):
 
     mn=i['model_name']
     mp=i.get('model_params',{})
+
+    cap=i.get('caption','')
 
     mf=i.get('model_file','')
     mf1=i['model_file']+'.model.obj'
@@ -175,6 +178,7 @@ def build(i):
        r=ck.access({'action':'convert_to_decision_tree',
                     'module_uoa':cfg['module_deps']['graph.dot'],
                     'input_file':mf2,
+                    'caption':cap,
                     'output_file':mf7})
        if r['return']>0: return r
 

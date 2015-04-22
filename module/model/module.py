@@ -89,6 +89,7 @@ def build(i):
                 (model_file)                            - model output file, otherwise generated as tmp file
                 (keep_temp_files)                       - if 'yes', keep temp files 
                 (remove_points_with_none)               - if 'yes', remote points with None
+                (caption)                               - add caption to graphs, if needed
 
               (csv_file)                                - if !='', only record prepared table to CSV ...
             }
@@ -108,6 +109,8 @@ def build(i):
     i['out']=''
 
     ktf=i.get('keep_temp_files','')
+
+    cap=i.get('caption','')
 
     rpwn=i.get('remove_points_with_none','')
 
@@ -241,6 +244,7 @@ def build(i):
         'characteristics_table': ctable,
         'characteristics_keys': ckeys,
         'keep_temp_files':ktf,
+        'caption':cap,
         'out':o
        }
     r=ck.access(ii)

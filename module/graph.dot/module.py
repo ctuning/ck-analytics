@@ -38,7 +38,7 @@ def convert_to_decision_tree(i):
     Input:  {
               input_file  - .dot file
               output_file - CK json decision tree file
-
+              (caption)   - add caption, if needed
             }
 
     Output: {
@@ -56,6 +56,8 @@ def convert_to_decision_tree(i):
 
     fi=i['input_file']
     fo=i['output_file']
+
+    cap=i.get('caption','')
 
     s=''
     r=ck.load_text_file({'text_file':fi, 
@@ -162,6 +164,12 @@ def convert_to_decision_tree(i):
               q=q[:j1]+qq+q[j2+2:]
 
         s+=q+'\n'
+
+        # If first line, add caption
+        if j==0 and cap!='':
+           s+='label="'+cap+'"\n'
+           s+='labelloc=top;\n'
+           s+='labeljust=center;\n'
 
     # Finding path to a given leaf
     for ll in labels:
