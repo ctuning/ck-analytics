@@ -275,13 +275,14 @@ def add(i):
        chl=dd.get('characteristics_list',[])
        if len(ch)>0: chl.append(ch)
 
+       # Avoid changing original input !
        ddx=copy.deepcopy(dd)
 
-       if 'characteristics' in dd: del(dd['characteristics'])
-       if 'characteristics_list' in dd: del(dd['characteristics_list'])
+       if 'characteristics' in ddx: del(ddx['characteristics'])
+       if 'characteristics_list' in ddx: del(ddx['characteristics_list'])
 
        # Flatten data and perform basic analysis **********************************
-       r=ck.flatten_dict({'dict':dd})
+       r=ck.flatten_dict({'dict':ddx})
        if r['return']>0: return r
        ddf=r['dict']
 
@@ -315,8 +316,6 @@ def add(i):
            mdp=r['max_range_percent']
            mmin=r['min']
            mmax=r['max']
-
-       dd=ddx # To record original to point
 
     # Check if record all points or only with max_range_percent > max_range_percent_threshold
     sp=ddft.get('sub_points',0)

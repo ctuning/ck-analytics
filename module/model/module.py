@@ -73,8 +73,8 @@ def build(i):
 
                 (features_flat_keys_list)               - list of flat keys to extract from points into table
                                                           (order is important: for example, for plot -> X,Y,Z)
-                (features_flat_keys_list)               - list of flat keys to extract from points into table
-                                                          (for example, ##features#)
+                (features_flat_keys_ext)                - extension of keys with wildcard * to extract multiple keys 
+                                                          (for example, ##features#) - useful when many
                 (features_flat_keys_desc)               - list of flat key descriptions (not stable!)
 
                 (characteristics_flat_keys_list)        - list of flat keys to extract from points into table
@@ -427,14 +427,20 @@ def validate(i):
     if lctable!=lpt:
        return {'return':1, 'error':'length of characteristic table ('+str(lctable)+') is not the same as table with predictions ('+str(lpt)+')'}
 
-    # Checking model
-    s=0.0
-
-    sx='Label:;Original value;predicted value'
-    kk=mtable[0].get('features',{}).get('features',{})
-    for a in kk:
+    # Get all keys + make header for CVS with leaf labels
+    sx='Label:;Original value;predicted value;correct?'
+    dkk=[]
+    for pp in mtable:
+        kk=pp.get('features',{}).get('features',{})
+        for a in sorted(kk):
+            if a not in dkk: dkk.append(a)
+    dkk=sorted(dkk)
+    for a in dkk:
         sx+=';'+a
     sx+='\n'
+
+    # Checking model
+    s=0.0
 
     imispredictions=0
     for k in range(0, lctable):
@@ -445,38 +451,14 @@ def validate(i):
 
         kk=mtable[k].get('features',{}).get('features',{})
 
-        if type(v)==float:
-           sv="%11.3f" % v
-           pv=float(pv)
-           pt[k][0]=pv
-           spv="%11.3f" % pv
-        else:
-           sv=str(v)
-           spv=str(pv)
-
-        sx+=label+';'+sv+';'+spv
-        for a in kk:
-            sx+=';'+str(kk[a])
-        sx+='\n'
-
-#              sx+=';'+str(kk["derived_type_of_prog"])
-#              sx+=';'+str(kk["type"])
-#              sx+=';'+str(kk["test"])
-#              sx+=';'+str(kk["test_id"])
-#              sx+=';'+str(kk["version"])
-#              sx+=';'+str(kk["compression"])
-#              sx+=';'+str(kk["derived_samples_by_primitives"])
-#              sx+=';'+str(kk["resolution"])
-#              sx+=';'+str(kk["resw"])
-#              sx+=';'+str(kk["resx"])
-#              sx+=';'+str(kk["resy"])
-
         sdiff=''
+        correct=True
         if type(v)==float or type(v)==int:
            if v==0:
               if v!=pv:
                  sdiff='***'
                  imispredictions+=1
+                 correct=False
            else:
               s+=(v-pv)*(v-pv)
               diff=abs(pv-v)/v
@@ -484,6 +466,7 @@ def validate(i):
               if diff>0.1: #10%
                  x1=' ***'
                  imispredictions+=1
+                 correct=False
               sdiff="%7.3f" % diff + x1         
 
         else:
@@ -508,6 +491,21 @@ def validate(i):
               s+=1
               sdiff='***'
               imispredictions+=1
+              correct=False
+
+        if type(v)==float:
+           sv="%11.3f" % v
+           pv=float(pv)
+           pt[k][0]=pv
+           spv="%11.3f" % pv
+        else:
+           sv=str(v)
+           spv=str(pv)
+
+        sx+=label+';'+sv+';'+spv+';'+str(correct)
+        for a in dkk:
+            sx+=';'+str(kk.get(a,''))
+        sx+='\n'
 
         if o=='con':
            import json
