@@ -64,6 +64,7 @@ def build(i):
     import tempfile
     import os
     import pickle
+    import shutil
 
     o=i.get('out','')
 
@@ -76,6 +77,7 @@ def build(i):
     mf1=i['model_file']+'.model.obj'
     mf2=i['model_file']+'.model.dot'
     mf2x=i['model_file']+'.modelx.dot'
+    mf2y=i['model_file']+'.modely.dot'
     mf3=i['model_file']+'.model.pdf'
     mf4=i['model_file']+'.model.ft.txt'
     mf5=i['model_file']+'.model.inp.ft.json'
@@ -174,6 +176,8 @@ def build(i):
        with open(mf2, 'w') as f:
           f=tree.export_graphviz(clf, out_file=f)
 
+       shutil.copyfile(mf2,mf2x)
+
        # Convert to decision tree
        r=ck.access({'action':'convert_to_decision_tree',
                     'module_uoa':cfg['module_deps']['graph.dot'],
@@ -183,13 +187,11 @@ def build(i):
        if r['return']>0: return r
 
        # Substitute features with names
-       import shutil
-       shutil.copyfile(mf2,mf2x)
        fk=0
        for fx in fkeys:
            uu1='X['+str(fk)+']'
            uu2=fdesc.get(fx,{}).get('name','')
-           r=ck.substitute_str_in_file({'filename':mf2, 'string1':uu1, 'string2':uu1+': '+uu2})
+           r=ck.substitute_str_in_file({'filename':mf2, 'string1':uu1, 'string2':'if '+uu1+' ('+uu2+')'})
            if r['return']>0: return r
            fk+=1
 

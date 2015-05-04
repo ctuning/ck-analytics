@@ -36,9 +36,13 @@ def init(i):
 def convert_to_decision_tree(i):
     """
     Input:  {
-              input_file  - .dot file
-              output_file - CK json decision tree file
-              (caption)   - add caption, if needed
+              input_file          - .dot file
+              output_file         - CK json decision tree file
+              (caption)           - add caption, if needed
+              (labels)            - Yes/No by default (can be True/False) 
+              (problem_threshold) - float; if samples1/samples2 in the final leaf is more than this threshold
+                                    add *X* to the final answer to show that there is a possible misprediction.
+                                    By default = 0.12
             }
 
     Output: {
@@ -54,6 +58,9 @@ def convert_to_decision_tree(i):
 
     """
 
+    dlabels=i.get('labels',[])
+    if len(dlabels)==0: dlabels=cfg['labels']
+
     fi=i['input_file']
     fo=i['output_file']
 
@@ -64,6 +71,10 @@ def convert_to_decision_tree(i):
                          'split_to_list':'yes'})
     if r['return']>0: return r
     lst=r['lst']
+
+    pt=i.get('problem_threshold','')
+    if pt=='': pt=0.12
+    pt=float(pt)
 
     jl=1
     labels={}
@@ -107,7 +118,6 @@ def convert_to_decision_tree(i):
               labels[sjl]['value']=value
 
               jl+=1
-
         else:
            j1=q.find('[label="')
            if j1>0:
@@ -132,10 +142,14 @@ def convert_to_decision_tree(i):
               ll2=q[j1+4:j2].strip()
 
               if ll in link: 
+                 lbb='no'
                  link_no[ll2]=ll
               else:
                  link[ll]='+'
                  link_yes[ll2]=ll
+                 lbb='yes'
+
+              lst[j]=q[:j2]+'[label="'+lbb+'"];'
 
         # Remove gini (difficult to interpret)
         q=lst[j]
@@ -154,8 +168,15 @@ def convert_to_decision_tree(i):
                   if a!='': qb.append(int(a))
 
               if len(qb)==2:
-                 q=q[:j1]+'True ('+str(qb[0])+') / False ('+str(qb[1])+')'+q[j2+1:]
+                 final_answer=dlabels[0]
+                 if qb[0]<qb[1]: final_answer=dlabels[1]
 
+                 problem=False
+                 if qb[0]<qb[1] and qb[1]!=0 and (float(qb[0])/float(qb[1]))>pt: problem=True
+                 if qb[0]>=qb[1] and qb[0]!=0 and (float(qb[1])/float(qb[0]))>pt: problem=True
+                 if problem: final_answer='*'+final_answer+'*'
+
+                 q=q[:j1]+dlabels[0]+' ('+str(qb[0])+') / '+dlabels[1]+' ('+str(qb[1])+')\\n\\n'+final_answer+q[j2+1:]
 
         j1=q.find('gini = ')
         if j1>0:
@@ -167,10 +188,13 @@ def convert_to_decision_tree(i):
 
         # If first line, add caption
         if j==0 and cap!='':
-           s+='label="'+cap+'"\n'
+           s+='label="'+cap+'";\n'
+           s+='fontsize=16;\n'
+           s+='fontname=Helvetica;\n'
+           s+='fontcolor=Blue;\n'
            s+='labelloc=top;\n'
            s+='labeljust=center;\n'
-
+           s+='\n'
     # Finding path to a given leaf
     for ll in labels:
         l=labels[ll]
