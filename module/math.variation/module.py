@@ -81,7 +81,8 @@ def analyze(i):
        if i.get('skip_fail','')!='yes':
           return {'return':1, 'error':'Seems like some python math modules are not installed ('+format(e)+')'}
 
-    ctable=i['characteristics_table']
+    ctable1=i['characteristics_table']
+    ctable=copy.deepcopy(ctable1) # since slightly changing it ...
 
     dmin=i.get('min',-1)
     dmax=i.get('max',-1)

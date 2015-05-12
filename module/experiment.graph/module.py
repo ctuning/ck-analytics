@@ -181,20 +181,21 @@ def plot(i):
               for k in gt:
                   v=k[0]
 
-                  if start: 
-                     dmin=v
-                     start=False
-                  else: 
-                     dmin=min(dmin, v)
+                  if v!=None:
+                     if start: 
+                        dmin=v
+                        start=False
+                     else: 
+                        dmin=min(dmin, v)
 
-                  if start: 
-                     dmax=v
-                     start=False
-                  else: 
-                     dmax=max(dmax, v)
+                     if start: 
+                        dmax=v
+                        start=False
+                     else: 
+                        dmax=max(dmax, v)
 
-                  it+=1
-                  dt+=v
+                     it+=1
+                     dt+=v
 
           if it!=0: dmean=dt/it
 

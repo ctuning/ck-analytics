@@ -40,10 +40,15 @@ def add(i):
     Input:  {
               dict                          - format prepared for predictive analytics
                                               {
-                                                "meta"            - coarse grain meta information to distinct entries (species)
-                                                ("choices")       - choices (for example, optimizations)
-                                                ("features")      - species features in points inside entries (mostly unchanged)
-                                                "characteristics" - species characteristics in points inside entries (measured)
+                                                "meta"                 - coarse grain meta information to distinct entries (species)
+
+                                                ("choices")            - choices (for example, optimizations)
+
+                                                ("features")           - species features in points inside entries (mostly unchanged)
+
+                                                "characteristics"      - (dict) species characteristics in points inside entries (measured)
+                                                      or
+                                                "characteristics_list" - (list) adding multiple experiments at the same time
                                               }
 
               (experiment_repo_uoa)         - if defined, use it instead of repo_uoa
@@ -162,6 +167,10 @@ def add(i):
        if euoa=='' and euid=='':
           ii['action']='add'
           x='  Existing experiments were not found. Adding new entry ...'
+       elif euid=='':
+          ii['action']='update'
+          x='  Adding new entry ...'
+
        else:
           ii['action']='update'
           x='  Updating entry ...'
@@ -294,7 +303,7 @@ def add(i):
        for cx in chl:
            ich+=1
 
-#           ck.out('      Processing characteristic point '+str(ich)+' out of '+str(len(chl))+' ...')
+           ck.out('        Processing characteristic point '+str(ich)+' out of '+str(len(chl))+' ...')
 
            cddf=copy.deepcopy(ddf)
 
