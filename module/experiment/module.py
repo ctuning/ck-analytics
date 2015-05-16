@@ -1,4 +1,4 @@
-#   
+   
 # Collective Knowledge (Universal Experiment)
 #
 # See CK LICENSE.txt for licensing details
@@ -42,13 +42,21 @@ def add(i):
                                               {
                                                 "meta"                 - coarse grain meta information to distinct entries (species)
 
+
                                                 ("choices")            - choices (for example, optimizations)
 
                                                 ("features")           - species features in points inside entries (mostly unchanged)
+                                                                           (may contain state, such as frequency or cache/bus contentions, etc)
 
                                                 "characteristics"      - (dict) species characteristics in points inside entries (measured)
                                                       or
                                                 "characteristics_list" - (list) adding multiple experiments at the same time
+
+                                                (pipeline)             - (dict) if experiment from pipeline, record it to be able to reproduce/replay
+                                                (pipeline_uoa)         -   if experiment comes from CK pipeline (from some repo), record UOA
+                                                (pipeline_uid)         -   if experiment comes from CK pipeline (from some repo), record UOA
+                                                                           (to be able to reproduce experiments, test other choices 
+                                                                           and improve pipeline by the community/workgroups)
                                               }
 
               (experiment_repo_uoa)         - if defined, use it instead of repo_uoa
@@ -61,7 +69,8 @@ def add(i):
               (force_new_entry)             - if 'yes', do not search for existing entry,
                                               but add a new one!
 
-              (search_point_by_features)    - if 'yes', add point
+              (search_point_by_features)    - if 'yes', find subpoint by features
+              (search_point_by_choices)     - if 'yes', find subpoint by choices
 
               (ignore_update)               - if 'yes', do not record update control info (date, user, etc)
 
@@ -96,6 +105,10 @@ def add(i):
 
     meta=dd.get('meta',{})
     ft=dd.get('features',{})
+    choices=dd.get('choices',{})
+    
+    pipeline=ck.get_from_dicts(dd, 'pipeline', {}, None) # get pipeline and remove from individual points,
+                                                         #  otherwise can be very large duplicates ...
 
     if len(dd)==0:
        return {'return':1, 'error':'no data provided ("dict" key is empty)'}
@@ -114,6 +127,7 @@ def add(i):
     rruoa=i.get('remote_repo_uoa','')
 
     spbf=i.get('search_point_by_features','')
+    spbc=i.get('search_point_by_choices','')
     dpoint={}
     point=0
 
@@ -207,14 +221,27 @@ def add(i):
     if o=='con': 
        ck.out('  Loaded and locked successfully (lock UID='+lock_uid+') ...')
 
+    # Check if pipeline was recorded
+    if len(pipeline)>0:
+       ppf=os.path.join(p,'pipeline.json')
+       if not os.path.isfile(ppf):
+          r=ck.save_json_to_file({'json_file':ppf, 'dict':pipeline})
+          if r['return']>0: return r
+
     # If existing experiment found, check if search point by feature
-    ddft={'features':ft}
+    ddft={'features':ft, 'choices':choices}
     fpoint=''
-    if euid!='' and spbf=='yes':
-       if len(ft)==0:
-          return {'return':1, 'error':'can\'t search by features when they are not present'}
+    if euid!='' and (spbf=='yes' or spbc=='yes'):
+#       if spbf=='yes' and len(ft)==0:
+#          return {'return':1, 'error':'can\'t search by features when they are not present'}
+#       if spbc=='yes' and len(choices)==0:
+#          return {'return':1, 'error':'can\'t search by choices when they are not present'}
 
        if o=='con': ck.out('    Searching points by features ...')
+
+       dwork2={}
+       if spbf=='yes': dwork2['features']=ft
+       if spbc=='yes': dwork2['choices']=choices 
 
        dirList=os.listdir(p)
        for fn in dirList:
@@ -225,7 +252,11 @@ def add(i):
               if r['return']>0: return r
               ft1=r['dict']
 
-              r=ck.compare_dicts({'dict1':ft1.get('features',{}), 'dict2':ft})
+              dwork1={}
+              if spbf=='yes': dwork1['features']=ft1.get('features',{})
+              if spbc=='yes': dwork1['choices']=ft1.get('choices',{}) 
+
+              r=ck.compare_dicts({'dict1':dwork1, 'dict2':dwork2})
               if r['return']>0: return r
 
               if r['equal']=='yes': 
@@ -544,7 +575,7 @@ def get(i):
                   pp2=pp1[4:]
                   drz={}
 
-                  fpf1=os.path.join(p, fn[:-10]+'.features.json')
+                  fpf1=os.path.join(p, pp1+'.features.json')
                   rz=ck.load_json_file({'json_file':fpf1})
                   if rz['return']>0: 
                      skip=True
@@ -1213,3 +1244,245 @@ def filter(i):
                   if r['return']>0: return r
 
     return {'return':0, 'aggregation':aggr}
+
+##############################################################################
+# list all points in an entry
+
+def list_points(i):
+    """
+    Input:  {
+               data_uoa          - experiment data UOA
+               (repo_uoa)        - experiment repo UOA
+               (remote_repo_uoa) - if repo_uoa is remote repo, use this to specify which local repo to use at the remote machine
+               (module_uoa)
+
+               (point)           - get subpoints for a given point
+
+               (skip_subpoints)  - if 'yes', do not show number of subpoints
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+
+              points       - list of point UIDs
+              (subpoints)  - if 'point' is selected, list of subpoints
+            }
+
+    """
+
+    o=i.get('out','')
+
+    duoa=i.get('data_uoa','')
+    muoa=i.get('module_uoa','')
+    ruoa=i.get('repo_uoa','')
+
+    puid=i.get('point','')
+
+    ii={'action':'load',
+        'module_uoa':muoa,
+        'data_uoa':duoa,
+        'repo_uoa':ruoa}
+    rx=ck.access(ii)
+    if rx['return']>0: return rx
+
+    p=rx['path']
+
+    points=[]
+    subpoints=[]
+
+    ssp=i.get('skip_subpoints','')
+
+    # Start listing points
+    dirList=os.listdir(p)
+    features=i.get('features',{})
+    added=False
+    for fn in sorted(dirList):
+        if fn.startswith('ckp-'):
+           if len(fn)>20 and fn[20]=='.':
+              uid=fn[4:20]
+              if uid not in points:
+                 points.append(uid)
+
+              if uid==puid and len(fn)>25 and fn[25]=='.':
+                 suid=fn[21:25]
+                 if suid!='flat':
+                    subpoints.append(suid)
+
+    if o=='con':
+       if ssp!='yes' and puid!='':
+          for k in subpoints:
+              ck.out(puid+'-'+k)
+       else:
+          for q in points:
+              ck.out(q)
+
+    return {'return':0, 'points':points, 'subpoints':subpoints}
+
+
+##############################################################################
+# replay experiment == the same as reproduce
+
+def replay(i):
+    """
+    Input:  {
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    return reproduce(i)
+
+##############################################################################
+# rerun experiment == the same as reproduce
+
+def rerun(i):
+    """
+    Input:  {
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    return reproduce(i)
+
+##############################################################################
+# reproduce a given experiment
+
+def reproduce(i):
+    """
+    Input:  {
+               data_uoa          - experiment data UOA
+               (repo_uoa)        - experiment repo UOA
+               (remote_repo_uoa) - if repo_uoa is remote repo, use this to specify which local repo to use at the remote machine
+               (module_uoa)
+
+               (point)           - point (or skip, if there is only one), can be of format UID-<subpoint>
+               (subpoint)        - subpoint (or skip, if there is only one)
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    o=i.get('out','')
+
+    ruoa=i.get('repo_uoa','')
+    muoa=i.get('module_uoa','')
+    duoa=i.get('data_uoa','')
+
+    puid=i.get('point','')
+    sp=i.get('subpoint','')
+    if puid.find('-')>=0:
+       puid,sp=puid.split('-')
+    puid=puid.strip()
+    spid=sp.strip()
+
+    # If point is not specified, get points
+    if puid=='':
+       rx=list_points({'repo_uoa':ruoa,
+                       'module_uoa':muoa,
+                       'data_uoa':duoa})
+       if rx['return']>0: return rx
+
+       points=rx['points']
+       if len(points)==0:
+          return {'return':1, 'error':'no points found in a given entry'}
+       elif len(points)>1:
+          if o=='con':
+             ck.out('Multiple points:')
+             for q in points:
+                 ck.out('  '+q)
+             ck.out('')
+          return {'return':1, 'error':'select a point in a given entry'}
+       else:
+          puid=points[0]
+
+    # If subpoint is not specified, get subpoints
+    if spid=='':
+       rx=list_points({'repo_uoa':ruoa,
+                       'module_uoa':muoa,
+                       'data_uoa':duoa,
+                       'point':puid})
+       if rx['return']>0: return rx
+
+       spoints=rx['subpoints']
+       if len(spoints)==0:
+          return {'return':1, 'error':'no subpoints found in a given entry'}
+       elif len(spoints)>1:
+          if o=='con':
+             ck.out('Multiple subpoints:')
+             for q in points:
+                 ck.out('  '+q)
+             ck.out('')
+          return {'return':1, 'error':'select a given subpoint for a given point in a given entry'}
+       else:
+          spid=spoints[0]
+      
+    # Get all info about this point
+    rx=load_point({'repo_uoa':ruoa,
+                   'module_uoa':muoa,
+                   'data_uoa':duoa,
+                   'point':puid,
+                   'subpoint':spid})
+    if rx['return']>0: return rx
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return {'return':0}
+
+##############################################################################
+# load all info about a given point and subpoint
+
+def load_point(i):
+    """
+    Input:  {
+               data_uoa          - experiment data UOA
+               (repo_uoa)        - experiment repo UOA
+               (remote_repo_uoa) - if repo_uoa is remote repo, use this to specify which local repo to use at the remote machine
+               (module_uoa)
+
+               (point)           - point (or skip, if there is only one), can be of format UID-<subpoint>
+               (subpoint)        - subpoint (or skip, if there is only one)
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    print ('load all info about a given point and subpoint')
+
+    return {'return':0}

@@ -18,9 +18,24 @@
     "get_all_meta": {
       "desc": "Get all meta information from all entries"
     }, 
+    "list_points": {
+      "desc": "list all points in an entry"
+    }, 
+    "load_point": {
+      "desc": "load all info about a given point and subpoint"
+    }, 
     "process_multi": {
       "desc": "Process multiple experimental results", 
       "for_web": "yes"
+    }, 
+    "replay": {
+      "desc": "replay experiment == the same as reproduce"
+    }, 
+    "reproduce": {
+      "desc": "reproduce/replay/rerun a given experiment"
+    }, 
+    "rerun": {
+      "desc": "rerun experiment == the same as reproduce"
     }, 
     "sort_table": {
       "desc": "sort table, substitute index with loop", 
