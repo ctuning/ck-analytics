@@ -40,8 +40,11 @@ def add(i):
     Input:  {
               dict                          - format prepared for predictive analytics
                                               {
-                                                "meta"                 - coarse grain meta information to distinct entries (species)
+                                                ("meta")               - coarse grain meta information to distinct entries (species)
+                                                ("tags")               - tags (separated by comma)
+                                                ("subtags")            - subtags to write to a point
 
+                                                ("dependencies")       - (resolved) dependencies
 
                                                 ("choices")            - choices (for example, optimizations)
 
@@ -51,6 +54,12 @@ def add(i):
                                                 "characteristics"      - (dict) species characteristics in points inside entries (measured)
                                                       or
                                                 "characteristics_list" - (list) adding multiple experiments at the same time
+                                                                         Note: at the end, we only keep characteristics_list
+                                                                         and append characteristics to this list...
+
+                                                (choices_desc)         - choices descrpition
+                                                (features_desc)        - features description
+                                                (characteristics_desc) - characteristic description
 
                                                 (pipeline)             - (dict) if experiment from pipeline, record it to be able to reproduce/replay
                                                 (pipeline_uoa)         -   if experiment comes from CK pipeline (from some repo), record UOA
@@ -84,6 +93,10 @@ def add(i):
 
               (record_all_subpoints)        - if 'yes', record all subpoints
               (max_range_percent_threshold) - (float) if set, record all subpoints where max_range_percent exceeds this threshold
+
+              (record_desc_at_each_point)   - if 'yes', record descriptions for each point and not just an entry.
+                                                Useful if descriptions change at each point (say checking all compilers 
+                                                for 1 benchmark in one entry - then compiler flags will be changing)
             }
 
     Output: {
@@ -104,11 +117,25 @@ def add(i):
     dd=i.get('dict',{})
 
     meta=dd.get('meta',{})
-    ft=dd.get('features',{})
-    choices=dd.get('choices',{})
+    ft=dd.get('features', {})
+    choices=dd.get('choices', {})
+    choices_order=dd.get('choices_order', [])
+    ch=dd.get('characteristics',{})
+    chl=dd.get('characteristics_list',[])
+
+    # Check if characteristics lits (to add a number of experimental results at the same time,
+    #   otherwise point by point processing can become very slow
+    if len(ch)>0: chl.append(ch)
+    if 'characteristics' in dd: del(dd['characteristics'])
+
+    ft_desc=dd.get('features_desc', {})
+    choices_desc=dd.get('choices_desc', {})
+    ch_desc=dd.get('characteristics_desc',{})
     
     pipeline=ck.get_from_dicts(dd, 'pipeline', {}, None) # get pipeline and remove from individual points,
                                                          #  otherwise can be very large duplicates ...
+    pipeline_uoa=ck.get_from_dicts(dd, 'pipeline_uoa', '', None)
+    pipeline_uid=ck.get_from_dicts(dd, 'pipeline_uid', '', None)
 
     if len(dd)==0:
        return {'return':1, 'error':'no data provided ("dict" key is empty)'}
@@ -132,6 +159,7 @@ def add(i):
     point=0
 
     ras=i.get('record_all_subpoints','')
+    rdep=i.get('record_desc_at_each_point','')
 
     # Search for an entry to aggregate, if needed
     lock_uid=''
@@ -218,18 +246,38 @@ def add(i):
     lock_uid=r['lock_uid']
     ipoints=int(dde.get('points','0'))
 
+    # Check old and new pipeline UID if exists
+    opipeline_uid=dde.get('pipeline_uid','')
+    if opipeline_uid!='' and opipeline_uid!=pipeline_uid:
+       return {'return':1, 'error':'existing entry has different pipeline UID ('+opipeline_uid+' vs. '+pipeline_uid+')'}
+    if pipeline_uoa!='': dde['pipeline_uoa']=pipeline_uoa
+    if pipeline_uid!='': dde['pipeline_uid']=pipeline_uid
+
     if o=='con': 
        ck.out('  Loaded and locked successfully (lock UID='+lock_uid+') ...')
 
-    # Check if pipeline was recorded
+    # Check if pipeline was recorded or record new
     if len(pipeline)>0:
        ppf=os.path.join(p,'pipeline.json')
        if not os.path.isfile(ppf):
           r=ck.save_json_to_file({'json_file':ppf, 'dict':pipeline})
           if r['return']>0: return r
 
+    # Check key descriptions
+    ppfd=os.path.join(p,'desc.json')
+    ddesc={'features_desc':ft_desc,
+           'choices_desc':choices_desc,
+           'characteristics_desc':ch_desc}
+
+    if not os.path.isfile(ppfd):
+       r=ck.save_json_to_file({'json_file':ppfd, 'dict':ddesc})
+       if r['return']>0: return r
+#    else:
+#       r=ck.load_json_from_file({'
+# rdep xyz
+
     # If existing experiment found, check if search point by feature
-    ddft={'features':ft, 'choices':choices}
+    ddft={'features':ft, 'choices':choices, 'choices_order':choices_order}
     fpoint=''
     if euid!='' and (spbf=='yes' or spbc=='yes'):
 #       if spbf=='yes' and len(ft)==0:
@@ -240,8 +288,11 @@ def add(i):
        if o=='con': ck.out('    Searching points by features ...')
 
        dwork2={}
-       if spbf=='yes': dwork2['features']=ft
-       if spbc=='yes': dwork2['choices']=choices 
+       if spbf=='yes': 
+          dwork2['features']=ft
+       if spbc=='yes': 
+          dwork2['choices']=choices 
+          dwork2['choices_order']=choices_order
 
        dirList=os.listdir(p)
        for fn in dirList:
@@ -253,8 +304,11 @@ def add(i):
               ft1=r['dict']
 
               dwork1={}
-              if spbf=='yes': dwork1['features']=ft1.get('features',{})
-              if spbc=='yes': dwork1['choices']=ft1.get('choices',{}) 
+              if spbf=='yes': 
+                 dwork1['features']=ft1.get('features',{})
+              if spbc=='yes': 
+                 dwork1['choices']=ft1.get('choices',{}) 
+                 dwork1['choices_order']=ft1.get('choices_order',[]) 
 
               r=ck.compare_dicts({'dict1':dwork1, 'dict2':dwork2})
               if r['return']>0: return r
@@ -308,12 +362,6 @@ def add(i):
           r=ck.load_json_file({'json_file':fpflat1})
           if r['return']>0: return r
           ddflat=r['dict']
-
-       # Check if characteristics lits (to add a number of experimental results at the same time,
-       #   otherwise point by point processing can become very slow
-       ch=dd.get('characteristics',{})
-       chl=dd.get('characteristics_list',[])
-       if len(ch)>0: chl.append(ch)
 
        # Avoid changing original input !
        ddx=copy.deepcopy(dd)
@@ -372,8 +420,14 @@ def add(i):
        fssp=fpoint+ssp+'.json'
        fssp1=os.path.join(p, fssp)
 
+       # Prepare what to write
+       dds={'features':ft,
+            'choices':choices,
+            'choices_order':choices_order,
+            'characteristics_list':chl}
+
        # Save subpoint dict to file
-       r=ck.save_json_to_file({'json_file':fssp1, 'dict':dd, 'sort_keys':sk})
+       r=ck.save_json_to_file({'json_file':fssp1, 'dict':dds, 'sort_keys':sk})
        if r['return']>0: return r
 
     # Save features file (that include subpoint)
@@ -385,6 +439,10 @@ def add(i):
     if i.get('skip_flatten','')!='yes':
        r=ck.save_json_to_file({'json_file':fpflat1, 'dict':ddflat, 'sort_keys':sk})
        if r['return']>0: return r
+
+    pfpd=os.path.join(p, fpoint)+'.desc.json'
+    if rdep=='yes':
+       r=ck.save_json_to_file({'json_file':pfpd, 'dict':ddesc})
 
     # Adding/updating entry *****************************************************
     if o=='con': 
@@ -1257,7 +1315,6 @@ def list_points(i):
                (module_uoa)
 
                (point)           - get subpoints for a given point
-
                (skip_subpoints)  - if 'yes', do not show number of subpoints
             }
 
@@ -1268,6 +1325,9 @@ def list_points(i):
 
               points       - list of point UIDs
               (subpoints)  - if 'point' is selected, list of subpoints
+
+              dict         - dict of entry
+              path         - local path to the entry
             }
 
     """
@@ -1286,8 +1346,8 @@ def list_points(i):
         'repo_uoa':ruoa}
     rx=ck.access(ii)
     if rx['return']>0: return rx
-
     p=rx['path']
+    d=rx['dict']
 
     points=[]
     subpoints=[]
@@ -1304,10 +1364,9 @@ def list_points(i):
               uid=fn[4:20]
               if uid not in points:
                  points.append(uid)
-
               if uid==puid and len(fn)>25 and fn[25]=='.':
                  suid=fn[21:25]
-                 if suid!='flat':
+                 if suid!='flat' and suid!='desc':
                     subpoints.append(suid)
 
     if o=='con':
@@ -1318,7 +1377,7 @@ def list_points(i):
           for q in points:
               ck.out(q)
 
-    return {'return':0, 'points':points, 'subpoints':subpoints}
+    return {'return':0, 'path':p, 'dict':d, 'points':points, 'subpoints':subpoints}
 
 
 ##############################################################################
@@ -1326,7 +1385,7 @@ def list_points(i):
 
 def replay(i):
     """
-    Input:  {
+    Input:  { see 'reproduce'
             }
 
     Output: {
@@ -1344,7 +1403,7 @@ def replay(i):
 
 def rerun(i):
     """
-    Input:  {
+    Input:  { see 'reproduce'
             }
 
     Output: {
@@ -1352,7 +1411,6 @@ def rerun(i):
                                          >  0, if error
               (error)      - error text if return > 0
             }
-
     """
 
     return reproduce(i)
@@ -1363,10 +1421,10 @@ def rerun(i):
 def reproduce(i):
     """
     Input:  {
-               data_uoa          - experiment data UOA
-               (repo_uoa)        - experiment repo UOA
-               (remote_repo_uoa) - if repo_uoa is remote repo, use this to specify which local repo to use at the remote machine
+               data_uoa          - experiment data UOA (can have wildcards)
+               (repo_uoa)        - experiment repo UOA (can have wildcards)
                (module_uoa)
+               (tags)            - search by tags
 
                (point)           - point (or skip, if there is only one), can be of format UID-<subpoint>
                (subpoint)        - subpoint (or skip, if there is only one)
@@ -1377,7 +1435,6 @@ def reproduce(i):
                                          >  0, if error
               (error)      - error text if return > 0
             }
-
     """
 
     o=i.get('out','')
@@ -1386,6 +1443,28 @@ def reproduce(i):
     muoa=i.get('module_uoa','')
     duoa=i.get('data_uoa','')
 
+    i['out']=''
+    r=ck.search(i)
+    if r['return']>0: return r
+
+    lst=r['lst']
+    if len(lst)==0:
+       return {'return':1, 'error':'entry not found'}
+    elif len(lst)==1:
+       ruoa=lst[0]['repo_uoa']
+       muoa=lst[0]['module_uoa']
+       duoa=lst[0]['data_uoa']
+
+    else:
+       if o=='con':
+          r=ck.select_uoa({'choices':lst})
+          if r['return']>0: return r
+          duoa=r['choice']
+          ck.out('')
+       else:
+          return {'return':1, 'error':'multiple entries found - please prune search', 'lst':lst}
+
+    # Check point
     puid=i.get('point','')
     sp=i.get('subpoint','')
     if puid.find('-')>=0:
@@ -1439,26 +1518,54 @@ def reproduce(i):
                    'module_uoa':muoa,
                    'data_uoa':duoa,
                    'point':puid,
-                   'subpoint':spid})
+                   'subpoint':spid,
+                   'add_pipeline':'yes'})
     if rx['return']>0: return rx
+
+    dd=rx['dict']
+
+    ch=dd.get('flat',{})
+    if len(ch)==0:
+       return {'return':1, 'error':'no flat characteristics in the point to compare'}
+
+    pipeline_uoa=rx['pipeline_uoa']
+    pipeline_uid=rx['pipeline_uid']
+    pipeline=rx['pipeline']
+
+    if len(pipeline)==0:
+       return {'return':1, 'error':'pipeline not found in the entry'}
  
+    # Attempt to run pipeline
+    ii={'action':'run',
+        'module_uoa':cfg['module_deps']['pipeline'],
+        'data_uoa':pipeline_uid,
+        'pipeline':pipeline}
+    r=ck.access(ii)
+    if r['return']>0: return r
+
+    # Check that didn't fail (or failed, if reproducing a bug)
 
 
+    # Flattening characteristics
+    chn=r.get('characteristics',{})
+
+    rx=ck.flatten_dict({'dict':chn, 'prefix':'##characteristics'})
+    if rx['return']>0: return rx
+    fchn=rx['dict']
+
+    # Comparing dicts
+    for q in ch:
+        if q.startswith('##characteristics'):
+#           print q
+           if q.endswith('#min'):
+              q1=q[:-4]
+              if q1 in fchn:
+                 print q1
+                 print '   '+str(ch[q])
+                 print '   '+str(fchn[q1])
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-    return {'return':0}
+    return r
 
 ##############################################################################
 # load all info about a given point and subpoint
@@ -1468,21 +1575,93 @@ def load_point(i):
     Input:  {
                data_uoa          - experiment data UOA
                (repo_uoa)        - experiment repo UOA
-               (remote_repo_uoa) - if repo_uoa is remote repo, use this to specify which local repo to use at the remote machine
                (module_uoa)
 
                (point)           - point (or skip, if there is only one), can be of format UID-<subpoint>
                (subpoint)        - subpoint (or skip, if there is only one)
+
+               (add_pipeline)    - if 'yes', load pipeline from entry (if exists)
             }
 
     Output: {
               return       - return code =  0, if successful
                                          >  0, if error
               (error)      - error text if return > 0
+
+              dict         - {point extension = loaded json file}
+
+              pipeline     - if add_pipeline!='yes' and pipeline exists, return dict
+              pipeline_uoa - if add_pipeline!='yes' and pipeline_uoa exists, return pipeline UOA
+              pipeline_uid - if add_pipeline!='yes' and pipeline_uid exists, return pipeline UID
             }
 
     """
 
-    print ('load all info about a given point and subpoint')
+    o=i.get('out','')
 
-    return {'return':0}
+    oo=''
+    if o=='con': oo=o
+
+    ruoa=i.get('repo_uoa','')
+    muoa=i.get('module_uoa','')
+    if muoa=='': muoa=work['self_module_uoa']
+    duoa=i.get('data_uoa','')
+
+    sp=i.get('subpoint','')
+
+    ap=i.get('add_pipeline','')
+
+    # Check point
+    puid=i.get('point','')
+
+    r=list_points({'module_uoa':muoa,
+                   'data_uoa':duoa,
+                   'repo_uoa':ruoa,
+                   'out':oo})
+    if r['return']>0: return r
+    p=r['path']
+    d=r['dict']
+
+    if puid=='':
+       pp=r['points']
+
+       if len(pp)==0:
+          return {'return':1, 'error':'points not found in the entry'}
+       elif len(pp)>1:
+          return {'return':1, 'error':'more than one point found - please prune your choice'}
+
+       puid=pp[0]
+
+    dd={}
+
+    # Check pipeline
+    pxuoa=d.get('pipeline_uoa','')
+    pxuid=d.get('pipeline_uid','')
+    pipeline={}
+
+    if ap=='yes' and (pxuoa!='' or pxuid!=''):
+       p1=os.path.join(p, 'pipeline.json')
+       if os.path.isfile(p1):
+          rx=ck.load_json_file({'json_file':p1})
+          if rx['return']>0: return rx
+          pipeline=rx['dict']
+                 
+    # Start listing points
+    dirList=os.listdir(p)
+    added=False
+    for fn in sorted(dirList):
+        if fn.startswith('ckp-'):
+           if len(fn)>20 and fn[20]=='.':
+              uid=fn[4:20]
+              if uid==puid:
+                 i1=fn.find('.json')
+                 if i1>0:
+                    key=fn[21:i1]
+                    if sp!='' and key!='flat' and key!='desc' and key!='features' and key!=sp:
+                       continue
+                    p1=os.path.join(p,fn)
+                    rx=ck.load_json_file({'json_file':p1})
+                    if rx['return']>0: return rx
+                    dd[key]=rx['dict']
+
+    return {'return':0, 'dict':dd, 'pipeline_uoa':pxuoa, 'pipeline_uid':pxuid, 'pipeline':pipeline}
