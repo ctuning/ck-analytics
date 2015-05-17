@@ -97,6 +97,9 @@ def add(i):
               (record_desc_at_each_point)   - if 'yes', record descriptions for each point and not just an entry.
                                                 Useful if descriptions change at each point (say checking all compilers 
                                                 for 1 benchmark in one entry - then compiler flags will be changing)
+
+              (record_deps_at_each_point)   - if 'yes', record dependencies for each point and not just an entry.
+                                                Useful if descriptions change at each point (say different program may require different libs)
             }
 
     Output: {
@@ -122,6 +125,8 @@ def add(i):
     choices_order=dd.get('choices_order', [])
     ch=dd.get('characteristics',{})
     chl=dd.get('characteristics_list',[])
+
+    ddeps=dd.get('dependencies',{})
 
     # Check if characteristics lits (to add a number of experimental results at the same time,
     #   otherwise point by point processing can become very slow
@@ -159,7 +164,8 @@ def add(i):
     point=0
 
     ras=i.get('record_all_subpoints','')
-    rdep=i.get('record_desc_at_each_point','')
+    rdesc=i.get('record_desc_at_each_point','')
+    rdeps=i.get('record_deps_at_each_point','')
 
     # Search for an entry to aggregate, if needed
     lock_uid=''
@@ -272,9 +278,6 @@ def add(i):
     if not os.path.isfile(ppfd):
        r=ck.save_json_to_file({'json_file':ppfd, 'dict':ddesc})
        if r['return']>0: return r
-#    else:
-#       r=ck.load_json_from_file({'
-# rdep xyz
 
     # If existing experiment found, check if search point by feature
     ddft={'features':ft, 'choices':choices, 'choices_order':choices_order}
@@ -375,7 +378,8 @@ def add(i):
        ddf=r['dict']
 
        # Process multiple points
-       sak=i.get('process_multi_keys',['characteristics', 'features'])
+       sak=i.get('process_multi_keys','')
+       if sak=='': sak=['characteristics', 'features', 'choices']
 
 #       ck.out('')
        ich=0
@@ -441,8 +445,12 @@ def add(i):
        if r['return']>0: return r
 
     pfpd=os.path.join(p, fpoint)+'.desc.json'
-    if rdep=='yes':
+    if rdesc=='yes':
        r=ck.save_json_to_file({'json_file':pfpd, 'dict':ddesc})
+
+    pfpds=os.path.join(p, fpoint)+'.deps.json'
+    if rdeps=='yes':
+       r=ck.save_json_to_file({'json_file':pfpds, 'dict':ddeps})
 
     # Adding/updating entry *****************************************************
     if o=='con': 
@@ -1366,7 +1374,7 @@ def list_points(i):
                  points.append(uid)
               if uid==puid and len(fn)>25 and fn[25]=='.':
                  suid=fn[21:25]
-                 if suid!='flat' and suid!='desc':
+                 if suid!='flat' and suid!='desc' and suid!='deps':
                     subpoints.append(suid)
 
     if o=='con':
@@ -1452,9 +1460,9 @@ def reproduce(i):
        return {'return':1, 'error':'entry not found'}
     elif len(lst)==1:
        ruoa=lst[0]['repo_uoa']
+
        muoa=lst[0]['module_uoa']
        duoa=lst[0]['data_uoa']
-
     else:
        if o=='con':
           r=ck.select_uoa({'choices':lst})
@@ -1463,6 +1471,10 @@ def reproduce(i):
           ck.out('')
        else:
           return {'return':1, 'error':'multiple entries found - please prune search', 'lst':lst}
+
+    if o=='con':
+       ck.out('Found entry '+duoa+'!')
+       ck.out('')
 
     # Check point
     puid=i.get('point','')
@@ -1506,7 +1518,7 @@ def reproduce(i):
        elif len(spoints)>1:
           if o=='con':
              ck.out('Multiple subpoints:')
-             for q in points:
+             for q in spoints:
                  ck.out('  '+q)
              ck.out('')
           return {'return':1, 'error':'select a given subpoint for a given point in a given entry'}
@@ -1528,12 +1540,24 @@ def reproduce(i):
     if len(ch)==0:
        return {'return':1, 'error':'no flat characteristics in the point to compare'}
 
+    cf=dd.get('features',{}) # choices and features
+    if 'sub_points' in cf: del(cf['sub_points'])
+
+    deps=dd.get('deps',{})
+
     pipeline_uoa=rx['pipeline_uoa']
     pipeline_uid=rx['pipeline_uid']
     pipeline=rx['pipeline']
 
+    pipeline.update(cf)
+    pipeline.update({'dependencies':deps})
+
     if len(pipeline)==0:
        return {'return':1, 'error':'pipeline not found in the entry'}
+
+    if o=='con':
+       ck.out('Restarting pipeline ...')
+       ck.out('')
  
     # Attempt to run pipeline
     ii={'action':'run',
@@ -1544,7 +1568,10 @@ def reproduce(i):
     if r['return']>0: return r
 
     # Check that didn't fail (or failed, if reproducing a bug)
-
+    if r.get('fail','')=='yes':
+       if o=='con':
+          ck.out('')
+          ck.out('Pipeline failed ('+r.get('fail_reason','')+')')
 
     # Flattening characteristics
     chn=r.get('characteristics',{})
@@ -1657,7 +1684,7 @@ def load_point(i):
                  i1=fn.find('.json')
                  if i1>0:
                     key=fn[21:i1]
-                    if sp!='' and key!='flat' and key!='desc' and key!='features' and key!=sp:
+                    if sp!='' and key!='flat' and key!='deps' and key!='desc' and key!='features' and key!=sp:
                        continue
                     p1=os.path.join(p,fn)
                     rx=ck.load_json_file({'json_file':p1})
