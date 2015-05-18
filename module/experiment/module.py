@@ -393,7 +393,25 @@ def add(i):
            # Flatten data and perform basic analysis **********************************
            r=ck.flatten_dict({'dict':{'characteristics':cx}})
            if r['return']>0: return r
-           cddf.update(r['dict'])
+
+           fch=r['dict']
+
+           # Process multiple values in time packed as @@value1,value2
+           for q in fch:
+               v=fch[q]
+               x=False
+               try: x=v.startswith('@@')
+               except AttributeError: pass
+               if x:
+                  v1=fch[q][2:].split(',')
+                  v2=[]
+                  for k in v1:
+                      try: k=float(k)
+                      except ValueError: pass
+                      v2.append(k)
+                  fch[q]=v2
+
+           cddf.update(fch)
 
            ii={'dict':ddflat, 'dict1':cddf, 'process_multi_keys':sak}
 
@@ -901,102 +919,104 @@ def process_multi(i):
                break
 
         if process:
-           v1=d1[k]
+           vv1=d1[k]
 
-           # Number of repetitions
-           k_repeats=k+'#repeats'
-           vr=d.get(k_repeats,0)
-           vr+=1
-           d[k_repeats]=vr
+           if type(vv1)!=list: vv1=[vv1]
+           for v1 in vv1:
+               # Number of repetitions
+               k_repeats=k+'#repeats'
+               vr=d.get(k_repeats,0)
+               vr+=1
+               d[k_repeats]=vr
 
-           # Put all values (useful to calculate means, deviations, etc)
-           k_all=k+'#all'
-           v=d.get(k_all,[])
-           v.append(v1)
-           d[k_all]=v
+               # Put all values (useful to calculate means, deviations, etc)
+               k_all=k+'#all'
+               v=d.get(k_all,[])
+               v.append(v1)
+               d[k_all]=v
 
-           # Put only unique values 
-           k_all_u=k+'#all_unique'
-           v=d.get(k_all_u,[])
-           if v1 not in v: v.append(v1)
-           d[k_all_u]=v
+               # Put only unique values 
+               k_all_u=k+'#all_unique'
+               v=d.get(k_all_u,[])
+               if v1 not in v: v.append(v1)
+               d[k_all_u]=v
 
-           # If float or int, perform basic analysis
-           if smm!='yes' and (type(v1)==float or type(v1)==int):
-              # Calculate min
-              k_min=k+'#min'
-              vmin=d.get(k_min,v1)
-              if v1<vmin: 
-                 vmin=v1
-                 mmin='yes'
-              d[k_min]=vmin
+               # If float or int, perform basic analysis
+               if smm!='yes' and (type(v1)==float or type(v1)==int):
+                  # Calculate min
+                  k_min=k+'#min'
+                  vmin=d.get(k_min,v1)
+                  if v1<vmin: 
+                     vmin=v1
+                     mmin='yes'
+                  d[k_min]=vmin
 
-              # Calculate max
-              k_max=k+'#max'
-              vmax=d.get(k_max,v1)
-              if v1>vmax: 
-                 vmax=v1
-                 mmax='yes'
-              d[k_max]=vmax
+                  # Calculate max
+                  k_max=k+'#max'
+                  vmax=d.get(k_max,v1)
+                  if v1>vmax: 
+                     vmax=v1
+                     mmax='yes'
+                  d[k_max]=vmax
 
-              # Calculate #range (max-min)
-              k_range=k+'#range'
-              vrange=vmax-vmin
-              d[k_range]=vrange
+                  # Calculate #range (max-min)
+                  k_range=k+'#range'
+                  vrange=vmax-vmin
+                  d[k_range]=vrange
 
-              # Calculate #halfrange (max-min)/2
-              k_halfrange=k+'#halfrange'
-              vhrange=vrange/2
-              d[k_halfrange]=vhrange
+                  # Calculate #halfrange (max-min)/2
+                  k_halfrange=k+'#halfrange'
+                  vhrange=vrange/2
+                  d[k_halfrange]=vhrange
 
-              # Calculate #halfrange (max-min)/2
-              k_center=k+'#center'
-              d[k_center]=vmin+vhrange
+                  # Calculate #halfrange (max-min)/2
+                  k_center=k+'#center'
+                  d[k_center]=vmin+vhrange
 
-              # Calculate #range percent (max-min)/min
-              if vmin!=0:
-                 vp=(vmax-vmin)/vmin
-                 k_range_p=k+'#range_percent'
-                 d[k_range_p]=vp
-                 if vp>max_range_percent: max_range_percent=vp
+                  # Calculate #range percent (max-min)/min
+                  if vmin!=0:
+                     vp=(vmax-vmin)/vmin
+                     k_range_p=k+'#range_percent'
+                     d[k_range_p]=vp
+                     if vp>max_range_percent: max_range_percent=vp
 
-              # Calculate mean
-              k_mean=k+'#mean'
-              va=sum(d[k_all])/float(vr)
-              d[k_mean]=va
+                  # Calculate mean
+                  k_mean=k+'#mean'
+                  va=sum(d[k_all])/float(vr)
+                  d[k_mean]=va
 
-              if sev!='yes':
-                 # Check density, expected value and peaks
-                 rx=ck.access({'action':'analyze',
-                               'module_uoa':cfg['module_deps']['math.variation'],
-                               'characteristics_table':d[k_all],
-                               'skip_fail':'yes'})
-                 if rx['return']>0: return rx
+                  if sev!='yes':
+                     # Check density, expected value and peaks
+                     rx=ck.access({'action':'analyze',
+                                   'module_uoa':cfg['module_deps']['math.variation'],
+                                   'characteristics_table':d[k_all],
+                                   'skip_fail':'yes'})
+                     if rx['return']>0: return rx
 
-                 valx=rx['xlist2s']
-                 valy=rx['ylist2s']
+                     valx=rx['xlist2s']
+                     valy=rx['ylist2s']
 
-                 if len(valx)>0:
-                    k_exp=k+'#exp'
-                    d[k_exp]=valx[0]
+                     if len(valx)>0:
+                        k_exp=k+'#exp'
+                        d[k_exp]=valx[0]
 
-                    k_exp_allx=k+'#exp_allx'
-                    d[k_exp_allx]=valx
+                        k_exp_allx=k+'#exp_allx'
+                        d[k_exp_allx]=valx
 
-                    k_exp_ally=k+'#exp_ally'
-                    d[k_exp_ally]=valy
+                        k_exp_ally=k+'#exp_ally'
+                        d[k_exp_ally]=valy
 
-                    warning='no'
-                    if len(valx)>1: warning='yes'
-                    k_exp_war=k+'#exp_warning'
-                    d[k_exp_war]=warning
-           else:
-              # Add first value to min 
-              k_min=k+'#min'
-              vmin=d.get(k_min,'')
-              if vmin=='':
-                 mmin='yes'
-                 d[k_min]=v1
+                        warning='no'
+                        if len(valx)>1: warning='yes'
+                        k_exp_war=k+'#exp_warning'
+                        d[k_exp_war]=warning
+               else:
+                  # Add first value to min 
+                  k_min=k+'#min'
+                  vmin=d.get(k_min,'')
+                  if vmin=='':
+                     mmin='yes'
+                     d[k_min]=v1
 
     return {'return':0, 'dict':d, 'max_range_percent':max_range_percent, 'min':mmin, 'max':mmax}
 
