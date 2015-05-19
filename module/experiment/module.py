@@ -86,7 +86,8 @@ def add(i):
                                               but add a new one!
 
               (search_point_by_features)    - if 'yes', find subpoint by features
-              (search_point_by_choices)     - if 'yes', find subpoint by choices
+              (features_keys_to_process)         - list of keys for features (and choices) to process/search (can be wildcards)
+                                                       by default ['##features#*', '##choices#*', '##choices_order#*']
 
               (ignore_update)               - if 'yes', do not record update control info (date, user, etc)
 
@@ -166,7 +167,10 @@ def add(i):
     rruoa=i.get('remote_repo_uoa','')
 
     spbf=i.get('search_point_by_features','')
-    spbc=i.get('search_point_by_choices','')
+
+    cmpr=i.get('features_keys_to_process','')
+    if cmpr=='': cmpr=['##features#*', '##choices#*', '##choices_order#*']
+
     dpoint={}
     point=0
 
@@ -288,48 +292,37 @@ def add(i):
 
     # If existing experiment found, check if search point by feature
     ddft={'features':ft, 'choices':choices, 'choices_order':choices_order}
+
+    # Flatten and prune features and choices (to be able to faster detect related points for a given experiment later)
+    r=ck.flatten_dict({'dict':ddft, 'prune_keys':cmpr})
+    if r['return']>0: return r
+    fddft=r['dict']
+
+    # Find related point by features and/or choices
     fpoint=''
-    if euid!='' and (spbf=='yes' or spbc=='yes'):
-#       if spbf=='yes' and len(ft)==0:
-#          return {'return':1, 'error':'can\'t search by features when they are not present'}
-#       if spbc=='yes' and len(choices)==0:
-#          return {'return':1, 'error':'can\'t search by choices when they are not present'}
+    if euid!='' and spbf=='yes':
+       if o=='con': ck.out('    Searching points by features (and choices if needed) ...')
 
-       if o=='con': ck.out('    Searching points by features ...')
+       rx=list_points({'path':p, 
+                       'prune_by_features':fddft})
+       if rx['return']>0: return rx
 
-       dwork2={}
-       if spbf=='yes': 
-          dwork2['features']=ft
-       if spbc=='yes': 
-          dwork2['choices']=choices 
-          dwork2['choices_order']=choices_order
+       points=rx['points']
+       if len(points)>1:
+          return {'return':1, 'error':'ambiguity - more than one point found with the same features'}
 
-       dirList=os.listdir(p)
-       for fn in dirList:
-           if fn.endswith('.features.json'):
-              pfp=os.path.join(p, fn)
+       if len(points)==1:
+          fpoint='ckp-'+points[0]
 
-              r=ck.load_json_file({'json_file':pfp})
-              if r['return']>0: return r
-              ft1=r['dict']
+       if fpoint!='':
+          if o=='con': 
+             ck.out('      Found point by features: '+str(fpoint))
 
-              dwork1={}
-              if spbf=='yes': 
-                 dwork1['features']=ft1.get('features',{})
-              if spbc=='yes': 
-                 dwork1['choices']=ft1.get('choices',{}) 
-                 dwork1['choices_order']=ft1.get('choices_order',[]) 
-
-              r=ck.compare_dicts({'dict1':dwork1, 'dict2':dwork2})
-              if r['return']>0: return r
-
-              if r['equal']=='yes': 
-                 fpoint=fn[:-14]
-                 ddft=ft1
-
-                 if o=='con': ck.out('      Found point by features: '+str(fpoint))
-
-                 break
+          # Reload feature file from this point to get number of subpoints
+          px=os.path.join(p, fpoint+'.features.json')
+          rx=ck.load_json_file({'json_file':px})
+          if rx['return']>0: return rx
+          ddft=rx['dict']
 
     # Add information about user
     ri=ck.prepare_special_info_about_entry({})
@@ -441,7 +434,7 @@ def add(i):
 #       if sp>9999:
 #          return {'return':1, 'error':'max number of subpoints is reached (9999)'}
 
-       if o=='con': ck.out('      Next subpoint: '+str(sp))
+       if o=='con': ck.out('      Subpoint: '+str(sp))
 
        ddft['sub_points']=sp
        ssp='.'+str(sp).zfill(4)
@@ -462,6 +455,11 @@ def add(i):
     # Save features file (that include subpoint)
     pfp=os.path.join(p, fpoint)+'.features.json'
     r=ck.save_json_to_file({'json_file':pfp, 'dict':ddft, 'sort_keys':sk})
+    if r['return']>0: return r
+
+    # Save flattened features file
+    pfpf=os.path.join(p, fpoint)+'.features_flat.json'
+    r=ck.save_json_to_file({'json_file':pfpf, 'dict':fddft, 'sort_keys':sk})
     if r['return']>0: return r
 
     # Save updated flat dict to file
@@ -1348,6 +1346,10 @@ def list_points(i):
                (repo_uoa)        - experiment repo UOA
                (remote_repo_uoa) - if repo_uoa is remote repo, use this to specify which local repo to use at the remote machine
                (module_uoa)
+                    or
+               (path)            - if called from internal modules, can specify path of the experiment entry directly ...
+
+               (prune_points)    - flat dict with features to check (no wild cards here)
 
                (point)           - get subpoints for a given point
                (skip_subpoints)  - if 'yes', do not show number of subpoints
@@ -1361,7 +1363,7 @@ def list_points(i):
               points       - list of point UIDs
               (subpoints)  - if 'point' is selected, list of subpoints
 
-              dict         - dict of entry
+              dict         - dict of entry (if not loaded by path)
               path         - local path to the entry
             }
 
@@ -1369,40 +1371,68 @@ def list_points(i):
 
     o=i.get('out','')
 
-    duoa=i.get('data_uoa','')
-    muoa=i.get('module_uoa','')
-    ruoa=i.get('repo_uoa','')
+    p=i.get('path','')
+    d={}
 
     puid=i.get('point','')
 
-    ii={'action':'load',
-        'module_uoa':muoa,
-        'data_uoa':duoa,
-        'repo_uoa':ruoa}
-    rx=ck.access(ii)
-    if rx['return']>0: return rx
-    p=rx['path']
-    d=rx['dict']
+    if p=='':
+       # Attempt to load entry
+       duoa=i.get('data_uoa','')
+       muoa=i.get('module_uoa','')
+       ruoa=i.get('repo_uoa','')
+
+       ii={'action':'load',
+           'module_uoa':muoa,
+           'data_uoa':duoa,
+           'repo_uoa':ruoa}
+       rx=ck.access(ii)
+       if rx['return']>0: return rx
+       p=rx['path']
+       d=rx['dict']
 
     points=[]
+    skiped_points=[]
     subpoints=[]
 
     ssp=i.get('skip_subpoints','')
 
+    pp=i.get('prune_points',{})
+
     # Start listing points
     dirList=os.listdir(p)
-    features=i.get('features',{})
     added=False
     for fn in sorted(dirList):
         if fn.startswith('ckp-'):
            if len(fn)>20 and fn[20]=='.':
               uid=fn[4:20]
-              if uid not in points:
-                 points.append(uid)
-              if uid==puid and len(fn)>25 and fn[25]=='.':
-                 suid=fn[21:25]
-                 if suid!='flat' and suid!='desc' and suid!='deps':
-                    subpoints.append(suid)
+
+              if uid not in skiped_points:
+                 if len(pp)>0:
+                    skip=True
+
+                    px=os.path.join(p, 'ckp-'+uid+'.features_flat.json')
+                    if os.path.isfile(px):
+                       rx=ck.load_json_file({'json_file':px})
+                       if rx['return']>0: return rx
+                       ft=rx['dict']
+
+                       ry=ck.compare_dicts({'dict1':ft, 'dict2':pp})
+                       if ry['return']>0: return ry
+
+                       if ry['equal']=='yes': 
+                          skip=False
+
+                    if skip:
+                       skiped_points.append(uid)
+                       continue
+
+                 if uid not in points:
+                    points.append(uid)
+                 if uid==puid and len(fn)>25 and fn[25]=='.':
+                    suid=fn[21:25]
+                    if suid!='flat' and suid!='desc' and suid!='deps':
+                       subpoints.append(suid)
 
     if o=='con':
        if ssp!='yes' and puid!='':
