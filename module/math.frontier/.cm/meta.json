@@ -1,0 +1,13 @@
+{
+  "actions": {
+    "filter": {
+      "desc": "filter frontier (leave only best points)"
+    }
+  }, 
+  "copyright": "See CK Copyright.txt for copyright details", 
+  "desc": "detect frontier for multi-objective optimizations (such as execution time vs energy vs code size vs faults vs price ...)", 
+  "developer": "Grigori Fursin", 
+  "developer_email": "Grigori.Fursin@cTuning.org", 
+  "developer_webpage": "http://cTuning.org/lab/people/gfursin", 
+  "license": "See CK LICENSE.txt for licensing details"
+}

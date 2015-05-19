@@ -1307,17 +1307,17 @@ def filter(i):
 def list_points(i):
     """
     Input:  {
-               data_uoa          - experiment data UOA
-               (repo_uoa)        - experiment repo UOA
-               (remote_repo_uoa) - if repo_uoa is remote repo, use this to specify which local repo to use at the remote machine
+               data_uoa            - experiment data UOA
+               (repo_uoa)          - experiment repo UOA
+               (remote_repo_uoa)   - if repo_uoa is remote repo, use this to specify which local repo to use at the remote machine
                (module_uoa)
                     or
-               (path)            - if called from internal modules, can specify path of the experiment entry directly ...
+               (path)              - if called from internal modules, can specify path of the experiment entry directly ...
 
-               (prune_points)    - flat dict with features to check (no wild cards here)
+               (prune_by_features) - flat dict with features to check (no wild cards here)
 
-               (point)           - get subpoints for a given point
-               (skip_subpoints)  - if 'yes', do not show number of subpoints
+               (point)             - get subpoints for a given point
+               (skip_subpoints)    - if 'yes', do not show number of subpoints
             }
 
     Output: {
@@ -1362,7 +1362,7 @@ def list_points(i):
 
     ssp=i.get('skip_subpoints','')
 
-    pp=i.get('prune_points',{})
+    pp=i.get('prune_by_features',{})
 
     # Start listing points
     dirList=os.listdir(p)
