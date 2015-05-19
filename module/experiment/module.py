@@ -57,6 +57,13 @@ def add(i):
                                                                          Note: at the end, we only keep characteristics_list
                                                                          and append characteristics to this list...
 
+                                                                         Note, that if a string starts with @@, it should be 
+                                                                         of format "@@float_value1,float_value2,...
+                                                                         and will be converted into list of values which
+                                                                         will be statistically processed as one dimension in time
+                                                                         (needed to deal properly with bencmarks like slambench
+                                                                         which report kernel times for all frames)
+
                                                 (choices_desc)         - choices descrpition
                                                 (features_desc)        - features description
                                                 (characteristics_desc) - characteristic description
@@ -419,7 +426,7 @@ def add(i):
               ii['skip_expected_value']='yes'
               ii['skip_min_max']='yes'
 
-           r=process_multi(ii)
+           r=stat_analysis(ii)
            if r['return']>0: return r
 
            ddflat=r['dict']
@@ -873,7 +880,7 @@ def convert_table_to_csv(i):
 ##############################################################################
 # Process multiple experiments (flatten array + apply statistics)
 
-def process_multi(i):
+def stat_analysis(i):
     """
 
     Input:  {

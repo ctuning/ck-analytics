@@ -24,8 +24,8 @@
     "load_point": {
       "desc": "load all info about a given point and subpoint"
     }, 
-    "process_multi": {
-      "desc": "Process multiple experimental results", 
+    "stat_analysis": {
+      "desc": "Process multiple experimental results and apply various stat analysis", 
       "for_web": "yes"
     }, 
     "replay": {
