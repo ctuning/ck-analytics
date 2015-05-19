@@ -93,14 +93,16 @@ def add(i):
 
               (sort_keys)                   - if 'yes', sort keys in output json
 
-              (skip_flatten)                - if 'yes', skip flattinging and analyzing data ...
+              (skip_flatten)                - if 'yes', skip flattinging and analyzing data (including stat analysis) ...
 
               (process_multi_keys)          - list of keys (starts with) to perform stat analysis on flat array,
-                                              by default ['characteristics', 'features'],
+                                              by default ['##characteristics#*', '##features#*' '##choices#*'],
                                               if empty, no stat analysis
 
-              (record_all_subpoints)        - if 'yes', record all subpoints
+              (record_all_subpoints)        - if 'yes', record all subpoints (i.e. do not search and reuse existing points by features)
+
               (max_range_percent_threshold) - (float) if set, record all subpoints where max_range_percent exceeds this threshold
+                                                      useful, to avoid recording too many similar points, but only *unusual* ...
 
               (record_desc_at_each_point)   - if 'yes', record descriptions for each point and not just an entry.
                                                 Useful if descriptions change at each point (say checking all compilers 
@@ -111,9 +113,15 @@ def add(i):
             }
 
     Output: {
-              return       - return code =  0, if successful
-                                         >  0, if error
-              (error)      - error text if return > 0
+              return        - return code =  0, if successful
+                                          >  0, if error
+              (error)       - error text if return > 0
+
+              update_dict   - dict after updating entry
+              dict_flat     - flat dict with stat analysis (if performed)
+              stat_analysis - whole output of stat analysis (with warnings)
+
+              elapsed_time  - elapsed time (useful for debugging - to speed up processing of "big data" ;) )
             }
 
     """
@@ -125,33 +133,43 @@ def add(i):
 
     o=i.get('out','')
 
+    oo=''
+    if o=='con': oo=o
+
     dd=i.get('dict',{})
+    ddx=copy.deepcopy(dd) # To avoid changing original input !!! 
 
-    meta=dd.get('meta',{})
-    ft=dd.get('features', {})
-    choices=dd.get('choices', {})
-    choices_order=dd.get('choices_order', [])
-    ch=dd.get('characteristics',{})
-    chl=dd.get('characteristics_list',[])
+    meta=ddx.get('meta','')
+    if meta=='': meta={}
 
-    ddeps=dd.get('dependencies',{})
+    tags=ddx.get('tags','')
+    if tags=='': tags=[]
+
+    ft=ddx.get('features', {})
+    choices=ddx.get('choices', {})
+    choices_order=ddx.get('choices_order', [])
+
+    ddeps=ddx.get('dependencies',{})
+
+    ch=ddx.get('characteristics', {})
 
     # Check if characteristics lits (to add a number of experimental results at the same time,
     #   otherwise point by point processing can become very slow
+    chl=ddx.get('characteristics_list', [])
     if len(ch)>0: chl.append(ch)
-    if 'characteristics' in dd: del(dd['characteristics'])
 
-    ft_desc=dd.get('features_desc', {})
-    choices_desc=dd.get('choices_desc', {})
-    ch_desc=dd.get('characteristics_desc',{})
+    ft_desc=ddx.get('features_desc', {})
+    choices_desc=ddx.get('choices_desc', {})
+    ch_desc=ddx.get('characteristics_desc',{})
     
-    pipeline=ck.get_from_dicts(dd, 'pipeline', {}, None) # get pipeline and remove from individual points,
+    pipeline=ck.get_from_dicts(ddx, 'pipeline', {}, None) # get pipeline and remove from individual points,
                                                          #  otherwise can be very large duplicates ...
-    pipeline_uoa=ck.get_from_dicts(dd, 'pipeline_uoa', '', None)
-    pipeline_uid=ck.get_from_dicts(dd, 'pipeline_uid', '', None)
+    pipeline_uoa=ck.get_from_dicts(ddx, 'pipeline_uoa', '', None)
+    pipeline_uid=ck.get_from_dicts(ddx, 'pipeline_uid', '', None)
 
-    if len(dd)==0:
+    if len(ddx)==0:
        return {'return':1, 'error':'no data provided ("dict" key is empty)'}
+
 
     an=i.get('force_new_entry','')
 
@@ -168,8 +186,13 @@ def add(i):
 
     spbf=i.get('search_point_by_features','')
 
-    cmpr=i.get('features_keys_to_process','')
+    cmpr=i.get('features_keys_to_process','') # keys to search similar and already existing points 
     if cmpr=='': cmpr=['##features#*', '##choices#*', '##choices_order#*']
+
+    sf=i.get('skip_flatten','')
+
+    sak=i.get('process_multi_keys','') # Keys to perform stat analysis
+    if sak=='': sak=['##characteristics#*', '##features#*', '##choices#*']
 
     dpoint={}
     point=0
@@ -333,8 +356,8 @@ def add(i):
        dde['added']=dsi
     if len(dde.get('meta',{}))==0:
        dde['meta']=meta
-    if len(dd.get('tags',[]))!=0:
-       dde['tags']=dd['tags']
+    if len(tags)!=0:
+       dde['tags']=tags
 
     # Prepare new point (if not found by features)
     if fpoint=='':
@@ -355,77 +378,32 @@ def add(i):
     mmin=''
     mmax=''
 
-    if i.get('skip_flatten','')!='yes':
-       # Load flattened data
-       fpflat=fpoint+'.flat.json'
-       fpflat1=os.path.join(p, fpflat)
+    ddflat={}
+    rsa={}
+    if sf!='yes':
+       # Pre-load flattened data, if already exists
+       fpflat1=os.path.join(p, fpoint+'.flat.json')
 
-       ddflat={}
        if os.path.isfile(fpflat1):
           r=ck.load_json_file({'json_file':fpflat1})
           if r['return']>0: return r
           ddflat=r['dict']
 
-       # Avoid changing original input !
-       ddx=copy.deepcopy(dd)
+       # Perform statistical analysis of (multiple statistical) characteristics
+       rsa=multi_stat_analysis({'flat_dict':ddflat,
+                                'dict_to_add':ddx,
+                                'process_multi_keys':sak,
+                                'out':oo})
+       if rsa['return']>0: return rsa
 
-       if 'characteristics' in ddx: del(ddx['characteristics'])
-       if 'characteristics_list' in ddx: del(ddx['characteristics_list'])
+       ddflat=rsa['dict_flat']
+       mdp=rsa['max_range_percent']
+       mmin=rsa['min']
+       mmax=rsa['max']
 
-       # Flatten data and perform basic analysis **********************************
-       r=ck.flatten_dict({'dict':ddx})
+       # Save updated flat file
+       r=ck.save_json_to_file({'json_file':fpflat1, 'dict':ddflat, 'sort_keys':sk})
        if r['return']>0: return r
-       ddf=r['dict']
-
-       # Process multiple points
-       sak=i.get('process_multi_keys','')
-       if sak=='': sak=['characteristics', 'features', 'choices']
-
-#       ck.out('')
-       ich=0
-       for cx in chl:
-           ich+=1
-
-           ck.out('        Processing characteristic point '+str(ich)+' out of '+str(len(chl))+' ...')
-
-           cddf=copy.deepcopy(ddf)
-
-           # Flatten data and perform basic analysis **********************************
-           r=ck.flatten_dict({'dict':{'characteristics':cx}})
-           if r['return']>0: return r
-
-           fch=r['dict']
-
-           # Process multiple values in time packed as @@value1,value2
-           for q in fch:
-               v=fch[q]
-               x=False
-               try: x=v.startswith('@@')
-               except AttributeError: pass
-               if x:
-                  v1=fch[q][2:].split(',')
-                  v2=[]
-                  for k in v1:
-                      try: k=float(k)
-                      except ValueError: pass
-                      v2.append(k)
-                  fch[q]=v2
-
-           cddf.update(fch)
-
-           ii={'dict':ddflat, 'dict1':cddf, 'process_multi_keys':sak}
-
-           if ich!=len(chl):
-              ii['skip_expected_value']='yes'
-              ii['skip_min_max']='yes'
-
-           r=stat_analysis(ii)
-           if r['return']>0: return r
-
-           ddflat=r['dict']
-           mdp=r['max_range_percent']
-           mmin=r['min']
-           mmax=r['max']
 
     # Check if record all points or only with max_range_percent > max_range_percent_threshold
     sp=ddft.get('sub_points',0)
@@ -462,20 +440,17 @@ def add(i):
     r=ck.save_json_to_file({'json_file':pfpf, 'dict':fddft, 'sort_keys':sk})
     if r['return']>0: return r
 
-    # Save updated flat dict to file
-    if i.get('skip_flatten','')!='yes':
-       r=ck.save_json_to_file({'json_file':fpflat1, 'dict':ddflat, 'sort_keys':sk})
-       if r['return']>0: return r
-
+    # Save universal descriptions of (all) dimensions
     pfpd=os.path.join(p, fpoint)+'.desc.json'
     if rdesc=='yes':
        r=ck.save_json_to_file({'json_file':pfpd, 'dict':ddesc})
 
+    # Save dependencies for experiment
     pfpds=os.path.join(p, fpoint)+'.deps.json'
     if rdeps=='yes':
        r=ck.save_json_to_file({'json_file':pfpds, 'dict':ddeps})
 
-    # Adding/updating entry *****************************************************
+    # Updating and unlocking entry *****************************************************
     if o=='con': 
        ck.out('  Updating entry and unlocking ...')
 
@@ -491,11 +466,11 @@ def add(i):
         'unlock_uid':lock_uid
        }
     r=ck.access(ii)
+    if r['return']>0: return r
 
     et=time.time() - start_time
-    r['elapsed_time'] = str(et)
 
-    return r
+    return {'return':0, 'elapsed_time':str(et), 'update_dict':r, 'dict_flat':ddflat, 'stat_analysis':rsa}
 
 ##############################################################################
 # get points from multiple entries
@@ -884,9 +859,8 @@ def stat_analysis(i):
     Input:  {
               dict                  - existing flat dict 
               dict1                 - new flat dict to add
-              (process_multi_keys)  - list of keys (starts with) to perform stat analysis on flat array,
-                                      by default ['characteristics', 'features'],
                                       if empty, no stat analysis
+
               (skip_expected_value) - if 'yes', do not calculute expected value
               (skip_min_max)        - if 'yes', do not calculate min, max, mean, etc
             }
@@ -907,8 +881,6 @@ def stat_analysis(i):
     d=i['dict']
     d1=i['dict1']
 
-    sak=i.get('process_multi_keys',['characteristics', 'features'])
-
     max_range_percent=0
     mmin=''
     mmax=''
@@ -917,111 +889,104 @@ def stat_analysis(i):
     smm=i.get('skip_min_max','')
 
     for k in d1:
-        process=False
-        for kk in sak:
-            if k.startswith('##'+kk+'#'):
-               process=True
-               break
+        vv1=d1[k]
 
-        if process:
-           vv1=d1[k]
+        if type(vv1)!=list: vv1=[vv1]
+        for v1 in vv1:
+            # Number of repetitions
+            k_repeats=k+'#repeats'
+            vr=d.get(k_repeats,0)
+            vr+=1
+            d[k_repeats]=vr
 
-           if type(vv1)!=list: vv1=[vv1]
-           for v1 in vv1:
-               # Number of repetitions
-               k_repeats=k+'#repeats'
-               vr=d.get(k_repeats,0)
-               vr+=1
-               d[k_repeats]=vr
+            # Put all values (useful to calculate means, deviations, etc)
+            k_all=k+'#all'
+            v=d.get(k_all,[])
+            v.append(v1)
+            d[k_all]=v
 
-               # Put all values (useful to calculate means, deviations, etc)
-               k_all=k+'#all'
-               v=d.get(k_all,[])
-               v.append(v1)
-               d[k_all]=v
+            # Put only unique values 
+            k_all_u=k+'#all_unique'
+            v=d.get(k_all_u,[])
+            if v1 not in v: v.append(v1)
+            d[k_all_u]=v
 
-               # Put only unique values 
-               k_all_u=k+'#all_unique'
-               v=d.get(k_all_u,[])
-               if v1 not in v: v.append(v1)
-               d[k_all_u]=v
+            # If float or int, perform basic analysis
+            if smm!='yes' and (type(v1)==float or type(v1)==int):
+               # Calculate min
+               k_min=k+'#min'
+               vmin=d.get(k_min,v1)
+               if v1<vmin: 
+                  vmin=v1
+                  mmin='yes'
+               d[k_min]=vmin
 
-               # If float or int, perform basic analysis
-               if smm!='yes' and (type(v1)==float or type(v1)==int):
-                  # Calculate min
-                  k_min=k+'#min'
-                  vmin=d.get(k_min,v1)
-                  if v1<vmin: 
-                     vmin=v1
-                     mmin='yes'
-                  d[k_min]=vmin
+               # Calculate max
+               k_max=k+'#max'
+               vmax=d.get(k_max,v1)
+               if v1>vmax: 
+                  vmax=v1
+                  mmax='yes'
+               d[k_max]=vmax
 
-                  # Calculate max
-                  k_max=k+'#max'
-                  vmax=d.get(k_max,v1)
-                  if v1>vmax: 
-                     vmax=v1
-                     mmax='yes'
-                  d[k_max]=vmax
+               # Calculate #range (max-min)
+               k_range=k+'#range'
+               vrange=vmax-vmin
+               d[k_range]=vrange
 
-                  # Calculate #range (max-min)
-                  k_range=k+'#range'
-                  vrange=vmax-vmin
-                  d[k_range]=vrange
+               # Calculate #halfrange (max-min)/2
+               k_halfrange=k+'#halfrange'
+               vhrange=vrange/2
+               d[k_halfrange]=vhrange
 
-                  # Calculate #halfrange (max-min)/2
-                  k_halfrange=k+'#halfrange'
-                  vhrange=vrange/2
-                  d[k_halfrange]=vhrange
+               # Calculate #halfrange (max-min)/2
+               k_center=k+'#center'
+               d[k_center]=vmin+vhrange
 
-                  # Calculate #halfrange (max-min)/2
-                  k_center=k+'#center'
-                  d[k_center]=vmin+vhrange
+               # Calculate #range percent (max-min)/min
+               if vmin!=0:
+                  vp=(vmax-vmin)/vmin
+                  k_range_p=k+'#range_percent'
+                  d[k_range_p]=vp
+                  if vp>max_range_percent: max_range_percent=vp
 
-                  # Calculate #range percent (max-min)/min
-                  if vmin!=0:
-                     vp=(vmax-vmin)/vmin
-                     k_range_p=k+'#range_percent'
-                     d[k_range_p]=vp
-                     if vp>max_range_percent: max_range_percent=vp
+               # Calculate mean
+               k_mean=k+'#mean'
+               va=sum(d[k_all])/float(vr)
+               d[k_mean]=va
 
-                  # Calculate mean
-                  k_mean=k+'#mean'
-                  va=sum(d[k_all])/float(vr)
-                  d[k_mean]=va
+               if sev!='yes':
+                  # Check density, expected value and peaks
+                  rx=ck.access({'action':'analyze',
+                                'module_uoa':cfg['module_deps']['math.variation'],
+                                'characteristics_table':d[k_all],
+                                'skip_fail':'yes'})
+                  if rx['return']>0: return rx
 
-                  if sev!='yes':
-                     # Check density, expected value and peaks
-                     rx=ck.access({'action':'analyze',
-                                   'module_uoa':cfg['module_deps']['math.variation'],
-                                   'characteristics_table':d[k_all],
-                                   'skip_fail':'yes'})
-                     if rx['return']>0: return rx
+                  valx=rx['xlist2s']
+                  valy=rx['ylist2s']
 
-                     valx=rx['xlist2s']
-                     valy=rx['ylist2s']
+                  if len(valx)>0:
+                     k_exp=k+'#exp'
+                     d[k_exp]=valx[0]
 
-                     if len(valx)>0:
-                        k_exp=k+'#exp'
-                        d[k_exp]=valx[0]
+                     k_exp_allx=k+'#exp_allx'
+                     d[k_exp_allx]=valx
 
-                        k_exp_allx=k+'#exp_allx'
-                        d[k_exp_allx]=valx
+                     k_exp_ally=k+'#exp_ally'
+                     d[k_exp_ally]=valy
 
-                        k_exp_ally=k+'#exp_ally'
-                        d[k_exp_ally]=valy
-
-                        warning='no'
-                        if len(valx)>1: warning='yes'
-                        k_exp_war=k+'#exp_warning'
-                        d[k_exp_war]=warning
-               else:
-                  # Add first value to min 
-                  k_min=k+'#min'
-                  vmin=d.get(k_min,'')
-                  if vmin=='':
-                     mmin='yes'
-                     d[k_min]=v1
+                     warning='no'
+                     if len(valx)>1: warning='yes'
+                     k_exp_war=k+'#exp_warning'
+                     d[k_exp_war]=warning
+            else:
+               # Add first value to min 
+               k_min=k+'#min'
+               vmin=d.get(k_min,'')
+               if vmin=='':
+                  mmin='yes'
+                  d[k_min]=v1
 
     return {'return':0, 'dict':d, 'max_range_percent':max_range_percent, 'min':mmin, 'max':mmax}
 
@@ -1749,3 +1714,122 @@ def load_point(i):
                     dd[key]=rx['dict']
 
     return {'return':0, 'dict':dd, 'pipeline_uoa':pxuoa, 'pipeline_uid':pxuid, 'pipeline':pipeline}
+
+##############################################################################
+# stat analysis with multiple points at the same time
+
+def multi_stat_analysis(i):
+    """
+    Input:  {
+              (dict)                        - pre-loaded dict with characteristics that will be flattened
+                  or
+              (flat_dict)                   - pre-loaded flat dict with characteristics
+
+                                                  USE 'characteristic_list' in dict!
+
+              dict_to_add                   - data to analyze and add to dict
+
+              (process_multi_keys)          - list of keys (starts with) to perform stat analysis on flat array,
+                                              by default ['##characteristics#*', '##features#*' '##choices#*'],
+                                              if empty, no stat analysis
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+
+              dict_flat         - updated and flattened original dictionary
+              max_range_percent - max % range in float/int data (useful to record points with unusual behavior)
+              min               - 'yes', if one of monitored values reached min
+              max               - 'yes', if one of monitored values reached max
+            }
+
+    """
+
+    import copy
+
+    o=i.get('out','')
+
+    ddflat=i.get('flat_dict',{})
+    dd=i.get('dict',{})
+
+    # Select keys to prune and flat
+    sak=i.get('process_multi_keys','')
+    if sak=='': 
+       sak=['##characteristics#*', '##features#*', '##choices#*']
+
+    if len(dd)>0 and len(ddflat)==0:
+       r=ck.flatten_dict({'dict':dd, 'prune_keys':sak})
+       if r['return']>0: return r
+       ddflat=r['dict']
+
+    ddx=i.get('dict_to_add',{})
+
+    cddx=copy.deepcopy(ddx)
+
+    # Remove characteristics from original
+    ch=ck.get_from_dicts(cddx, 'characteristics', {}, None)
+
+    # Check if characteristics lits (to add a number of experimental results at the same time,
+    #   otherwise point by point processing can become very slow
+    chl=ck.get_from_dicts(cddx, 'characteristics_list', [], None)
+    if len(ch)>0: chl.append(ch)
+
+    # Flatten input dict
+    r=ck.flatten_dict({'dict':cddx, 'prune_keys':sak})
+    if r['return']>0: return r
+    ddf=r['dict']
+
+    mmin=''
+    mmax=''
+    mdp=''
+
+    ich=0
+    for cx in chl:
+        ich+=1
+
+        if o=='con':
+           ck.out('        Processing characteristic point '+str(ich)+' out of '+str(len(chl))+' ...')
+
+        cddf=copy.deepcopy(ddf) # Prepare clean input (and append iteration of statistical characteristics)
+
+        # Flatten/prune next iteration of statistical characteristic dict and perform basic analysis **********************************
+        r=ck.flatten_dict({'dict':{'characteristics':cx}, 'prune_keys':sak})
+        if r['return']>0: return r
+        ddfi=r['dict']
+
+        # Process multiple values in time packed as @@value1,value2
+        for q in ddfi:
+            v=ddfi[q]
+            x=False
+            try: x=v.startswith('@@')
+            except AttributeError: pass
+            if x:
+               v1=ddfi[q][2:].split(',')
+               v2=[]
+               for k in v1:
+                   try: k=float(k)
+                   except ValueError: pass
+                   v2.append(k)
+               ddfi[q]=v2
+
+        # Update original input with iteration from statistical repetition
+        cddf.update(ddfi)
+
+        # Prepare input for statistical analysis
+        ii={'dict':ddflat, 'dict1':cddf}
+
+        if ich!=len(chl):
+           ii['skip_expected_value']='yes'
+           ii['skip_min_max']='yes'
+
+        r=stat_analysis(ii)
+        if r['return']>0: return r
+
+        ddflat=r['dict']
+        mdp=r['max_range_percent']
+        mmin=r['min']
+        mmax=r['max']
+
+    return {'return':0, 'dict_flat':ddflat, 'min':mmin, 'max':mmax, 'max_range_percent':mdp}

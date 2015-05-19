@@ -24,9 +24,8 @@
     "load_point": {
       "desc": "load all info about a given point and subpoint"
     }, 
-    "stat_analysis": {
-      "desc": "Process multiple experimental results and apply various stat analysis", 
-      "for_web": "yes"
+    "multi_stat_analysis": {
+      "desc": "stat analysis with multiple points at the same time"
     }, 
     "replay": {
       "desc": "replay experiment == the same as reproduce"
@@ -41,6 +40,10 @@
       "desc": "sort table, substitute index with loop", 
       "for_web": "yes"
     }, 
+    "stat_analysis": {
+      "desc": "Process multiple experimental results and apply various stat analysis", 
+      "for_web": "yes"
+    }, 
     "substitute_x_with_loop": {
       "desc": "substitute x axis in table with loop", 
       "for_web": "yes"
@@ -53,7 +56,7 @@
   "desc": "Universal Experiment", 
   "license": "See CK LICENSE.txt for licensing details", 
   "module_deps": {
-    "math.variation": "d3b13388e6152da7",
-    "pipeline":"db25414b48b4ffb3"
+    "math.variation": "d3b13388e6152da7", 
+    "pipeline": "db25414b48b4ffb3"
   }
 }
