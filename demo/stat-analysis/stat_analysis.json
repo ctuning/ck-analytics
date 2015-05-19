@@ -1,0 +1,9 @@
+{
+"dict":{},
+
+"dict1": {
+  "##characteristics#compile#binary_size#min": [171941,171941,171277,185101,169381,171277],
+  "##characteristics#run#execution_time#min": [0.017235,0.012235,0.018795,0.05366,0.016395,0.01786]
+ }
+
+}

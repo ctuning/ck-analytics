@@ -1,0 +1,22 @@
+{
+  "table":{"0":[[0.017235],[0.012235],[0.018795],[0.05366],[0.016395],[0.01786],[0.012235],[0.016395]]},
+
+  "ignore_point_if_none":"yes",
+
+  "plot_type":"mpl_1d_histogram",
+
+  "display_y_error_bar":"no",
+
+  "title":"Powered by Collective Knowledge",
+
+  "axis_x_desc":"Execution time",
+  "axis_y_desc":"Density",
+
+  "bins":100,
+
+  "plot_grid":"yes",
+
+  "mpl_image_size_x":"12",
+  "mpl_image_size_y":"6",
+  "mpl_image_dpi":"100"
+}
