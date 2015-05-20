@@ -57,6 +57,11 @@ def plot(i):
 
               (flat_keys_list)                      - list of flat keys to extract from points into table
                                                       (order is important: for example, for plot -> X,Y,Z)
+
+              (flat_keys_list_separate_graphs)      - [ [keys], [keys], ...] - several graphs ...
+
+              (labels_for_separate_graphs)          - list of labels for separate graphs
+
               (flat_keys_index)                     - add all flat keys starting from this index 
               (flat_keys_index_end)                 - add all flat keys ending with this index (default #min)
 
@@ -65,6 +70,8 @@ def plot(i):
               Graphical parameters:
                 plot_type                  - mpl_2d_scatter
                 point_style                - dict, setting point style for each separate graph {"0", "1", etc}
+
+                x_ticks_period             - (int) for bar graphs, put periodicity when to show number 
 
 
             }
@@ -83,6 +90,12 @@ def plot(i):
 
     otf=i.get('out_to_file','')
 
+    xtp=i.get('x_ticks_period','')
+    if xtp=='' or xtp==0: xtp=1
+    if xtp!='': xtp=int(xtp)
+
+    lsg=i.get('labels_for_separate_graphs',[])
+
     # Check if table already there
     table=i.get('table',[])
     if len(table)==0:
@@ -97,6 +110,8 @@ def plot(i):
        if r['return']>0: return r
 
        table=r['table']
+
+       rk=r['real_keys']
 
        i['action']=tmp_a
        i['module_uoa']=tmp_mu
@@ -219,19 +234,32 @@ def plot(i):
        if pt=='mpl_2d_bars' or pt=='mpl_2d_lines':
           ind=[]
           gt=table['0']
+          xt=0
           for q in gt:
-              ind.append(q[0])
+
+              xt+=1
+
+              if xt==xtp: 
+                 v=q[0]
+                 xt=0
+              else: 
+                 v=0
+
+              ind.append(v)
 
           sp.set_xticks(ind)
           sp.set_xticklabels(ind, rotation=-20)
 
           width=0.9/len(table)
 
-       # Add points
+       # Iterate over separate graphs and add points
        s=0
 
        for g in sorted(table, key=int):
            gt=table[g]
+
+           lbl=''
+           if s<len(lsg): lbl=lsg[s]
 
            if pt=='mpl_2d_scatter' or pt=='mpl_2d_bars' or pt=='mpl_2d_lines':
               mx=[]
@@ -277,26 +305,26 @@ def plot(i):
                      mx1.append(q+width*s)
 
                  if yerr=='yes':
-                    sp.bar(mx1, my, width=width, edgecolor=gs[s]['color'], facecolor=gs[s]['color'], align='center', yerr=myerr) # , error_kw=dict(lw=2))
+                    sp.bar(mx1, my, width=width, edgecolor=gs[s]['color'], facecolor=gs[s]['color'], align='center', yerr=myerr, label=lbl) # , error_kw=dict(lw=2))
                  else:
-                    sp.bar(mx1, my, width=width, edgecolor=gs[s]['color'], facecolor=gs[s]['color'], align='center')
+                    sp.bar(mx1, my, width=width, edgecolor=gs[s]['color'], facecolor=gs[s]['color'], align='center', label=lbl)
 
               elif pt=='mpl_2d_lines':
 
                  if yerr=='yes':
                      sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw)
-                 sp.plot(mx, my, c=gs[s]['color'])
+                 sp.plot(mx, my, c=gs[s]['color'], label=lbl)
 
 
               else:
                  if xerr=='yes' and yerr=='yes':
-                    sp.errorbar(mx, my, xerr=mxerr, yerr=myerr, ls='none', c=cl, elinewidth=elw)
+                    sp.errorbar(mx, my, xerr=mxerr, yerr=myerr, ls='none', c=cl, elinewidth=elw, label=lbl)
                  elif xerr=='yes' and yerr!='yes':
-                    sp.errorbar(mx, my, xerr=mxerr, ls='none',  c=cl, elinewidth=elw)
+                    sp.errorbar(mx, my, xerr=mxerr, ls='none',  c=cl, elinewidth=elw, label=lbl)
                  elif yerr=='yes' and xerr!='yes':
-                     sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw)
+                     sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw, label=lbl)
                  else:
-                    sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=cl, marker=gs[s]['marker'])
+                    sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=cl, marker=gs[s]['marker'], label=lbl)
 
            elif pt=='mpl_1d_density' or pt=='mpl_1d_histogram':
               if not start: # I.e. we got non empty points
@@ -328,11 +356,11 @@ def plot(i):
                  if cl=='': cl=gs[s]['color']
 
                  if pt=='mpl_1d_density':
-                    sp.plot(xs,dxs)
+                    sp.plot(xs,dxs, label=lbl)
                     sp.plot(pxs, dpxs, 'x', mec='r', mew=2, ms=8) #, mfc=None, mec='r', mew=2, ms=8)
                     sp.plot([dmean,dmean],[0,dpxs[0]],'g--',lw=2)
                  else:
-                    plt.hist(mx, bins=xbins, normed=True)
+                    plt.hist(mx, bins=xbins, normed=True, label=lbl)
 
            s+=1
            if s>=len(gs):s=0
@@ -346,6 +374,9 @@ def plot(i):
 
        atitle=i.get('title','')
        if atitle!='': plt.title(atitle)
+
+#       handles, labels = plt.get_legend_handles_labels()
+       plt.legend()#handles, labels)
 
        if otf=='':
           plt.show()

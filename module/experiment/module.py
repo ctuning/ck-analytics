@@ -505,6 +505,9 @@ def get(i):
 
 
               (flat_keys_list)                      - list of flat keys to extract from points into table
+
+              (flat_keys_list_separate_graphs)      - [ [keys], [keys], ...] - several graphs ...
+
                                                       (order is important: for example, for plot -> X,Y,Z)
               (flat_keys_index)                     - add all flat keys starting from this index 
               (flat_keys_index_end)                 - add all flat keys ending with this index (default #min)
@@ -546,6 +549,11 @@ def get(i):
     fkie=i.get('flat_keys_index_end','#min')
     fkied=i.get('flat_keys_index_end_range','')
     fkl=i.get('flat_keys_list',[])
+
+    fkls=i.get('flat_keys_list_separate_graphs','')
+    if fkls=='': fkls=[]
+    if len(fkls)==0 or len(fkl)>0: fkls.append(fkl) # at least one combination of keys, even empty!
+
     rfkl=[] # real flat keys (if all)
     trfkl=[]
 
@@ -665,100 +673,92 @@ def get(i):
                   if r['return']>0: return r
                   df=r['dict']
 
-                  # Create final vector (X,Y,Z,...)
-                  vect=[]
-                  has_none=False
-                  if fki!='' or len(fkl)==0:
-                     # Add all sorted (otherwise there is no order in python dict)
-                     for k in sorted(df.keys()):
-                         if (fki=='' or k.startswith(fki)) and (fkie=='' or k.endswith(fkie)):
-                            if len(rfkl)==0:
-                               trfkl.append(k)
-                            v=df[k]
-                            if v==None: has_none=True
-                            if v!=None and type(v)==list:
-                               if len(v)==0: v=None
-                               else: 
-                                  if el!='yes':
-                                     v=v[0]
-                            vect.append(v)
+                  # Iterate over combinations of keys
+                  for fkl in fkls:
+                      # Create final vector (X,Y,Z,...)
+                      vect=[]
+                      has_none=False
+                      if fki!='' or len(fkl)==0:
+                         # Add all sorted (otherwise there is no order in python dict)
+                         for k in sorted(df.keys()):
+                             if (fki=='' or k.startswith(fki)) and (fkie=='' or k.endswith(fkie)):
+                                if len(rfkl)==0:
+                                   trfkl.append(k)
+                                v=df[k]
+                                if v==None: has_none=True
+                                if v!=None and type(v)==list:
+                                   if len(v)==0: v=None
+                                   else: 
+                                      if el!='yes':
+                                         v=v[0]
+                                vect.append(v)
 
-                            # Check if range
-                            if fkie!='' and fkied!='':
-                               kb=k[:len(k)-len(fkie)]
-                               kbd=kb+fkied
-                               if len(rfkl)==0:
-                                  trfkl.append(kbd)
-                               vd=df.get(kbd, None)
-                               if vd==None: has_none=True
-                               if vd!=None and type(vd)==list:
-                                  if len(vd)==0: vd=None
-                                  else: 
-                                     if el!='yes':
-                                        vd=vd[0]
+                                # Check if range
+                                if fkie!='' and fkied!='':
+                                   kb=k[:len(k)-len(fkie)]
+                                   kbd=kb+fkied
+                                   if len(rfkl)==0:
+                                      trfkl.append(kbd)
+                                   vd=df.get(kbd, None)
+                                   if vd==None: has_none=True
+                                   if vd!=None and type(vd)==list:
+                                      if len(vd)==0: vd=None
+                                      else: 
+                                         if el!='yes':
+                                            vd=vd[0]
 
-                               vect.append(vd)
+                                   vect.append(vd)
 
-                     if len(trfkl)!=0:
-                        rfkl=trfkl
-                  else:
-                     for k in fkl:
-                         v=df.get(k,None)
-                         if v==None: has_none=True
-                         if v!=None and type(v)==list:
-                            if len(v)==0: v=None
-                            else: 
-                               if el!='yes':
-                                  v=v[0]
-                         vect.append(v)
+                         if len(trfkl)!=0:
+                            rfkl=trfkl
+                      else:
+                         for k in fkl:
+                             v=df.get(k,None)
+                             if v==None: has_none=True
+                             if v!=None and type(v)==list:
+                                if len(v)==0: v=None
+                                else: 
+                                   if el!='yes':
+                                      v=v[0]
+                             vect.append(v)
 
-                  # Add vector
-                  sigraph=str(igraph)
+                      # Add vector
+                      sigraph=str(igraph)
 
-                  if sigraph not in table: 
-                     table[sigraph]=[]
-                     mtable[sigraph]=[]
-                  if el=='yes':
-                     ei=-1 # find index with list to expand
-                     lei=0 # length of vector to expand
-                     for ih in range(0, len(vect)):
-                         h=vect[ih]
-                         if type(h)==list:
-                            if ei!=-1:
-                               return {'return':1, 'error':'can\'t expand vectors with more than one list dimension'}
-                            ei=ih
-                            lei=len(h)
-                     
-                     if ei==-1:
-                        table[sigraph].append(vect)
-                     else:
-                        for q in range(0, lei):
-                            vect1=[]
-                            for k in range(0, len(vect)):
-                                h=vect[k]
-                                if k==ei:
-                                   v=h[q]
-                                else:
-                                   v=h
-                                vect1.append(v)
-                            table[sigraph].append(vect1)
-                  else:
-                     if ipin!='yes' or not has_none:
-                        table[sigraph].append(vect)
+                      if sigraph not in table: 
+                         table[sigraph]=[]
+                         mtable[sigraph]=[]
+                      if el=='yes':
+                         max_length=0
+                         for ih in range(0, len(vect)):
+                             max_length=max(max_length, len(vect[ih]))
+                         
+                         for q in range(0, max_length):
+                             vect1=[]
+                             for ih in range(0, len(vect)):
+                                 h=vect[ih]
+                                 if q<len(h): v1=h[q]
+                                 else: v1=h[len(h)-1]
+                                 vect1.append(v1)
+                             table[sigraph].append(vect1)
+                      else:
+                         if ipin!='yes' or not has_none:
+                            table[sigraph].append(vect)
 
-                  # Add misc info:
-                  mi={'repo_uoa':ruid, 'module_uoa':muid, 'data_uoa':duid,
-                      'point_uid':pp2, 'features':drz}
+                      # Add misc info:
+                      mi={'repo_uoa':ruid, 'module_uoa':muid, 'data_uoa':duid,
+                          'point_uid':pp2, 'features':drz}
 
-                  mtable[sigraph].append(mi)
+                      mtable[sigraph].append(mi)
 
-                  if sstg=='yes':
-                     igraph+=1
+                      if sstg=='yes' or len(fkls)>1:
+                         igraph+=1
 
            if sstg!='yes' and added and igs!='yes':
               igraph+=1
 
-    if len(rfkl)==0 and len(fkl)!=0: rfkl=fkl
+    if len(rfkl)==0 and len(fkls)!=0 and len(fkls[0])>0: 
+       rfkl=fkls[0]
 
     # If sort/substitute
     si=i.get('sort_index','')
