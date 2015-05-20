@@ -1,0 +1,22 @@
+{
+  "table":{"0":[[1, 10, 1], [2,20,2], [3,18,0.5], [4,22,1]], "1":[[1,15,2],[2,17,3],[3,11,0.8],[4,15,1.2]], "2":[[1,8,0.9], [2,13,0.9],[3,14,0.9],[4,16,0.5]]},
+
+  "add_x_loop":"yes",
+
+  "ignore_point_if_none":"yes",
+
+  "plot_type":"mpl_2d_lines",
+
+  "display_y_error_bar":"yes",
+
+  "title":"Powered by Collective Knowledge",
+
+  "axis_x_desc":"No",
+  "axis_y_desc":"Value",
+
+  "plot_grid":"yes",
+
+  "mpl_image_size_x":"12",
+  "mpl_image_size_y":"6",
+  "mpl_image_dpi":"100"
+}
