@@ -216,7 +216,7 @@ def plot(i):
        xerr=i.get('display_x_error_bar','')
        yerr=i.get('display_y_error_bar','')
 
-       if pt=='mpl_2d_bars':
+       if pt=='mpl_2d_bars' or pt=='mpl_2d_lines':
           ind=[]
           gt=table['0']
           for q in gt:
@@ -233,7 +233,7 @@ def plot(i):
        for g in sorted(table, key=int):
            gt=table[g]
 
-           if pt=='mpl_2d_scatter' or pt=='mpl_2d_bars':
+           if pt=='mpl_2d_scatter' or pt=='mpl_2d_bars' or pt=='mpl_2d_lines':
               mx=[]
               mxerr=[]
               my=[]
@@ -280,6 +280,12 @@ def plot(i):
                     sp.bar(mx1, my, width=width, edgecolor=gs[s]['color'], facecolor=gs[s]['color'], align='center', yerr=myerr) # , error_kw=dict(lw=2))
                  else:
                     sp.bar(mx1, my, width=width, edgecolor=gs[s]['color'], facecolor=gs[s]['color'], align='center')
+
+              elif pt=='mpl_2d_lines':
+
+                 if yerr=='yes':
+                     sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw)
+                 sp.plot(mx, my, c=gs[s]['color'])
 
 
               else:
