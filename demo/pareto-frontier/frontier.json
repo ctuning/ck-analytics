@@ -1,28 +1,20 @@
 {
 "points": {
   "1737e16da44696ad": {
-    "##characteristics#compile#binary_size#min": 171941, 
-    "##characteristics#run#execution_time#min": 0.017235
+    "##characteristics#compile#binary_size#min": 10, 
+    "##characteristics#run#execution_time#min": 4
   }, 
   "475435a893244532": {
-    "##characteristics#compile#binary_size#min": 171941, 
-    "##characteristics#run#execution_time#min": 0.012235
+    "##characteristics#compile#binary_size#min": 20, 
+    "##characteristics#run#execution_time#min": 3.5
   }, 
   "1b4886ae4b04cbc3": {
-    "##characteristics#compile#binary_size#min": 171277, 
-    "##characteristics#run#execution_time#min": 0.018795
-  }, 
-  "450294673f7f9536": {
-    "##characteristics#compile#binary_size#min": 185101, 
-    "##characteristics#run#execution_time#min": 0.05366
-  }, 
-  "74f454295d9a22fe": {
-    "##characteristics#compile#binary_size#min": 169381, 
-    "##characteristics#run#execution_time#min": 0.016395
+    "##characteristics#compile#binary_size#min": 30, 
+    "##characteristics#run#execution_time#min": 4
   }, 
   "d78424dbab0ab4c2": {
-    "##characteristics#compile#binary_size#min": 171277, 
-    "##characteristics#run#execution_time#min": 0.01786
+    "##characteristics#compile#binary_size#min": 40, 
+    "##characteristics#run#execution_time#min": 1
   }
  }
 }

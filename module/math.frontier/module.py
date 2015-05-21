@@ -74,26 +74,33 @@ def filter(i):
            ul0=uids[l0]
            if ul0!='':
               p0=points[ul0]
-              # Check if at least one dimension is better than all other points!
-              keep=False
-              for d0 in p0:
-                  v0=p0[d0]
-                  better=True
-                  if v0!=None and v0!='':
-                     v0=float(v0)
-                     for l1 in range(0,lp,1):
-                         ul1=uids[l1]
-                         if ul1!='':
-                            p1=points[ul1]
+ 
+              # Check if there is at least one point with all better dimensions
+
+              keep=True
+
+              for l1 in range(0,lp,1):
+                  ul1=uids[l1]
+                  if ul1!='' and ul1!=ul0:
+                     p1=points[ul1]
+
+                     better=True
+                     for d0 in p0:
+                         v0=p0[d0]
+                         if v0!=None and v0!='':
+                            v0=float(v0)
+
                             v1=p1.get(d0,None)
                             if v1!=None and v1!='':
                                v1=float(v1)
-                               if v0>v1:
+                               if v0<v1:
                                   better=False
+
+
                                   break
-                  if better:
-                     keep=True
-                     break
+                     if better:
+                        keep=False
+                        break
 
               if not keep:
                  dpoints[ul0]=points[ul0]

@@ -179,9 +179,27 @@ def plot(i):
        if i.get('plot_grid','')=='yes':
           plt.grid(True)
 
+       bl=i.get('bound_lines','')
+
        sp=fig.add_subplot(111)
    #    sp.set_yscale('log')
 
+       # Find min/max in all data and all dimensions
+       tmin=[]
+       tmax=[]
+
+       for g in table:
+           gt=table[g]
+           for k in gt:
+               for d in range(0, len(k)):
+                   v=k[d]
+                   if len(tmin)<=d:
+                      tmin.append(v)
+                      tmax.append(v)
+                   else:
+                      if v<tmin[d]: tmin[d]=v
+                      if v>tmax[d]: tmax[d]=v 
+                              
        # If density, find min and max for both graphs:
        if pt=='mpl_1d_density' or pt=='mpl_1d_histogram':
           dmean=0.0
@@ -335,8 +353,25 @@ def plot(i):
                  else:
                     sp.scatter(mx, my, s=int(sz), edgecolor=cl, c=cl, marker=mrk, label=lbl)
 
-                    if xpst.get('frontier','')=='yes':
-                       sp.plot(mx, my, c=cl, linestyle=lst, label=lbl)
+                 if xpst.get('frontier','')=='yes':
+                    # not optimal solution, but should work (need to sort to draw proper frontier)
+                    a=[]
+                    for q in range(0, len(mx)):
+                        a.append([mx[q],my[q]])
+
+                    b=sorted(a, key=lambda k: k[0])
+
+                    mx=[tmin[0]]
+                    my=[tmax[1]]
+
+                    for j in b:
+                        mx.append(j[0])
+                        my.append(j[1])
+
+                    mx.append(tmax[0])
+                    my.append(tmin[1])
+
+                    sp.plot(mx, my, c=cl, linestyle=lst, label=lbl)
 
            elif pt=='mpl_1d_density' or pt=='mpl_1d_histogram':
               if not start: # I.e. we got non empty points
@@ -371,6 +406,12 @@ def plot(i):
 
            s+=1
            if s>=len(gs):s=0
+
+       if bl=='yes':
+          xbs=i.get('bound_style',':')
+          xbc=i.get('bound_color','r')
+          sp.plot([tmin[0],tmax[0]],[tmin[1],tmin[1]], linestyle=xbs, c=xbc)
+          sp.plot([tmin[0],tmin[0]],[tmin[1],tmax[1]], linestyle=xbs, c=xbc)
 
        # Set axes names
        axd=i.get('axis_x_desc','')
