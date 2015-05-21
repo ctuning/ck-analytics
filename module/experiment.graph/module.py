@@ -261,6 +261,22 @@ def plot(i):
            lbl=''
            if s<len(lsg): lbl=lsg[s]
 
+           xpst=pst.get(g,{})
+
+           elw=int(xpst.get('elinewidth',0))
+
+           cl=xpst.get('color','')
+           if cl=='': cl=gs[s]['color']
+
+           sz=xpst.get('size','')
+           if sz=='': sz=gs[s]['size']
+
+           mrk=xpst.get('marker','')
+           if mrk=='': mrk=gs[s]['marker']
+
+           lst=xpst.get('line_style','')
+           if lst=='': lst=gs[s].get('line_style', '-')
+
            if pt=='mpl_2d_scatter' or pt=='mpl_2d_bars' or pt=='mpl_2d_lines':
               mx=[]
               mxerr=[]
@@ -292,28 +308,21 @@ def plot(i):
                         myerr.append(u[iu])
                         iu+=1 
 
-              xpst=pst.get(g,{})
-
-              elw=int(xpst.get('elinewidth',0))
-
-              cl=xpst.get('color','')
-              if cl=='': cl=gs[s]['color']
-
               if pt=='mpl_2d_bars':
                  mx1=[]
                  for q in mx:
                      mx1.append(q+width*s)
 
                  if yerr=='yes':
-                    sp.bar(mx1, my, width=width, edgecolor=gs[s]['color'], facecolor=gs[s]['color'], align='center', yerr=myerr, label=lbl) # , error_kw=dict(lw=2))
+                    sp.bar(mx1, my, width=width, edgecolor=cl, facecolor=cl, align='center', yerr=myerr, label=lbl) # , error_kw=dict(lw=2))
                  else:
-                    sp.bar(mx1, my, width=width, edgecolor=gs[s]['color'], facecolor=gs[s]['color'], align='center', label=lbl)
+                    sp.bar(mx1, my, width=width, edgecolor=cl, facecolor=cl, align='center', label=lbl)
 
               elif pt=='mpl_2d_lines':
 
                  if yerr=='yes':
                      sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw)
-                 sp.plot(mx, my, c=gs[s]['color'], label=lbl)
+                 sp.plot(mx, my, c=cl, label=lbl)
 
 
               else:
@@ -324,7 +333,10 @@ def plot(i):
                  elif yerr=='yes' and xerr!='yes':
                      sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw, label=lbl)
                  else:
-                    sp.scatter(mx, my, s=int(gs[s]['size']), edgecolor=gs[s]['color'], c=cl, marker=gs[s]['marker'], label=lbl)
+                    sp.scatter(mx, my, s=int(sz), edgecolor=cl, c=cl, marker=mrk, label=lbl)
+
+                    if xpst.get('frontier','')=='yes':
+                       sp.plot(mx, my, c=cl, linestyle=lst, label=lbl)
 
            elif pt=='mpl_1d_density' or pt=='mpl_1d_histogram':
               if not start: # I.e. we got non empty points
@@ -349,11 +361,6 @@ def plot(i):
 
                  pxs=r['xlist2s']
                  dpxs=r['ylist2s']
-
-                 xpst=pst.get(g,{})
-
-                 cl=xpst.get('color','')
-                 if cl=='': cl=gs[s]['color']
 
                  if pt=='mpl_1d_density':
                     sp.plot(xs,dxs, label=lbl)

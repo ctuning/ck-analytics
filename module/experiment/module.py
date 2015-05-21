@@ -86,8 +86,8 @@ def add(i):
                                               but add a new one!
 
               (search_point_by_features)    - if 'yes', find subpoint by features
-              (features_keys_to_process)         - list of keys for features (and choices) to process/search (can be wildcards)
-                                                       by default ['##features#*', '##choices#*', '##choices_order#*']
+              (features_keys_to_process)    - list of keys for features (and choices) to process/search (can be wildcards)
+                                                   by default ['##features#*', '##choices#*', '##choices_order#*']
 
               (ignore_update)               - if 'yes', do not record update control info (date, user, etc)
 
@@ -120,6 +120,8 @@ def add(i):
               update_dict   - dict after updating entry
               dict_flat     - flat dict with stat analysis (if performed)
               stat_analysis - whole output of stat analysis (with warnings)
+
+              flat_features - flat dict of real features of the recorded point (can be later used to search the same points)
 
               elapsed_time  - elapsed time (useful for debugging - to speed up processing of "big data" ;) )
             }
@@ -169,7 +171,6 @@ def add(i):
 
     if len(ddx)==0:
        return {'return':1, 'error':'no data provided ("dict" key is empty)'}
-
 
     an=i.get('force_new_entry','')
 
@@ -238,6 +239,7 @@ def add(i):
 
     # If not found, add dummy entry
     if an=='yes' or len(lst)==0:
+
        ii={'common_func':'yes',
            'repo_uoa': ruoa,
            'remote_repo_uoa': rruoa,
@@ -251,7 +253,7 @@ def add(i):
           x='  Existing experiments were not found. Adding new entry ...'
        elif euid=='':
           ii['action']='update'
-          x='  Adding new entry ...'
+          x='  Adding/updating entry ...'
 
        else:
           ii['action']='update'
@@ -259,7 +261,24 @@ def add(i):
 
        if o=='con': ck.out(x)
 
-       r=ck.access(ii)
+       # If entry exists, we just touch it. Hence if it is locked, we can wait here ...
+       success=False
+       start_time1 = time.time()
+       while not success:
+             r=ck.access(ii)
+
+             if r['return']==0:
+                success=True
+             elif r['return']==32:
+                tm = time.time()-start_time1
+                if tm>120:
+                   return r
+                if o=='con':
+                   ck.out('    Entry exists ('+r['data_uoa']+') and locked - waiting 5 sec ...')
+                   time.sleep(5)   
+             else:
+                return r
+
        if r['return']>0: return r
        euoa=r['data_uoa']
        euid=r['data_uid']
@@ -331,6 +350,7 @@ def add(i):
        if rx['return']>0: return rx
 
        points=rx['points']
+
        if len(points)>1:
           return {'return':1, 'error':'ambiguity - more than one point found with the same features'}
 
@@ -470,7 +490,7 @@ def add(i):
 
     et=time.time() - start_time
 
-    return {'return':0, 'elapsed_time':str(et), 'update_dict':r, 'dict_flat':ddflat, 'stat_analysis':rsa}
+    return {'return':0, 'elapsed_time':str(et), 'update_dict':r, 'dict_flat':ddflat, 'stat_analysis':rsa, 'flat_features':fddft}
 
 ##############################################################################
 # get points from multiple entries
@@ -483,7 +503,7 @@ def get(i):
                  (repo_uoa) or (experiment_repo_uoa)     - can be wild cards
                  (remote_repo_uoa)                       - if remote access, use this as a remote repo UOA
                  (module_uoa) or (experiment_module_uoa) - can be wild cards
-                 (data_uoa) or (experiment_data_uoa)     - can be wild cards
+                 (data_uoa) or (experiment_uoa) or (experiment_data_uoa)     - can be wild cards
 
                  (repo_uoa_list)                       - list of repos to search
                  (module_uoa_list)                     - list of module to search
@@ -493,9 +513,14 @@ def get(i):
                  (ignore_case)                         - if 'yes', ignore case when searching
 
                        OR
-                 (meta)                                - meta in the entry (adds search_dict['meta'])
-                 (tags)                                - tags in the entry
-                 (features)                            - features in the entry
+                 (meta)                                - search by meta in the entry (adds search_dict['meta'])
+                 (tags)                                - search by tags in the entry
+
+                 (features)                            - search by features in the entry
+                       OR
+                 (flat_features)                       - search by flat features in the entry (faster) ...
+
+                 (features_keys_to_ignore)             - list of keys to remove from features (can be wildcards) - useful for frontier detection
 
                        OR 
 
@@ -503,6 +528,9 @@ def get(i):
                  (mtable)                              - misc or meta table related to above table
                                                          may be useful, when doing labeling for machine learning
 
+              (skip_processing)                        - if 'yes', do not load data (useful to return points for frontier detection)
+              (load_json_files)                        - list of json files to load ...
+              (get_keys_from_json_files)               - which keys to get from json files (useful for frontier) ...
 
               (flat_keys_list)                      - list of flat keys to extract from points into table
 
@@ -535,6 +563,8 @@ def get(i):
               mtable       - misc table - misc info related to above table (UOA, point, etc)
                              may be useful, when doing labeling for machine learning
 
+              points       - list of points {'repo_uoa','repo_uid','module_uoa','module_uid','data_uoa','data_uid','point_uid', '<file_extension_name>'=dict ...}}
+
               real_keys    - all added keys (useful when flat_keys_index is used)
             }
 
@@ -550,6 +580,8 @@ def get(i):
     fkied=i.get('flat_keys_index_end_range','')
     fkl=i.get('flat_keys_list',[])
 
+    fkti=i.get('features_keys_to_ignore',[])
+
     fkls=i.get('flat_keys_list_separate_graphs','')
     if fkls=='': fkls=[]
     if len(fkls)==0 or len(fkl)>0: fkls.append(fkl) # at least one combination of keys, even empty!
@@ -561,7 +593,13 @@ def get(i):
     igs=i.get('ignore_graph_separation','')
     sstg=i.get('separate_subpoints_to_graphs','')
 
+    sl=i.get('skip_processing','')
+    ljf=i.get('load_json_files',[])
+    gkjf=i.get('get_keys_from_json_files',[])
+
     el=i.get('expand_list','') # useful for histograms
+
+    points=[]
 
     if len(table)==0:
        ruoa=i.get('repo_uoa','')
@@ -577,6 +615,8 @@ def get(i):
        duoa=i.get('experiment_data_uoa','')
        if duoa=='':
           duoa=i.get('data_uoa','')
+       if duoa=='':
+          duoa=i.get('experiment_uoa','')
 
        ruoal=i.get('repo_uoa_list',[])
        muoal=i.get('module_uoa_list',[])
@@ -612,6 +652,14 @@ def get(i):
        mtable={}
        igraph=0
 
+       features=i.get('features',{})
+       ffeatures=i.get('flat_features',{})
+
+       if len(features)>0 and len(ffeatures)==0:
+          r=ck.flatten_dict({'dict':features})
+          if r['return']>0: return r
+          ffeatures=r['dict']
+
        # Iterate over entries
        for e in lst:
            ruoa=e['repo_uoa']
@@ -638,53 +686,107 @@ def get(i):
            meta=dd.get('meta',{})
 
            dirList=os.listdir(p)
-           features=i.get('features',{})
+
            added=False
            for fn in sorted(dirList):
                if fn.endswith('.flat.json'):
-                  skip=False
                   pp1=fn[:-10]
                   pp2=pp1[4:]
                   drz={}
 
-                  fpf1=os.path.join(p, pp1+'.features.json')
+                  skip=False
+
+                  fpf1=os.path.join(p, pp1+'.features_flat.json')
                   rz=ck.load_json_file({'json_file':fpf1})
                   if rz['return']>0: 
                      skip=True
                   else:
                      drz=rz['dict']
 
-                  if not skip and len(features)>0: 
-                     rx=ck.compare_dicts({'dict1':drz.get('features',{}), 'dict2':features, 'ignore_case':'yes'})
+                  if not skip and len(ffeatures)>0: 
+                     rx=ck.compare_flat_dicts({'dict1':drz, 'dict2':ffeatures, 'ignore_case':'yes', 'space_as_none':'yes', 'keys_to_ignore':fkti})
                      if rx['return']>0: return rx
                      equal=rx['equal']
                      if equal!='yes': skip=True
 
                      if o=='con' and not skip:
-                        ck.out('     Found point with searched features ...')
+                        ck.out('     Found point with related features ('+ruoa+':'+muoa+':'+duoa+'/'+pp2+') ...')
+
+                     ppx={'repo_uoa':ruoa, 'repo_uid':ruid, 'module_uoa':muoa, 'module_uid':muid, 'data_uoa':duoa, 'data_uid':duid, 'point_uid':pp2}
+                     
+                     # If load json files ...
+                     if len(ljf)>0:
+                        for jf in ljf:
+                            pj=os.path.join(p,pp1+'.'+jf+'.json')
+
+                            rx=ck.load_json_file({'json_file':pj})
+                            if rx['return']>0: return rx
+                            
+                            dpj=rx['dict']
+
+                            if len(gkjf)>0:
+                               x={}
+                               for k in gkjf:
+                                   x[k]=dpj.get(k, None)
+                               dpj=x
+
+                            ppx[jf]=dpj
+
+                     points.append(ppx)
+
                   if skip:
                      continue
 
                   added=True
 
-                  fpflat1=os.path.join(p, fn)
+                  if sl!='yes':
+                     fpflat1=os.path.join(p, fn)
 
-                  r=ck.load_json_file({'json_file':fpflat1})
-                  if r['return']>0: return r
-                  df=r['dict']
+                     r=ck.load_json_file({'json_file':fpflat1})
+                     if r['return']>0: return r
+                     df=r['dict']
 
-                  # Iterate over combinations of keys
-                  for fkl in fkls:
-                      # Create final vector (X,Y,Z,...)
-                      vect=[]
-                      has_none=False
-                      if fki!='' or len(fkl)==0:
-                         # Add all sorted (otherwise there is no order in python dict)
-                         for k in sorted(df.keys()):
-                             if (fki=='' or k.startswith(fki)) and (fkie=='' or k.endswith(fkie)):
-                                if len(rfkl)==0:
-                                   trfkl.append(k)
-                                v=df[k]
+                     # Iterate over combinations of keys
+                     for fkl in fkls:
+                         # Create final vector (X,Y,Z,...)
+                         vect=[]
+                         has_none=False
+                         if fki!='' or len(fkl)==0:
+                            # Add all sorted (otherwise there is no order in python dict)
+                            for k in sorted(df.keys()):
+                                if (fki=='' or k.startswith(fki)) and (fkie=='' or k.endswith(fkie)):
+                                   if len(rfkl)==0:
+                                      trfkl.append(k)
+                                   v=df[k]
+                                   if v==None: has_none=True
+                                   if v!=None and type(v)==list:
+                                      if len(v)==0: v=None
+                                      else: 
+                                         if el!='yes':
+                                            v=v[0]
+                                   vect.append(v)
+
+                                   # Check if range
+                                   if fkie!='' and fkied!='':
+                                      kb=k[:len(k)-len(fkie)]
+                                      kbd=kb+fkied
+                                      if len(rfkl)==0:
+                                         trfkl.append(kbd)
+                                      vd=df.get(kbd, None)
+                                      if vd==None: has_none=True
+                                      if vd!=None and type(vd)==list:
+                                         if len(vd)==0: vd=None
+                                         else: 
+                                            if el!='yes':
+                                               vd=vd[0]
+
+                                      vect.append(vd)
+
+                            if len(trfkl)!=0:
+                               rfkl=trfkl
+                         else:
+                            for k in fkl:
+                                v=df.get(k,None)
                                 if v==None: has_none=True
                                 if v!=None and type(v)==list:
                                    if len(v)==0: v=None
@@ -693,66 +795,37 @@ def get(i):
                                          v=v[0]
                                 vect.append(v)
 
-                                # Check if range
-                                if fkie!='' and fkied!='':
-                                   kb=k[:len(k)-len(fkie)]
-                                   kbd=kb+fkied
-                                   if len(rfkl)==0:
-                                      trfkl.append(kbd)
-                                   vd=df.get(kbd, None)
-                                   if vd==None: has_none=True
-                                   if vd!=None and type(vd)==list:
-                                      if len(vd)==0: vd=None
-                                      else: 
-                                         if el!='yes':
-                                            vd=vd[0]
+                         # Add vector
+                         sigraph=str(igraph)
 
-                                   vect.append(vd)
+                         if sigraph not in table: 
+                            table[sigraph]=[]
+                            mtable[sigraph]=[]
+                         if el=='yes':
+                            max_length=0
+                            for ih in range(0, len(vect)):
+                                max_length=max(max_length, len(vect[ih]))
+                            
+                            for q in range(0, max_length):
+                                vect1=[]
+                                for ih in range(0, len(vect)):
+                                    h=vect[ih]
+                                    if q<len(h): v1=h[q]
+                                    else: v1=h[len(h)-1]
+                                    vect1.append(v1)
+                                table[sigraph].append(vect1)
+                         else:
+                            if ipin!='yes' or not has_none:
+                               table[sigraph].append(vect)
 
-                         if len(trfkl)!=0:
-                            rfkl=trfkl
-                      else:
-                         for k in fkl:
-                             v=df.get(k,None)
-                             if v==None: has_none=True
-                             if v!=None and type(v)==list:
-                                if len(v)==0: v=None
-                                else: 
-                                   if el!='yes':
-                                      v=v[0]
-                             vect.append(v)
+                         # Add misc info:
+                         mi={'repo_uoa':ruid, 'module_uoa':muid, 'data_uoa':duid,
+                             'point_uid':pp2, 'features':drz}
 
-                      # Add vector
-                      sigraph=str(igraph)
+                         mtable[sigraph].append(mi)
 
-                      if sigraph not in table: 
-                         table[sigraph]=[]
-                         mtable[sigraph]=[]
-                      if el=='yes':
-                         max_length=0
-                         for ih in range(0, len(vect)):
-                             max_length=max(max_length, len(vect[ih]))
-                         
-                         for q in range(0, max_length):
-                             vect1=[]
-                             for ih in range(0, len(vect)):
-                                 h=vect[ih]
-                                 if q<len(h): v1=h[q]
-                                 else: v1=h[len(h)-1]
-                                 vect1.append(v1)
-                             table[sigraph].append(vect1)
-                      else:
-                         if ipin!='yes' or not has_none:
-                            table[sigraph].append(vect)
-
-                      # Add misc info:
-                      mi={'repo_uoa':ruid, 'module_uoa':muid, 'data_uoa':duid,
-                          'point_uid':pp2, 'features':drz}
-
-                      mtable[sigraph].append(mi)
-
-                      if sstg=='yes' or len(fkls)>1:
-                         igraph+=1
+                         if sstg=='yes' or len(fkls)>1:
+                            igraph+=1
 
            if sstg!='yes' and added and igs!='yes':
               igraph+=1
@@ -776,7 +849,7 @@ def get(i):
        if rx['return']>0: return rx
        table=rx['table']
 
-    return {'return':0, 'table':table, 'mtable':mtable, 'real_keys':rfkl}
+    return {'return':0, 'table':table, 'mtable':mtable, 'real_keys':rfkl, 'points':points}
 
 ##############################################################################
 # Convert experiment table to CSV
@@ -1381,7 +1454,7 @@ def list_points(i):
                        if rx['return']>0: return rx
                        ft=rx['dict']
 
-                       ry=ck.compare_dicts({'dict1':ft, 'dict2':pp})
+                       ry=ck.compare_flat_dicts({'dict1':ft, 'dict2':pp, 'space_as_none':'yes'})
                        if ry['return']>0: return ry
 
                        if ry['equal']=='yes': 
@@ -1832,3 +1905,97 @@ def multi_stat_analysis(i):
         mmax=r['max']
 
     return {'return':0, 'dict_flat':ddflat, 'min':mmin, 'max':mmax, 'max_range_percent':mdp}
+
+##############################################################################
+# delete multiple points from multiple entries (for example, during Pareto frontier filtering)
+
+def delete_points(i):
+    """
+    Input:  {
+              points       - list of points {'repo_uoa','repo_uid','module_uoa','module_uid','data_uoa','data_uid','point_uid'}
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    o=i.get('out','')
+
+    points=i['points']
+
+    apoints={}
+
+    # Get unique repo/module/data and aggregate points
+    for q in points:
+        ruoa=q.get('repo_uoa','')
+        ruid=q.get('repo_uid','')
+        muoa=q.get('module_uoa','')
+        muid=q.get('module_uid','')
+        duoa=q.get('data_uoa','')
+        duid=q.get('data_uid','')
+        puid=q.get('point_uid','')
+
+        k=ruoa+';'+ruid+';'+muoa+';'+muid+';'+duoa+';'+duid
+
+        if k not in apoints:
+           apoints[k]=q
+           apoints[k]['point_uids']=[]
+
+        apoints[k]['point_uids'].append(puid)
+
+    # Go through entries and delete points ...
+    for q in apoints:
+        qq=apoints[q]
+        ruoa=qq.get('repo_uoa','')
+        ruid=qq.get('repo_uid','')
+        muoa=qq.get('module_uoa','')
+        muid=qq.get('module_uid','')
+        duoa=qq.get('data_uoa','')
+        duid=qq.get('data_uid','')
+        puids=qq.get('point_uids',[])
+
+        # Load and lock entry
+        ii={'action':'load',
+            'repo_uoa':ruid,
+            'module_uoa':muid,
+            'data_uoa':duid,
+            'get_lock':'yes'}
+
+        rx=ck.access(ii)
+        if rx['return']>0: return rx
+
+        lock_uid=rx['lock_uid']
+        p=rx['path']
+        d=rx['dict']
+
+        dp=d.get('points', '')
+        if dp=='': dp=0
+        dp=int(dp)
+        dp-=len(puids)
+        if dp<0: dp=0 # should not be, but just in case
+
+        d['points']=str(dp)
+
+        # Remove files for each point
+        for k in puids:
+            px='ckp-'+k+'.'
+
+            dirList=os.listdir(p)
+
+            for fn in dirList:
+                if fn.startswith(px):
+                   os.remove(os.path.join(p,fn))
+
+        # Update and unlock entry
+        ii['action']='update'
+        del(ii['get_lock'])
+        ii['unlock_uid']=lock_uid
+        ii['dict']=d
+        rx=ck.access(ii)
+        if rx['return']>0: return rx
+
+    return {'return':0}

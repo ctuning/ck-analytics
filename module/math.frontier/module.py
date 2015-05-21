@@ -47,11 +47,12 @@ def filter(i):
             }
 
     Output: {
-              return       - return code =  0, if successful
-                                         >  0, if error
-              (error)      - error text if return > 0
+              return         - return code =  0, if successful
+                                           >  0, if error
+              (error)        - error text if return > 0
 
-              points       - filtered points!
+              points         - filtered points!
+              deleted_points - deleted points
             }
 
     """
@@ -61,10 +62,12 @@ def filter(i):
     points=i['points']
     lp=len(points)
 
+    dpoints={}
+
     uids=list(points.keys())
 
     if oo=='con':
-       ck.out('Original number of points: '+str(lp))
+       ck.out('Original number of points:        '+str(lp))
 
     if lp>1:
        for l0 in range(0,lp,1):
@@ -93,11 +96,12 @@ def filter(i):
                      break
 
               if not keep:
+                 dpoints[ul0]=points[ul0]
                  del(points[ul0])
                  uids[l0]=''
 
     lp=len(points)
     if oo=='con':
-       ck.out('Final number of points: '+str(lp))
+       ck.out('Number of points after filtering: '+str(lp))
 
-    return {'return':0, 'points':points}
+    return {'return':0, 'points':points, 'deleted_points':dpoints}

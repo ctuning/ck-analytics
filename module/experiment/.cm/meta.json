@@ -8,6 +8,9 @@
       "desc": "Convert experiment table to CSV", 
       "for_web": "yes"
     }, 
+    "delete_points": {
+      "desc": "delete multiple points from multiple entries"
+    }, 
     "filter": {
       "desc": "filter / pre-process data"
     }, 
