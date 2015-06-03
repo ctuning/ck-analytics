@@ -181,8 +181,15 @@ def plot(i):
 
        bl=i.get('bound_lines','')
 
-       sp=fig.add_subplot(111)
-   #    sp.set_yscale('log')
+       if pt=='mpl_3d_scatter' or pt=='mpl_3d_trisurf':
+          from mpl_toolkits.mplot3d import Axes3D
+          sp=fig.add_subplot(111, projection='3d')
+       else:
+          sp=fig.add_subplot(111)
+
+       if i.get('xscale_log','')=='yes': sp.set_xscale('log')
+       if i.get('yscale_log','')=='yes': sp.set_yscale('log')
+       if i.get('zscale_log','')=='yes': sp.set_zscale('log')
 
        # Find min/max in all data and all dimensions
        tmin=[]
@@ -200,8 +207,11 @@ def plot(i):
                       if v<tmin[d]: tmin[d]=v
                       if v>tmax[d]: tmax[d]=v 
                               
-       # If density, find min and max for both graphs:
-       if pt=='mpl_1d_density' or pt=='mpl_1d_histogram':
+       # If density or heatmap, find min and max for both graphs:
+       if pt=='mpl_1d_density' or pt=='mpl_1d_histogram' or pt=='mpl_2d_heatmap' or pt=='mpl_3d_scatter' or pt=='mpl_3d_trisurf':
+          index=0
+          if pt=='mpl_2d_heatmap': index=2
+
           dmean=0.0
           start=True
           dmin=0.0
@@ -212,7 +222,7 @@ def plot(i):
               gt=table[g]
 
               for k in gt:
-                  v=k[0]
+                  v=k[index]
 
                   if v!=None:
                      if start: 
@@ -232,6 +242,12 @@ def plot(i):
 
           if it!=0: dmean=dt/it
 
+       # If heatmap, prepare colorbar
+       if pt=='mpl_2d_heatmap' or pt=='mpl_3d_trisurf':
+          from matplotlib import cm
+          xcmap = plt.cm.get_cmap('coolwarm')
+
+
        xmin=i.get('xmin','')
        xmax=i.get('xmax','')
        ymin=i.get('ymin','')
@@ -248,6 +264,7 @@ def plot(i):
 
        xerr=i.get('display_x_error_bar','')
        yerr=i.get('display_y_error_bar','')
+       zerr=i.get('display_z_error_bar','')
 
        if pt=='mpl_2d_bars' or pt=='mpl_2d_lines':
           ind=[]
@@ -294,6 +311,8 @@ def plot(i):
 
            lst=xpst.get('line_style','')
            if lst=='': lst=gs[s].get('line_style', '-')
+
+           heatmap=None
 
            if pt=='mpl_2d_scatter' or pt=='mpl_2d_bars' or pt=='mpl_2d_lines':
               mx=[]
@@ -404,9 +423,57 @@ def plot(i):
                  else:
                     plt.hist(mx, bins=xbins, normed=True, label=lbl)
 
+           elif pt=='mpl_2d_heatmap' or pt=='mpl_3d_scatter' or pt=='mpl_3d_trisurf':
+                mx=[]
+                mxerr=[]
+                my=[]
+                myerr=[]
+                mz=[]
+                mzerr=[]
+
+                for u in gt:
+                    iu=0
+
+                    # Check if no None
+                    partial=False
+                    for q in u:
+                        if q==None:
+                           partial=True
+                           break
+
+                    if not partial:
+                       mx.append(u[iu])
+                       iu+=1
+                       if xerr=='yes':
+                          mxerr.append(u[iu])
+                          iu+=1 
+
+                       my.append(u[iu])
+                       iu+=1
+                       if yerr=='yes':
+                          myerr.append(u[iu])
+                          iu+=1 
+
+                       mz.append(u[iu])
+                       iu+=1
+                       if zerr=='yes':
+                          mzerr.append(u[iu])
+                          iu+=1 
+
+                if pt=='mpl_2d_heatmap':
+                   heatmap=sp.scatter(mx, my, c=mz, s=int(sz), marker=mrk, lw=elw, vmin=dmin, vmax=dmax, cmap=xcmap)
+                elif pt=='mpl_3d_scatter':
+                   heatmap=sp.scatter(mx,my,mz, c=cl, s=int(sz), marker=mrk, lw=elw)
+                elif pt=='mpl_3d_trisurf':
+                   heatmap=sp.plot_trisurf(mx,my,mz,cmap=cm.coolwarm, lw=elw)
            s+=1
            if s>=len(gs):s=0
 
+       # If heatmap, finish colors
+       if pt=='mpl_2d_heatmap' or pt=='mpl_3d_trisurf':
+          plt.colorbar(heatmap, orientation=xpst.get('colorbar_orietation','horizontal'), label=xpst.get('colorbar_label',''))
+
+       # If bounds
        if bl=='yes':
           xbs=i.get('bound_style',':')
           xbc=i.get('bound_color','r')
