@@ -224,7 +224,7 @@ def plot(i):
               for k in gt:
                   v=k[index]
 
-                  if v!=None:
+                  if v!=None and v!='':
                      if start: 
                         dmin=v
                         start=False

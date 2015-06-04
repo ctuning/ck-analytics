@@ -546,6 +546,7 @@ def get(i):
               (sort_index)                          - if !='', sort by this number within vector (i.e. 0 - X, 1 - Y, etc)
 
               (ignore_point_if_none)                - if 'yes', ignore points where there is a None
+              (ignore_point_if_empty_string)        - if 'yes', ignore points where there is a None
               (ignore_graph_separation)             - if 'yes', ignore separating different entries into graphs 
               (separate_subpoints_to_graphs)        - if 'yes', separate each subpoint of entry into a new graph
 
@@ -590,6 +591,7 @@ def get(i):
     trfkl=[]
 
     ipin=i.get('ignore_point_if_none','')
+    ipies=i.get('ignore_point_if_empty_string','')
     igs=i.get('ignore_graph_separation','')
     sstg=i.get('separate_subpoints_to_graphs','')
 
@@ -751,6 +753,7 @@ def get(i):
                          # Create final vector (X,Y,Z,...)
                          vect=[]
                          has_none=False
+                         has_empty_string=False
                          if fki!='' or len(fkl)==0:
                             # Add all sorted (otherwise there is no order in python dict)
                             for k in sorted(df.keys()):
@@ -759,6 +762,7 @@ def get(i):
                                       trfkl.append(k)
                                    v=df[k]
                                    if v==None: has_none=True
+                                   if v=='': has_empty_string=True
                                    if v!=None and type(v)==list:
                                       if len(v)==0: v=None
                                       else: 
@@ -774,6 +778,7 @@ def get(i):
                                          trfkl.append(kbd)
                                       vd=df.get(kbd, None)
                                       if vd==None: has_none=True
+                                      if vd=='': has_empty_string=True
                                       if vd!=None and type(vd)==list:
                                          if len(vd)==0: vd=None
                                          else: 
@@ -788,6 +793,7 @@ def get(i):
                             for k in fkl:
                                 v=df.get(k,None)
                                 if v==None: has_none=True
+                                if v=='': has_empty_string=True
                                 if v!=None and type(v)==list:
                                    if len(v)==0: v=None
                                    else: 
@@ -815,7 +821,7 @@ def get(i):
                                     vect1.append(v1)
                                 table[sigraph].append(vect1)
                          else:
-                            if ipin!='yes' or not has_none:
+                            if (ipin!='yes' or not has_none) and (ipies!='yes' or not has_empty_string):
                                table[sigraph].append(vect)
 
                          # Add misc info:
@@ -1677,7 +1683,6 @@ def reproduce(i):
     # Comparing dicts
     for q in ch:
         if q.startswith('##characteristics'):
-#           print q
            if q.endswith('#min'):
               q1=q[:-4]
               if q1 in fchn:
