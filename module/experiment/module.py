@@ -1536,20 +1536,42 @@ def reproduce(i):
 
                (point)           - point (or skip, if there is only one), can be of format UID-<subpoint>
                (subpoint)        - subpoint (or skip, if there is only one)
+
+               (repetitions)     - statistical repetitions (default=4)
+               (pipeline_update) - customize pipeline with this dict (useful to update already prepared pipeline from file)
+
+               (dims_to_check)               - list of dims to check, can have wildcards (if empty, check all)
+               (end_of_dims_to_check)        - list of endings of dimensions to compare ...
+
+               (threshold_to_compare)        - % threshold to decide whether dim is different or not
+
+               (record_original_flat_json)   - file to record flat dict with original results
+               (record_reproduced_flat_json) - file to record flag dict with reproduced results
             }
 
     Output: {
               return       - return code =  0, if successful
                                          >  0, if error
               (error)      - error text if return > 0
+
+              output of a given pipeline
+
+              different_dims - list of different dimensions
             }
     """
+
+    import os
 
     o=i.get('out','')
 
     ruoa=i.get('repo_uoa','')
     muoa=i.get('module_uoa','')
     duoa=i.get('data_uoa','')
+
+    pipeline_update=i.get('pipeline_update',{})
+    repetitions=i.get('repetitions','')
+
+    pp=os.getcwd()+os.path.sep
 
     i['out']=''
     r=ck.search(i)
@@ -1663,7 +1685,9 @@ def reproduce(i):
     ii={'action':'run',
         'module_uoa':cfg['module_deps']['pipeline'],
         'data_uoa':pipeline_uid,
-        'pipeline':pipeline}
+        'pipeline':pipeline,
+        'repetitions':repetitions,
+        'pipeline_update':pipeline_update}
     r=ck.access(ii)
     if r['return']>0: return r
 
@@ -1674,22 +1698,88 @@ def reproduce(i):
           ck.out('Pipeline failed ('+r.get('fail_reason','')+')')
 
     # Flattening characteristics
-    chn=r.get('characteristics',{})
+    chn=r.get('last_stat_analysis',{}).get('dict_flat',{})
 
-    rx=ck.flatten_dict({'dict':chn, 'prefix':'##characteristics'})
-    if rx['return']>0: return rx
-    fchn=rx['dict']
+    # Record orig and reproduced results, if needed
+    rofj=i.get('record_original_flat_json','').replace('$#ck_cur_path#$',pp)
+    rrfj=i.get('record_reproduced_flat_json','').replace('$#ck_cur_path#$',pp)
+
+    if rofj!='':
+       rx=ck.save_json_to_file({'json_file':rofj, 'dict':ch})
+       if rx['return']>0: return rx
+
+    if rrfj!='':
+       rx=ck.save_json_to_file({'json_file':rrfj, 'dict':chn})
+       if rx['return']>0: return rx
 
     # Comparing dicts
-    for q in ch:
-        if q.startswith('##characteristics'):
-           if q.endswith('#min'):
-              q1=q[:-4]
-              if q1 in fchn:
-                 print q1
-                 print '   '+str(ch[q])
-                 print '   '+str(fchn[q1])
+    if o=='con':
+       ck.out('')
+       ck.out('Performing comparison on all dimensions...')
+       ck.out('')
 
+    ends=i.get('end_of_dims_to_check',[])
+    ttc=i.get('threshold_to_compare','')
+    if ttc=='': ttc=8.0
+    ttc=float(ttc)/100
+
+    import fnmatch
+
+    dc=i.get('dims_to_check',[])
+
+    dd=[]
+    inot_found=0
+    for q in ch:
+        v=ch[q]
+        if type(v)!=list and type(v)!=dict:
+           check=False
+
+           if len(dc)==0: 
+              check=True
+           else:
+              for k in dc:
+                  if fnmatch.fnmatch(q,k):
+                     check=True
+                     break
+
+           if check:
+              check=False
+
+              if len(ends)==0: 
+                 check=True
+              else:
+                 for k in ends:
+                     if q.endswith(k):
+                        check=True
+                        break
+
+           if check:
+              if q not in chn:
+                 inot_found+=1
+              else:
+                 v1=chn[q]
+                 if v!=v1:
+                    if type(v)==int or type(v)==float:
+                       vx=abs(v1-v)/v
+                       if vx>ttc:
+                          if o=='con':
+                             ck.out(q+':  '+str(v)+'  vs  '+str(v1)+'    diff='+( '%3.1f'% (vx*100))+'%')
+                          dd.append(q)
+                    else:
+                       if o=='con':
+                          ck.out(q+':  '+str(v)+'  vs  '+str(v1))
+                       dd.append(q)
+
+                                                                          
+    if o=='con':
+       ck.out('')
+       if inot_found!=0:
+          ck.out(str(inot_found)+' dimensions (keys) not found in replicated experiment!')
+
+       if len(dd)==0:
+          ck.out('All existing dimension are the same (within statistical margin '+str(ttc*100)+'%)!')
+
+    r['different_dims']=dd
 
     return r
 
