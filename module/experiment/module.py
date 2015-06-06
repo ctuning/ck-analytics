@@ -810,7 +810,9 @@ def get(i):
                          if el=='yes':
                             max_length=0
                             for ih in range(0, len(vect)):
-                                max_length=max(max_length, len(vect[ih]))
+                                vih=vect[ih]
+                                if vih!=None:
+                                   max_length=max(max_length, len(vih))
                             
                             for q in range(0, max_length):
                                 vect1=[]
