@@ -1426,11 +1426,13 @@ def list_points(i):
        duoa=i.get('data_uoa','')
        muoa=i.get('module_uoa','')
        ruoa=i.get('repo_uoa','')
+       rruoa=i.get('remote_repo_uoa','')
 
        ii={'action':'load',
            'module_uoa':muoa,
            'data_uoa':duoa,
            'repo_uoa':ruoa}
+       if rruoa!='': ii['remote_repo_uoa']=rruoa
        rx=ck.access(ii)
        if rx['return']>0: return rx
        p=rx['path']
@@ -1531,8 +1533,11 @@ def rerun(i):
 def reproduce(i):
     """
     Input:  {
-               data_uoa          - experiment data UOA (can have wildcards)
-               (repo_uoa)        - experiment repo UOA (can have wildcards)
+               data_uoa              - experiment data UOA (can have wildcards)
+               (repo_uoa)            - experiment repo UOA (can have wildcards)
+               (experiment_repo_uoa) - use it, if repository is remote
+               (remote_repo_uoa)     - if repo above is remote, use this repo on remote machine
+
                (module_uoa)
                (tags)            - search by tags
 
@@ -1567,6 +1572,17 @@ def reproduce(i):
     o=i.get('out','')
 
     ruoa=i.get('repo_uoa','')
+    if i.get('experiment_repo_uoa','')!='': ruoa=i['experiment_repo_uoa']
+    cruoa=ruoa
+    rruoa=i.get('remote_repo_uoa','')
+
+    # Check if repo remote (to save in json rather than to out)
+    remote='no'
+    if ruoa!='':
+       rx=ck.load_repo_info_from_cache({'repo_uoa':ruoa})
+       if rx['return']>0: return rx
+       remote=rx.get('dict',{}).get('remote','')
+
     muoa=i.get('module_uoa','')
     duoa=i.get('data_uoa','')
 
@@ -1575,8 +1591,13 @@ def reproduce(i):
 
     pp=os.getcwd()+os.path.sep
 
-    i['out']=''
-    r=ck.search(i)
+    ii={'out':'',
+        'repo_uoa':ruoa,
+        'module_uoa':muoa,
+        'data_uoa':duoa,
+        'action':'search'}
+    if rruoa!='': ii['remote_repo_uoa']=rruoa
+    r=ck.access(ii)
     if r['return']>0: return r
 
     lst=r['lst']
@@ -1600,6 +1621,10 @@ def reproduce(i):
        ck.out('Found entry '+duoa+'!')
        ck.out('')
 
+    if remote=='yes':
+       rruoa=ruoa
+       ruoa=cruoa
+
     # Check point
     puid=i.get('point','')
     sp=i.get('subpoint','')
@@ -1610,9 +1635,12 @@ def reproduce(i):
 
     # If point is not specified, get points
     if puid=='':
-       rx=list_points({'repo_uoa':ruoa,
-                       'module_uoa':muoa,
-                       'data_uoa':duoa})
+       ii={'repo_uoa':ruoa,
+           'module_uoa':muoa,
+           'data_uoa':duoa,
+           'action':'list_points'}
+       if rruoa!='': ii['remote_repo_uoa']=rruoa
+       rx=ck.access(ii)
        if rx['return']>0: return rx
 
        points=rx['points']
@@ -1630,10 +1658,12 @@ def reproduce(i):
 
     # If subpoint is not specified, get subpoints
     if spid=='':
-       rx=list_points({'repo_uoa':ruoa,
-                       'module_uoa':muoa,
-                       'data_uoa':duoa,
-                       'point':puid})
+       ii={'repo_uoa':ruoa,
+           'module_uoa':muoa,
+           'data_uoa':duoa,
+           'point':puid,
+           'action':'list_points'}
+       rx=ck.access(ii)
        if rx['return']>0: return rx
 
        spoints=rx['subpoints']
@@ -1648,14 +1678,16 @@ def reproduce(i):
           return {'return':1, 'error':'select a given subpoint for a given point in a given entry'}
        else:
           spid=spoints[0]
-      
+
     # Get all info about this point
-    rx=load_point({'repo_uoa':ruoa,
-                   'module_uoa':muoa,
-                   'data_uoa':duoa,
-                   'point':puid,
-                   'subpoint':spid,
-                   'add_pipeline':'yes'})
+    ii={'repo_uoa':ruoa,
+        'module_uoa':muoa,
+        'data_uoa':duoa,
+        'point':puid,
+        'subpoint':spid,
+        'add_pipeline':'yes',
+        'action':'load_point'}
+    rx=ck.access(ii)
     if rx['return']>0: return rx
 
     dd=rx['dict']
