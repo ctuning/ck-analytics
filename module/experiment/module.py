@@ -1731,7 +1731,7 @@ def reproduce(i):
 
     dd=[]
     inot_found=0
-    for q in ch:
+    for q in sorted(ch):
         v=ch[q]
         if type(v)!=list and type(v)!=dict:
            check=False
@@ -1761,7 +1761,7 @@ def reproduce(i):
               else:
                  v1=chn[q]
                  if v!=v1:
-                    if type(v)==int or type(v)==float:
+                    if (type(v)==int or type(v)==float) and v!=0:
                        vx=abs(v1-v)/v
                        if vx>ttc:
                           if o=='con':
