@@ -1624,7 +1624,7 @@ def reproduce(i):
              for q in points:
                  ck.out('  '+q)
              ck.out('')
-          return {'return':1, 'error':'select a point in a given entry'}
+          return {'return':1, 'error':'select a point in a given entry (via --point=[above point UID])'}
        else:
           puid=points[0]
 
