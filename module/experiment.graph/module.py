@@ -37,6 +37,8 @@ def plot(i):
     """
 
     Input:  {
+              (load_table_from_file)                     - load table directly from file
+                         or
               Select entries or table:
                  (repo_uoa) or (experiment_repo_uoa)     - can be wild cards
                  (remote_repo_uoa)                       - if remote access, use this as a remote repo UOA
@@ -67,6 +69,8 @@ def plot(i):
 
               (out_to_file)                         - save picture to file, if supported
 
+              (save_table_to_json_file)             - save table to json file
+
               Graphical parameters:
                 plot_type                  - mpl_2d_scatter
                 point_style                - dict, setting point style for each separate graph {"0", "1", etc}
@@ -96,8 +100,17 @@ def plot(i):
 
     lsg=i.get('labels_for_separate_graphs',[])
 
-    # Check if table already there
+    stjf=i.get('save_table_to_json_file','')
+
     table=i.get('table',[])
+
+    ltfj=i.get('load_table_from_file','')
+    if ltfj!='':
+       rx=ck.load_json_file({'json_file':ltfj})
+       if rx['return']>0: return rx
+       table=rx['dict']
+
+    # Check if table already there
     if len(table)==0:
        # Get table from entries
        tmp_a=i.get('action','')
@@ -137,6 +150,11 @@ def plot(i):
 
     if len(table)==0:
        return {'return':1, 'error':'no points found'}
+
+    # Save table to file, if needed
+    if stjf!='':
+       rx=ck.save_json_to_file({'json_file':stjf, 'dict':table})
+       if rx['return']>0: return rx
 
     # Prepare libraries
     pt=i.get('plot_type','')
@@ -471,7 +489,7 @@ def plot(i):
 
        # If heatmap, finish colors
        if pt=='mpl_2d_heatmap' or pt=='mpl_3d_trisurf':
-          plt.colorbar(heatmap, orientation=xpst.get('colorbar_orietation','horizontal')) #, label=xpst.get('colorbar_label',''))
+          plt.colorbar(heatmap, orientation=xpst.get('colorbar_orietation','horizontal'), label=xpst.get('colorbar_label',''))
 
        # If bounds
        if bl=='yes':
