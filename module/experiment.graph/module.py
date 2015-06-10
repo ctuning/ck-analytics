@@ -471,7 +471,7 @@ def plot(i):
 
        # If heatmap, finish colors
        if pt=='mpl_2d_heatmap' or pt=='mpl_3d_trisurf':
-          plt.colorbar(heatmap, orientation=xpst.get('colorbar_orietation','horizontal'), label=xpst.get('colorbar_label',''))
+          plt.colorbar(heatmap, orientation=xpst.get('colorbar_orietation','horizontal')) #, label=xpst.get('colorbar_label',''))
 
        # If bounds
        if bl=='yes':
