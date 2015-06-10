@@ -88,6 +88,8 @@ def plot(i):
 
     """
 
+    import os
+
     o=i.get('out','')
 
     pst=i.get('point_style',{})
@@ -163,8 +165,11 @@ def plot(i):
    #    import numpy as np
        import matplotlib as mpl
 
+
        if ck.cfg.get('use_internal_engine_for_plotting','')=='yes':
-          mpl.use('Agg') # if XWindows is not installed, use internal engine
+          mpl.use('agg') # if XWindows is not installed, use internal engine
+       elif os.environ.get('CK_MPL_BACKEND','')!='':
+          mpl.use(os.environ['CK_MPL_BACKEND'])
 
        import matplotlib.pyplot as plt
 
