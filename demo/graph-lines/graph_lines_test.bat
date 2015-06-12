@@ -1,1 +1,1 @@
-ck plot experiment.graph @graph_lines_test.json
+ck plot graph @graph_lines_test.json

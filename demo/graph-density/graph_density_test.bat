@@ -1,1 +1,1 @@
-ck plot experiment.graph @graph_density_test.json
+ck plot graph @graph_density_test.json

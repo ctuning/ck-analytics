@@ -538,7 +538,7 @@ def validate(i):
            table["1"].append([0, pt[k][0]])
 
        ii={'action':'plot',
-           'module_uoa':cfg['module_deps']['experiment.graph'],
+           'module_uoa':cfg['module_deps']['graph'],
            'table':table}
        iig=i.get('graph_params',{})
        ii.update(iig)
