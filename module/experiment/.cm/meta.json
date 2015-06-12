@@ -21,6 +21,10 @@
     "get_all_meta": {
       "desc": "Get all meta information from all entries"
     }, 
+    "html_viewer": {
+      "desc": "view entries as html", 
+      "for_web": "yes"
+    }, 
     "list_points": {
       "desc": "list all points in an entry"
     }, 

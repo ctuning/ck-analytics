@@ -2128,3 +2128,27 @@ def delete_points(i):
         if rx['return']>0: return rx
 
     return {'return':0}
+
+##############################################################################
+# view entries as html
+
+def html_viewer(i):
+    """
+    Input:  {
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    h=''
+    raw='yes'
+    top='yes'
+
+    h='abc'
+
+    return {'return':0, 'raw':raw, 'show_top':top, 'html':h}
