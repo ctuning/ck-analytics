@@ -1,0 +1,37 @@
+{
+  "graphs": [
+    {
+      "id": "universal", 
+      "name": "universal graph", 
+      "params": {
+        "axis_x_desc": "Binary size", 
+        "axis_y_desc": "Execution time", 
+        "data_uoa_list": [
+        ], 
+        "display_x_error_bar": "no", 
+        "display_y_error_bar": "no", 
+        "experiment_module_uoa": "experiment", 
+        "flat_keys_list": [
+        ], 
+        "mpl_image_dpi": "100", 
+        "mpl_image_size_x": "12", 
+        "mpl_image_size_y": "6", 
+        "plot_grid": "yes", 
+        "plot_type": "mpl_2d_scatter", 
+        "point_style": {
+          "0": {
+            "color": "#3366cc"
+          }, 
+          "1": {
+            "color": "#dc3912", 
+            "elinewidth": "5"
+          }
+        }, 
+        "size_x": 700, 
+        "size_y": 400, 
+        "title": "Powered by Collective Knowledge"
+      }
+    }
+  ], 
+  "name": "Universal CK graph viewer"
+}

@@ -68,6 +68,9 @@ def plot(i):
               (flat_keys_index_end)                 - add all flat keys ending with this index (default #min)
 
               (out_to_file)                         - save picture to file, if supported
+              (out_to_file_repo_uoa)                - repo uoa where to save file (when reproducing graphs for interactive articles)
+              (out_to_file_module_uoa)              - module uoa where to save file (when reproducing graphs for interactive articles)
+              (out_to_file_data_uoa)                - data uoa where to save file (when reproducing graphs for interactive articles)
 
               (save_table_to_json_file)             - save table to json file
 
@@ -95,6 +98,9 @@ def plot(i):
     pst=i.get('point_style',{})
 
     otf=i.get('out_to_file','')
+    otf_ruoa=i.get('out_repo_uoa','')
+    otf_muoa=i.get('out_module_uoa','')
+    otf_duoa=i.get('out_data_uoa','')
 
     xtp=i.get('x_ticks_period','')
     if xtp=='' or xtp==0: xtp=1
@@ -153,9 +159,27 @@ def plot(i):
     if len(table)==0:
        return {'return':1, 'error':'no points found'}
 
+    # Check if out to module
+    pp=''
+    if otf_duoa!='':
+       if otf_muoa=='': otf_muoa=work['self_module_uid']
+       # Try to update this entry to be sure that we can record there, and get path
+       ii={'action':'update',
+           'module_uoa':otf_muoa,
+           'repo_uoa':otf_ruoa,
+           'data_uoa':otf_duoa,
+           'ignore_update':'yes'}
+       rx=ck.access(ii)
+       pp=rx['path']
+
     # Save table to file, if needed
     if stjf!='':
-       rx=ck.save_json_to_file({'json_file':stjf, 'dict':table})
+       if pp!='':
+          ppx=os.path.join(pp, stjf)
+       else:
+          ppx=stjf
+
+       rx=ck.save_json_to_file({'json_file':ppx, 'dict':table})
        if rx['return']>0: return rx
 
     # Prepare libraries
@@ -514,12 +538,17 @@ def plot(i):
        if atitle!='': plt.title(atitle)
 
 #       handles, labels = plt.get_legend_handles_labels()
-       plt.legend()#handles, labels)
+       plt.legend() #handles, labels)
 
        if otf=='':
           plt.show()
        else:
-          plt.savefig(otf)
+          if pp!='':
+             ppx=os.path.join(pp, otf)
+          else:
+             ppx=otf
+
+          plt.savefig(ppx)
 
     else:
        return {'return':1, 'error':'this type of plot ('+pt+') is not supported'}
@@ -550,3 +579,165 @@ def continuous_plot(i):
         x=ck.inp({'text':'Press any key'})
 
     return {'return':0}
+
+##############################################################################
+# view entry as html
+
+##############################################################################
+# view entry as html
+
+def html_viewer(i):
+    """
+    Input:  {
+              data_uoa
+              url_base
+              url_pull
+
+              url_pull_tmp
+              tmp_data_uoa
+
+              (all_params)
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+    import os
+
+    h=''
+    raw='no'
+    top='no'
+
+    duoa=i['data_uoa']
+    burl=i['url_base']
+    purl=i['url_pull']
+
+    tpurl=i['url_pull_tmp']
+    tpuoa=i['tmp_data_uoa']
+
+    ap=i.get('all_params',{})
+
+    ruoa=ap.get('ck_top_repo','')
+    muoa=ap.get('ck_top_module','')
+
+    cparams=ap.get('graph_params','') # current graph params
+
+    igraph=0
+    itype='png'
+
+    if duoa!='':
+       # Load entry
+       rx=ck.access({'action':'load',
+                     'module_uoa':work['self_module_uid'],
+                     'data_uoa':duoa})
+       if rx['return']>0: return rx
+
+       pp=rx['path']
+
+       dd=rx['dict']
+       duid=rx['data_uid']
+
+       name=dd.get('name','')
+
+       h+=' <span id="ck_entries1a">'+name+'</span><br>\n'
+       h+=' <div id="ck_entries_space4"></div>\n'
+       h+=' <hr class="ck_hr">\n'
+
+       graphs=dd.get('graphs',[])
+
+       if igraph<len(graphs):
+          g=graphs[igraph]
+
+          gid=g.get('id','')
+          if gid!='':
+             # Get graph params
+
+             image=gid+'.'+itype
+
+             params=g.get('params',{})
+
+             problem_converting_json=''
+
+             if 'reset_graph' not in ap and cparams!='':
+                rx=ck.convert_json_str_to_dict({'str':cparams, 'skip_quote_replacement':'yes'})
+                if rx['return']>0:
+                   problem_converting_json=rx['error']
+                else:
+                   params=rx['dict']
+
+             rx=ck.dumps_json({'dict':params, 'sort_keys':'yes'})
+             if rx['return']>0: return rx
+             jparams=rx['string']
+
+             # Check if need to regenerate
+             if 'refresh_graph' in ap:
+                import copy
+
+                ii=copy.deepcopy(params)
+                ii['action']='plot'
+                ii['module_uoa']=work['self_module_uoa']
+
+                rx=ck.gen_tmp_file({'prefix':'tmp-', 'suffix':'.'+itype, 'remove_dir':'yes'})
+                if rx['return']>0: return rx
+                image=rx['file_name']
+
+                ii['out_to_file']=image
+
+#                ii['out_repo_uoa']=ruoa
+                ii['out_module_uoa']='tmp'
+                ii['out_data_uoa']=tpuoa
+
+#               (save_table_to_json_file)             - save table to json file
+
+                rx=ck.access(ii)
+                if rx['return']>0: return rx
+
+                purl=tpurl
+
+             # Prepare html
+
+             size_x=params.get('size_x','')
+             size_y=params.get('size_y','')
+
+             h+=' <table border="0" cellpadding="3" width="100%">\n'
+             h+=' <tr>\n'
+
+             extra=''
+             if size_x!='': extra+='width="'+str(size_x)+'" '
+
+             h+='  <td valign="top" '+extra+'>\n'
+             h+='<b><small>Graph:</small></b>\n'
+             if image!='':
+                if size_y!='': extra+='height="'+str(size_y)+'" '
+                h+='   <img src="'+purl+image+'" '+extra+'>'
+             h+='  </td>\n'
+
+             h+='  <td valign="top">\n'
+
+             x='width:100%;'
+             if size_y!='': x+='height:'+str(size_y)+'px;'
+
+             h+='<b><small>Graph params (for reproducibility):</small></b>\n'
+
+             if problem_converting_json!='':
+                h+='<br><br><span style="color:red;"><i>'+problem_converting_json+'</i></span><br>\n'
+                    
+             h+='   <textarea name="graph_params" style="'+x+'">\n'
+             h+=jparams+'\n'
+             h+='   </textarea><br>\n'
+
+             h+='<center>\n'
+             h+='<button type="submit" name="refresh_graph">Refresh graph</button>\n'
+             h+='<button type="submit" name="reset_graph">Reset graph</button>\n'
+             h+='</center>\n'
+
+             h+='  </td>\n'
+
+             h+=' </tr>\n'
+             h+='</table>\n'
+
+    return {'return':0, 'raw':raw, 'show_top':top, 'html':h}

@@ -3,6 +3,10 @@
     "continuous_plot": {
       "desc": "Continuously updated plot"
     }, 
+    "html_viewer": {
+      "desc": "view entry as html", 
+      "for_web": "yes"
+    }, 
     "plot": {
       "desc": "plot graph", 
       "for_web": "yes"
