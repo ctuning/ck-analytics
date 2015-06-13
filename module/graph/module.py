@@ -12,6 +12,7 @@ work={} # Will be updated by CK (temporal data)
 ck=None # Will be updated by CK (initialized CK kernel) 
 
 # Local settings
+var_post_tmp_graph_file='cur_form_graph_tmp_file'
 
 ##############################################################################
 # Initialize module
@@ -597,6 +598,8 @@ def html_viewer(i):
               tmp_data_uoa
 
               (all_params)
+
+              (cur_form*)
             }
 
     Output: {
@@ -682,11 +685,23 @@ def html_viewer(i):
                 ii['action']='plot'
                 ii['module_uoa']=work['self_module_uoa']
 
-                rx=ck.gen_tmp_file({'prefix':'tmp-', 'suffix':'.'+itype, 'remove_dir':'yes'})
-                if rx['return']>0: return rx
-                image=rx['file_name']
+                image=i.get(var_post_tmp_graph_file,'')
+                if image=='':
+                   rx=ck.gen_tmp_file({'prefix':'tmp-', 'suffix':'.'+itype, 'remove_dir':'yes'})
+                   if rx['return']>0: return rx
+                   image=rx['file_name']
 
                 ii['out_to_file']=image
+
+                # Preset current entry params
+                jj={'action':'create_input',
+                    'module_uoa':cfg['module_deps']['wfe'],
+                    'type':'hidden', 
+                    'name': var_post_tmp_graph_file, 
+                    'value':image}
+                rx=ck.access(jj)
+                if rx['return']>0: return rx
+                h+=rx['html']+'\n'
 
 #                ii['out_repo_uoa']=ruoa
                 ii['out_module_uoa']='tmp'
