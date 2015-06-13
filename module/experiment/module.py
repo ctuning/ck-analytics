@@ -679,6 +679,7 @@ def get(i):
                'repo_uoa':ruid,
                'module_uoa':muid,
                'data_uoa':duid}
+
            r=ck.access(ii)
            if r['return']>0: return r
 

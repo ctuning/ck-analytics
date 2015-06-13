@@ -134,6 +134,11 @@ def plot(i):
        i['action']='get'
        i['module_uoa']=cfg['module_deps']['experiment']
 
+       if i.get('remote_repo_uoa','')!='':
+          i['repo_uoa']=i['remote_repo_uoa']
+          del(i['remote_repo_uoa'])
+          if 'out' in i: del(i['out'])
+
        r=ck.access(i)
        if r['return']>0: return r
 
@@ -605,6 +610,8 @@ def html_viewer(i):
               url_pull_tmp
               tmp_data_uoa
 
+              url_wiki
+
               form_name     - current form name
 
               (all_params)
@@ -626,6 +633,7 @@ def html_viewer(i):
     duoa=i['data_uoa']
     burl=i['url_base']
     purl=i['url_pull']
+    wurl=i.get('url_wiki','')
 
     tpurl=i['url_pull_tmp']
     tpuoa=i['tmp_data_uoa']
@@ -750,7 +758,11 @@ def html_viewer(i):
              # Get graph params
              if g.get('notes','')!='':
                 h+='<i>'+g['notes']+'</i>'
-                h+=' <hr class="ck_hr">\n'
+
+             if wurl!='':
+                h+='<div style="text-align: right;">[&nbsp;<a href="'+wurl+'">Discussion wiki (notes, reproducibility, etc.)</a>&nbsp;]</div>'
+
+             h+=' <hr class="ck_hr">\n'
 
              if hsb!='':
                 h+='<center>Select subgraph:&nbsp;'+hsb+'</center>\n'
