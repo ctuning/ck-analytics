@@ -171,6 +171,7 @@ def plot(i):
            'data_uoa':otf_duoa,
            'ignore_update':'yes'}
        rx=ck.access(ii)
+       if rx['return']>0: return rx
        pp=rx['path']
 
     # Save table to file, if needed
