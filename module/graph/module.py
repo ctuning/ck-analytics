@@ -768,6 +768,7 @@ def html_viewer(i):
 
              if hshare!='':
                 h+='<div id="ck_entries_space4"></div>\n'
+                h+='<div id="ck_entries_space4"></div>\n'
                 h+=hshare
 
              h+='<div style="text-align: right;">'
