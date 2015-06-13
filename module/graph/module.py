@@ -766,6 +766,9 @@ def html_viewer(i):
              px=os.path.join(pp, gid+'.json')
              if not os.path.isfile(px): px=''
 
+             if hshare!='':
+                h+=hshare
+
              h+='<div style="text-align: right;">'
 
              if px!='':
@@ -774,9 +777,6 @@ def html_viewer(i):
 
              if wurl!='':
                 h+='[&nbsp;<a href="'+wurl+'">Discussion wiki (comments, reproducibility, etc.)</a>&nbsp;]'
-
-             if hshare!='':
-                h+=hshare
 
              h+='</div>\n'
 
