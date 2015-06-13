@@ -612,6 +612,8 @@ def html_viewer(i):
 
               url_wiki
 
+              html_share
+
               form_name     - current form name
 
               (all_params)
@@ -644,6 +646,8 @@ def html_viewer(i):
     muoa=ap.get('ck_top_module','')
 
     cparams=ap.get('graph_params','') # current graph params
+
+    hshare=i.get('html_share','')
 
     itype='png'
 
@@ -759,8 +763,22 @@ def html_viewer(i):
              if g.get('notes','')!='':
                 h+='<i>'+g['notes']+'</i>'
 
+             px=os.path.join(pp, gid+'.json')
+             if not os.path.isfile(px): px=''
+
+             h+='<div style="text-align: right;">'
+
+             if px!='':
+                x=purl+gid+'.json'
+                h+='[&nbsp;<a href="'+x+'">Download experiment table</a>&nbsp;]&nbsp;&nbsp;'
+
              if wurl!='':
-                h+='<div style="text-align: right;">[&nbsp;<a href="'+wurl+'">Discussion wiki (notes, reproducibility, etc.)</a>&nbsp;]</div>'
+                h+='[&nbsp;<a href="'+wurl+'">Discussion wiki (comments, reproducibility, etc.)</a>&nbsp;]'
+
+             if hshare!='':
+                h+=hshare
+
+             h+='</div>\n'
 
              h+=' <hr class="ck_hr">\n'
 
@@ -877,5 +895,18 @@ def html_viewer(i):
              h+='&nbsp;&nbsp;&nbsp;Auto-replot graph:&nbsp;<input type="checkbox" name="'+var_post_autorefresh+'" id="'+var_post_autorefresh+'" onchange="submit()"'+checked+'>,'
              h+='&nbsp;seconds: <input type="text" name="'+var_post_autorefresh_time+'" value="'+str(iart)+'">\n'
              h+='</center>\n'
+
+             h+=' <hr class="ck_hr">\n'
+
+             duoal=params.get('data_uoa_list','')
+             if len(duoal)>0:
+                h+='\n'
+                for q in duoal:
+                    h+='<a href="'+burl+'wcid=experiment:'+q+'">'+q+'</a><br>\n'
+                h+='\n'
+
+
+
+             h+=' <hr class="ck_hr">\n'
 
     return {'return':0, 'raw':raw, 'show_top':top, 'html':h}
