@@ -12,7 +12,11 @@ work={} # Will be updated by CK (temporal data)
 ck=None # Will be updated by CK (initialized CK kernel) 
 
 # Local settings
-var_post_tmp_graph_file='cur_form_graph_tmp_file'
+var_post_tmp_graph_file='graph_tmp_file'
+var_post_refresh_graph='refresh_graph'
+var_post_reset_graph='reset_graph'
+var_post_autorefresh='graph_autorefresh'
+var_post_autorefresh_time='graph_autorefresh_time'
 
 ##############################################################################
 # Initialize module
@@ -592,15 +596,16 @@ def html_viewer(i):
     """
     Input:  {
               data_uoa
+
               url_base
               url_pull
 
               url_pull_tmp
               tmp_data_uoa
 
-              (all_params)
+              form_name     - current form name
 
-              (cur_form*)
+              (all_params)
             }
 
     Output: {
@@ -633,6 +638,38 @@ def html_viewer(i):
     igraph=0
     itype='png'
 
+    # Check autorefresh
+    ar=ap.get(var_post_autorefresh,'')
+
+    form_name=i['form_name']
+
+    art=ap.get(var_post_autorefresh_time,'')
+    iart=5
+    if art!='':
+       try:
+          iart=int(art)
+       except ValueError:
+          iart=5
+
+    if ar=='on':
+       h+='\n'
+       h+='<script language="javascript">\n'
+       h+=' <!--\n'
+       h+='  setTimeout(\'document.'+form_name+'.submit()\','+str(iart*1000)+');\n'
+       h+=' //-->\n'
+       h+='</script>\n'
+       h+='\n'
+
+       # Set replotting
+       jj={'action':'create_input',
+           'module_uoa':cfg['module_deps']['wfe'],
+           'type':'hidden', 
+           'name': var_post_refresh_graph, 
+           'value':'yes'}
+       rx=ck.access(jj)
+       if rx['return']>0: return rx
+       h+=rx['html']+'\n'
+
     if duoa!='':
        # Load entry
        rx=ck.access({'action':'load',
@@ -659,6 +696,9 @@ def html_viewer(i):
           gid=g.get('id','')
           if gid!='':
              # Get graph params
+             if g.get('notes','')!='':
+                h+='<i>'+g['notes']+'</i>'
+                h+=' <hr class="ck_hr">\n'
 
              image=gid+'.'+itype
 
@@ -666,7 +706,7 @@ def html_viewer(i):
 
              problem_converting_json=''
 
-             if 'reset_graph' not in ap and cparams!='':
+             if var_post_reset_graph not in ap and cparams!='':
                 rx=ck.convert_json_str_to_dict({'str':cparams, 'skip_quote_replacement':'yes'})
                 if rx['return']>0:
                    problem_converting_json=rx['error']
@@ -679,14 +719,14 @@ def html_viewer(i):
 
              # Check if need to regenerate
              problem=''
-             if 'refresh_graph' in ap:
+             if var_post_refresh_graph in ap:
                 import copy
 
                 ii=copy.deepcopy(params)
                 ii['action']='plot'
                 ii['module_uoa']=work['self_module_uoa']
 
-                image=i.get(var_post_tmp_graph_file,'')
+                image=ap.get(var_post_tmp_graph_file,'')
                 if image=='':
                    rx=ck.gen_tmp_file({'prefix':'tmp-', 'suffix':'.'+itype, 'remove_dir':'yes'})
                    if rx['return']>0: return rx
@@ -753,14 +793,21 @@ def html_viewer(i):
              h+=jparams+'\n'
              h+='   </textarea><br>\n'
 
-             h+='<center>\n'
-             h+='<button type="submit" name="refresh_graph">Refresh graph</button>\n'
-             h+='<button type="submit" name="reset_graph">Reset graph</button>\n'
-             h+='</center>\n'
-
              h+='  </td>\n'
 
              h+=' </tr>\n'
              h+='</table>\n'
+
+             h+=' <hr class="ck_hr">\n'
+
+             h+='<center>\n'
+             h+='<button type="submit" name="'+var_post_refresh_graph+'">Replot graph</button>\n'
+             h+='<button type="submit" name="'+var_post_reset_graph+'">Reset graph</button>\n'
+
+             checked=''
+             if ar=='on': checked=' checked '
+             h+='&nbsp;&nbsp;&nbsp;Auto-replot graph:&nbsp;<input type="checkbox" name="'+var_post_autorefresh+'" id="'+var_post_autorefresh+'" onchange="submit()"'+checked+'>,'
+             h+='&nbsp;seconds: <input type="text" name="'+var_post_autorefresh_time+'" value="'+str(iart)+'">\n'
+             h+='</center>\n'
 
     return {'return':0, 'raw':raw, 'show_top':top, 'html':h}
