@@ -674,6 +674,7 @@ def html_viewer(i):
              jparams=rx['string']
 
              # Check if need to regenerate
+             problem=''
              if 'refresh_graph' in ap:
                 import copy
 
@@ -694,7 +695,8 @@ def html_viewer(i):
 #               (save_table_to_json_file)             - save table to json file
 
                 rx=ck.access(ii)
-                if rx['return']>0: return rx
+                if rx['return']>0: 
+                   problem=rx['error']
 
                 purl=tpurl
 
@@ -711,9 +713,12 @@ def html_viewer(i):
 
              h+='  <td valign="top" '+extra+'>\n'
              h+='<b><small>Graph:</small></b>\n'
-             if image!='':
-                if size_y!='': extra+='height="'+str(size_y)+'" '
-                h+='   <img src="'+purl+image+'" '+extra+'>'
+             if problem!='':
+                h+='<br><br><span style="color:red;"><i>'+problem+'</i></span><br>\n'
+             else:
+                if image!='':
+                   if size_y!='': extra+='height="'+str(size_y)+'" '
+                   h+='   <img src="'+purl+image+'" '+extra+'>'
              h+='  </td>\n'
 
              h+='  <td valign="top">\n'
