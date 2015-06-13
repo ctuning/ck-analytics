@@ -714,7 +714,7 @@ def html_viewer(i):
              h+='  <td valign="top" '+extra+'>\n'
              h+='<b><small>Graph:</small></b>\n'
              if problem!='':
-                h+='<br><br><span style="color:red;"><i>Problem: '+problem+'</i></span><br>\n'
+                h+='<br><br><span style="color:red;"><i>Problem: '+problem+'!</i></span><br>\n'
              else:
                 if image!='':
                    if size_y!='': extra+='height="'+str(size_y)+'" '
