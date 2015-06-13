@@ -75,9 +75,9 @@ def plot(i):
               (flat_keys_index_end)                 - add all flat keys ending with this index (default #min)
 
               (out_to_file)                         - save picture to file, if supported
-              (out_to_file_repo_uoa)                - repo uoa where to save file (when reproducing graphs for interactive articles)
-              (out_to_file_module_uoa)              - module uoa where to save file (when reproducing graphs for interactive articles)
-              (out_to_file_data_uoa)                - data uoa where to save file (when reproducing graphs for interactive articles)
+              (out_repo_uoa)                        - repo uoa where to save file (when reproducing graphs for interactive articles)
+              (out_module_uoa)                      - module uoa where to save file (when reproducing graphs for interactive articles)
+              (out_data_uoa)                        - data uoa where to save file (when reproducing graphs for interactive articles)
 
               (save_table_to_json_file)             - save table to json file
 
