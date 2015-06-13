@@ -704,7 +704,9 @@ def html_viewer(i):
                 if rx['return']>0: return rx
                 h+=rx['html']+'\n'
 
-#                ii['out_repo_uoa']=ruoa
+                if ck.cfg.get('graph_tmp_repo_uoa','')!='':
+                   ii['out_repo_uoa']=ck.cfg['graph_tmp_repo_uoa']
+
                 ii['out_module_uoa']='tmp'
                 ii['out_data_uoa']=tpuoa
 
