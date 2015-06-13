@@ -12,6 +12,8 @@ work={} # Will be updated by CK (temporal data)
 ck=None # Will be updated by CK (initialized CK kernel) 
 
 # Local settings
+var_post_subgraph='subgraph'
+var_post_cur_subgraph='cur_subgraph'
 var_post_tmp_graph_file='graph_tmp_file'
 var_post_refresh_graph='refresh_graph'
 var_post_reset_graph='reset_graph'
@@ -635,13 +637,15 @@ def html_viewer(i):
 
     cparams=ap.get('graph_params','') # current graph params
 
-    igraph=0
     itype='png'
 
     # Check autorefresh
     ar=ap.get(var_post_autorefresh,'')
+    if ar=='on':
+       ap[var_post_refresh_graph]='yes'
 
     form_name=i['form_name']
+    form_submit='document.'+form_name+'.submit();'
 
     art=ap.get(var_post_autorefresh_time,'')
     iart=5
@@ -655,7 +659,7 @@ def html_viewer(i):
        h+='\n'
        h+='<script language="javascript">\n'
        h+=' <!--\n'
-       h+='  setTimeout(\'document.'+form_name+'.submit()\','+str(iart*1000)+');\n'
+       h+='  setTimeout(\''+form_submit+'\','+str(iart*1000)+');\n'
        h+=' //-->\n'
        h+='</script>\n'
        h+='\n'
@@ -686,10 +690,58 @@ def html_viewer(i):
 
        h+=' <span id="ck_entries1a">'+name+'</span><br>\n'
        h+=' <div id="ck_entries_space4"></div>\n'
-       h+=' <hr class="ck_hr">\n'
 
        graphs=dd.get('graphs',[])
 
+       # If more than one subgraph, prepare selector
+       hsb=''
+
+       igraph=0
+       cgraph=0
+       x=ap.get(var_post_cur_subgraph,'')
+       try:
+          cgraph=int(x)
+       except ValueError:
+          cgraph=0
+
+       sgraph=ap.get(var_post_subgraph,'')
+
+       if len(graphs)>1:
+          dx=[]
+          jgraph=0
+          for q in graphs:
+              vid=q.get('id','')
+              if vid==sgraph: 
+                 igraph=jgraph
+              dx.append({'name':q.get('name',''), 'value':vid})
+              jgraph+=1
+
+          jj={'action':'create_selector',
+              'module_uoa':cfg['module_deps']['wfe'],
+              'name': var_post_subgraph, 
+              'onchange':form_submit,
+              'data':dx,
+              'selected_value':sgraph}
+
+          rx=ck.access(jj)
+          if rx['return']>0: return rx
+          hsb=rx['html']+'\n'
+
+          if igraph!=cgraph:
+             ap[var_post_reset_graph]='yes'
+             cgraph=igraph
+
+          # Save current subgraph to detect change and reset ...
+          jj={'action':'create_input',
+              'module_uoa':cfg['module_deps']['wfe'],
+              'type':'hidden', 
+              'name': var_post_cur_subgraph, 
+              'value':str(cgraph)}
+          rx=ck.access(jj)
+          if rx['return']>0: return rx
+          h+=rx['html']+'\n'
+
+       # Visualize
        if igraph<len(graphs):
           g=graphs[igraph]
 
@@ -698,6 +750,10 @@ def html_viewer(i):
              # Get graph params
              if g.get('notes','')!='':
                 h+='<i>'+g['notes']+'</i>'
+                h+=' <hr class="ck_hr">\n'
+
+             if hsb!='':
+                h+='<center>Select subgraph:&nbsp;'+hsb+'</center>\n'
                 h+=' <hr class="ck_hr">\n'
 
              image=gid+'.'+itype
