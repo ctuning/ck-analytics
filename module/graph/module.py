@@ -767,6 +767,7 @@ def html_viewer(i):
              if not os.path.isfile(px): px=''
 
              if hshare!='':
+                h+='<div id="ck_entries_space4"></div>\n'
                 h+=hshare
 
              h+='<div style="text-align: right;">'
