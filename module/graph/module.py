@@ -1,4 +1,4 @@
-#
+
 # Collective Knowledge (various graphs for experiment)
 #
 # See CK LICENSE.txt for licensing details
@@ -80,6 +80,7 @@ def plot(i):
               (out_data_uoa)                        - data uoa where to save file (when reproducing graphs for interactive articles)
 
               (save_table_to_json_file)             - save table to json file
+              (save_table_to_csv_file)              - save table to csv file (need keys)
 
               Graphical parameters:
                 plot_type                  - mpl_2d_scatter
@@ -116,8 +117,11 @@ def plot(i):
     lsg=i.get('labels_for_separate_graphs',[])
 
     stjf=i.get('save_table_to_json_file','')
+    stcf=i.get('save_table_to_csv_file','')
 
     table=i.get('table',[])
+
+    rk=i.get('real_keys',[])
 
     ltfj=i.get('load_table_from_file','')
     if ltfj!='':
@@ -185,7 +189,7 @@ def plot(i):
        if rx['return']>0: return rx
        pp=rx['path']
 
-    # Save table to file, if needed
+    # Save table to JSON file, if needed
     if stjf!='':
        if pp!='':
           ppx=os.path.join(pp, stjf)
@@ -193,6 +197,22 @@ def plot(i):
           ppx=stjf
 
        rx=ck.save_json_to_file({'json_file':ppx, 'dict':table})
+       if rx['return']>0: return rx
+
+    # Save table to CSV file, if needed
+    if stcf!='':
+       if pp!='':
+          ppx=os.path.join(pp, stcf)
+       else:
+          ppx=stcf
+
+       ii={'action':'convert_table_to_csv',
+           'module_uoa':cfg['module_deps']['experiment'],
+           'table':table,
+           'keys':rk,
+           'merge_multi_tables':'yes',
+           'file_name':ppx}
+       rx=ck.access(ii)
        if rx['return']>0: return rx
 
     # Prepare libraries
@@ -700,6 +720,12 @@ def html_viewer(i):
 
        name=dd.get('name','')
 
+       gsr=dd.get('get_shared_repo','')
+
+       sruoa=dd.get('scripts_repo_uoa','')
+       smuoa=dd.get('scripts_module_uoa','')
+       sduoa=dd.get('scripts_data_uoa','')
+
        h+=' <span id="ck_entries1a">'+name+'</span><br>\n'
        h+=' <div id="ck_entries_space4"></div>\n'
 
@@ -763,30 +789,32 @@ def html_viewer(i):
              if g.get('notes','')!='':
                 h+='<i>'+g['notes']+'</i>'
 
-             px=os.path.join(pp, gid+'.json')
-             if not os.path.isfile(px): px=''
+             pjson=os.path.join(pp, gid+'.json')
+             if not os.path.isfile(pjson): pjson=''
+
+             pcsv=os.path.join(pp, gid+'.csv')
+             if not os.path.isfile(pcsv): pcsv=''
+
+             h+='<div id="ck_entries_space4"></div>\n'
 
              if hshare!='':
                 h+='<div id="ck_entries_space4"></div>\n'
-                h+='<div id="ck_entries_space4"></div>\n'
                 h+=hshare
+                h+=' <div id="ck_entries_space4"></div>\n'
 
              h+='<div style="text-align: right;">'
-
-             if px!='':
-                x=purl+gid+'.json'
-                h+='[&nbsp;<a href="'+x+'">Download experiment table</a>&nbsp;]&nbsp;&nbsp;'
 
              if wurl!='':
                 h+='[&nbsp;<a href="'+wurl+'">Discussion wiki (comments, reproducibility, etc.)</a>&nbsp;]'
 
              h+='</div>\n'
 
-             h+=' <hr class="ck_hr">\n'
+#             h+=' <hr class="ck_hr">\n'
 
              if hsb!='':
+                h+=' <div id="ck_entries_space4"></div>\n'
                 h+='<center>Select subgraph:&nbsp;'+hsb+'</center>\n'
-                h+=' <hr class="ck_hr">\n'
+#                h+=' <hr class="ck_hr">\n'
 
              image=gid+'.'+itype
 
@@ -807,7 +835,10 @@ def html_viewer(i):
 
              # Check if need to regenerate
              problem=''
+             image_orig=image
+             himage=''
              if var_post_refresh_graph in ap:
+                image_orig=''
                 import copy
 
                 ii=copy.deepcopy(params)
@@ -858,21 +889,29 @@ def html_viewer(i):
              if size_x!='': extra+='width="'+str(size_x)+'" '
 
              h+='  <td valign="top" '+extra+'>\n'
-             h+='<b><small>Graph:</small></b>\n'
+     
+             h+='   <div id="ck_entries">\n'
+
+             h+='    <b><small>Graph:</small></b>\n'
              if problem!='':
                 h+='<br><br><span style="color:red;"><i>Problem: '+problem+'!</i></span><br>\n'
              else:
                 if image!='':
                    if size_y!='': extra+='height="'+str(size_y)+'" '
-                   h+='   <img src="'+purl+image+'" '+extra+'>'
+                   himage='<img src="'+purl+image+'" '+extra+'>'
+                   h+='   '+himage
+
+             h+='   </div>\n'
              h+='  </td>\n'
 
              h+='  <td valign="top">\n'
 
-             x='width:100%;'
+             x='width:99%;'
              if size_y!='': x+='height:'+str(size_y)+'px;'
 
-             h+='<b><small>Graph params (for reproducibility):</small></b>\n'
+             h+='   <div id="ck_entries">\n'
+
+             h+='    <b><small>Graph params (to customize/reproduce):</small></b>\n'
 
              if problem_converting_json!='':
                 h+='<br><br><span style="color:red;"><i>'+problem_converting_json+'</i></span><br>\n'
@@ -881,12 +920,14 @@ def html_viewer(i):
              h+=jparams+'\n'
              h+='   </textarea><br>\n'
 
+             h+='   </div>\n'
+
              h+='  </td>\n'
 
              h+=' </tr>\n'
              h+='</table>\n'
 
-             h+=' <hr class="ck_hr">\n'
+#             h+=' <hr class="ck_hr">\n'
 
              h+='<center>\n'
              h+='<button type="submit" name="'+var_post_refresh_graph+'">Replot graph</button>\n'
@@ -898,7 +939,22 @@ def html_viewer(i):
              h+='&nbsp;seconds: <input type="text" name="'+var_post_autorefresh_time+'" value="'+str(iart)+'">\n'
              h+='</center>\n'
 
-             h+=' <hr class="ck_hr">\n'
+#             h+='<hr class="ck_hr">\n'
+
+             h+='<center>\n'
+             h+='<div id="ck_entries" style="background-color: #dfffbf;">\n'
+
+             h+='<b>Reproducing graph:</b>\n'
+
+             h+='<table width="99%">\n'
+             h+=' <tr>\n'
+             h+='  <td valign="top" align="left" width="44%">\n'
+
+             h+='   <table border="0" cellpadding="5">\n'
+
+             h+='    <tr>\n'
+             h+='     <td valign="top" width="140"><b>Experiment entries:</b></td>\n'
+             h+='     <td valign="top"><i>\n'
 
              duoal=params.get('data_uoa_list','')
              if len(duoal)>0:
@@ -907,8 +963,139 @@ def html_viewer(i):
                     h+='<a href="'+burl+'wcid=experiment:'+q+'">'+q+'</a><br>\n'
                 h+='\n'
 
+             h+='     </i></td>\n'
+             h+='    </tr>\n'
+
+             if smuoa!='' and sduoa!='':
+                cid=smuoa+':'+sduoa
+                if sruoa!='': cid=sruoa+':'+cid
+
+                h+='    <tr>\n'
+                h+='     <td valign="top"><b>Scripts to rebuild:</b></td>\n'
+                h+='     <td valign="top"><i>\n'
+                h+='      ck find '+cid+'<br>\n'
+                h+='      <a href="'+burl+'wcid='+cid+'">View in CK viewer</a>\n'
+                h+='     </i></td>\n'
+                h+='    </tr>\n'
 
 
-             h+=' <hr class="ck_hr">\n'
+             h+='   </table>\n'
+
+             h+='  </td>\n'
+             h+='  <td valign="top" align="left" width="56%">\n'
+
+             h+='   <table border="0" cellpadding="5">\n'
+
+             if gsr!='':
+                h+='    <tr>\n'
+                h+='     <td valign="top" width="250"><b>Obtain shared CK repo with all artifacts:</b></td>\n'
+                h+='     <td valign="top">\n'
+                h+='      <i>'+gsr+'</i>\n'
+                h+='     </td>\n'
+                h+='    </tr>\n'
+
+             if pjson!='' or pcsv!='':
+                x1=purl+gid+'.json'
+                x2=purl+gid+'.csv'
+
+                h+='    <tr>\n'
+                h+='     <td valign="top"><b>Experiment table:</b></td>\n'
+                h+='     <td valign="top"><i>\n'
+                if pjson!='':
+                   h+='      <a href="'+x1+'">Download in JSON</a>;&nbsp;&nbsp'
+                if pcsv!='':
+                   h+='      <a href="'+x2+'">Download in CSV</a>\n'
+                h+='     </i></td>\n'
+                h+='    </tr>\n'
+
+             if image_orig!='' and himage!='':
+                h+='    <tr>\n'
+                h+='     <td valign="top"><b>Embedd original image:</b></td>\n'
+                h+='     <td valign="top"><i>\n'
+                h+='      '+himage.replace('<','&lt;').replace('>','&gt;')+'\n'
+                h+='     </i></td>\n'
+                h+='    </tr>\n'
+
+
+             h+='   </table>\n'
+
+             h+='  </td>\n'
+             h+=' </tr>\n'
+             h+='</table>\n'
+
+             h+='</div>\n'
+
+             h+='</center>\n'
 
     return {'return':0, 'raw':raw, 'show_top':top, 'html':h}
+
+##############################################################################
+# replaying saved graph from CMD
+
+def replay(i):
+    """
+    Input:  {
+              (repo_uoa)   - repo UOA of s saved graph
+              data_uoa     - data UOA of a saved graph
+              (id)         - subgraph id
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    o=i.get('out','')
+
+    duoa=i['data_uoa']
+    ruoa=i.get('repo_uoa','')
+
+    ii={'action':'load',
+        'module_uoa':work['self_module_uid'],
+        'data_uoa':duoa,
+        'repo_uoa':ruoa}
+    rx=ck.access(ii)
+    if rx['return']>0: return rx
+
+    dd=rx['dict']
+
+    graphs=dd.get('graphs',[])
+
+    if len(graphs)==0:
+       return {'return':1, 'error':'no saved graphs found'}
+
+    igraph=-1
+
+    if len(graphs)==1:
+       igraph=0
+    elif len(graphs)>1:
+       gid=i.get('id','')
+       if gid=='':
+          if o=='con':
+             ck.out('Available subgraphs ID:')
+             for q in graphs:
+                 ck.out('  '+q.get('id',''))
+             ck.out('')
+
+          return {'return':1, 'error':'more than one subgraph found - please, specify id'}
+
+       jgraph=0
+       for q in graphs:
+           if q.get('id','')==gid:
+              igraph=jgraph
+              break
+           jgraph+=1
+
+    if igraph==-1:
+       return {'return':1, 'error':'can\'t find subgraph'}
+
+    params=graphs[igraph].get('params',{})
+
+    # Replaying
+    params['action']='plot'
+    params['module_uoa']=work['self_module_uid']
+
+    return ck.access(params)
