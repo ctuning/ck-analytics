@@ -1,5 +1,10 @@
 {
-  "actions": {}, 
+  "actions": {
+    "html_viewer": {
+      "desc": "view entry as html", 
+      "for_web": "yes"
+    }
+  }, 
   "copyright": "See CK Copyright.txt for copyright details", 
   "desc": "preparing experiment reports", 
   "developer": "Grigori Fursin", 
