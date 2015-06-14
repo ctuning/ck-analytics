@@ -867,12 +867,14 @@ def convert_table_to_csv(i):
     """
 
     Input:  {
-              table              - experiment table
-              keys               - keys
-              file_name          - output file for CSV
-              csv_no_header      - if 'yes', do not add header
-              (csv_separator)    - CSV entry separator (default ;)
-              (csv_decimal_mark) - CSV decimal mark    (default .)
+              table                - experiment table
+              (merge_multi_tables) - if 'yes', merge multiple tables to one
+              keys                 - list of keys
+              (keys_desc)          - dict with desc of keys
+              file_name            - output file for CSV
+              csv_no_header        - if 'yes', do not add header
+              (csv_separator)      - CSV entry separator (default ;)
+              (csv_decimal_mark)   - CSV decimal mark    (default .)
 
             }
 
@@ -887,6 +889,14 @@ def convert_table_to_csv(i):
     tbl=i['table']
     keys=i['keys']
     keys_desc=i.get('keys_desc',{})
+
+    mmt=i.get('merge_multi_tables','')
+    if mmt=='yes':
+       tbl1=[]
+       for g in sorted(tbl, key=int):
+           for j in tbl[g]:
+               tbl1.append(j)
+       tbl=tbl1
 
     fout=i['file_name']
 
@@ -2149,7 +2159,5 @@ def html_viewer(i):
     h=''
     raw='yes'
     top='yes'
-
-    h='abc'
 
     return {'return':0, 'raw':raw, 'show_top':top, 'html':h}
