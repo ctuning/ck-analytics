@@ -529,6 +529,7 @@ def get(i):
                                                          may be useful, when doing labeling for machine learning
 
               (skip_processing)                        - if 'yes', do not load data (useful to return points for frontier detection)
+              (get_all_points)                         - if 'yes', add all points
               (load_json_files)                        - list of json files to load ...
               (get_keys_from_json_files)               - which keys to get from json files (useful for frontier) ...
 
@@ -596,6 +597,7 @@ def get(i):
     sstg=i.get('separate_subpoints_to_graphs','')
 
     sl=i.get('skip_processing','')
+    gop=i.get('get_all_points','')
     ljf=i.get('load_json_files',[])
     gkjf=i.get('get_keys_from_json_files',[])
 
@@ -706,11 +708,12 @@ def get(i):
                   else:
                      drz=rz['dict']
 
-                  if not skip and len(ffeatures)>0: 
-                     rx=ck.compare_flat_dicts({'dict1':drz, 'dict2':ffeatures, 'ignore_case':'yes', 'space_as_none':'yes', 'keys_to_ignore':fkti})
-                     if rx['return']>0: return rx
-                     equal=rx['equal']
-                     if equal!='yes': skip=True
+                  if (not skip and len(ffeatures)>0) or gop=='yes': 
+                     if gop!='yes':
+                        rx=ck.compare_flat_dicts({'dict1':drz, 'dict2':ffeatures, 'ignore_case':'yes', 'space_as_none':'yes', 'keys_to_ignore':fkti})
+                        if rx['return']>0: return rx
+                        equal=rx['equal']
+                        if equal!='yes': skip=True
 
                      if o=='con' and not skip:
                         ck.out('     Found point with related features ('+ruoa+':'+muoa+':'+duoa+'/'+pp2+') ...')

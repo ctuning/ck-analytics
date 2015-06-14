@@ -979,6 +979,14 @@ def html_viewer(i):
                 h+='    </tr>\n'
 
 
+             h+='    <tr>\n'
+             h+='     <td valign="top"><b>Replay graph from CMD:</b></td>\n'
+             h+='     <td valign="top"><i>\n'
+             h+='      ck replay graph:'+duoa+' id='+sgraph+'\n'
+             h+='     </i></td>\n'
+             h+='    </tr>\n'
+
+
              h+='   </table>\n'
 
              h+='  </td>\n'
@@ -1015,7 +1023,6 @@ def html_viewer(i):
                 h+='      '+himage.replace('<','&lt;').replace('>','&gt;')+'\n'
                 h+='     </i></td>\n'
                 h+='    </tr>\n'
-
 
              h+='   </table>\n'
 
