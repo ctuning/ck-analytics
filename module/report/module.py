@@ -167,7 +167,7 @@ def html_viewer(i):
                 if rx['return']>0: return rx
                 th=rx['string']
 
-
+                th=th.replace('$#ck_root_url#$', burl)
 
              h+=th
 
