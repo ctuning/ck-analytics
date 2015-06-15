@@ -780,6 +780,7 @@ def html_viewer(i):
           h+=rx['html']+'\n'
 
        # Visualize
+       gid=''
        if igraph<len(graphs):
           g=graphs[igraph]
 
@@ -982,7 +983,7 @@ def html_viewer(i):
              h+='    <tr>\n'
              h+='     <td valign="top"><b>Replay graph from CMD:</b></td>\n'
              h+='     <td valign="top"><i>\n'
-             h+='      ck replay graph:'+duoa+' id='+sgraph+'\n'
+             h+='      ck replay graph:'+duoa+' id='+gid+'\n'
              h+='     </i></td>\n'
              h+='    </tr>\n'
 
