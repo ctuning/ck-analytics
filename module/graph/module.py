@@ -427,13 +427,26 @@ def plot(i):
 
               if pt=='mpl_2d_bars':
                  mx1=[]
+                 mx2=[]
+                 names={}
+                 iq=0
                  for q in mx:
+                     if type(q)!=int and type(q)!=float:
+                        if q in names: q=names[q]
+                        else:
+                           names[q]=iq
+                           q=iq
+                           iq+=1
+                        mx2.append(q)
                      mx1.append(q+width*s)
 
                  if yerr=='yes':
                     sp.bar(mx1, my, width=width, edgecolor=cl, facecolor=cl, align='center', yerr=myerr, label=lbl) # , error_kw=dict(lw=2))
                  else:
                     sp.bar(mx1, my, width=width, edgecolor=cl, facecolor=cl, align='center', label=lbl)
+
+                 if len(names)>0:
+                    sp.set_xticklabels(mx2)
 
               elif pt=='mpl_2d_lines':
 
