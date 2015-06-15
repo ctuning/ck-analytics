@@ -1002,7 +1002,7 @@ def html_viewer(i):
                 h+='     </td>\n'
                 h+='    </tr>\n'
 
-             if pjson!='' or pcsv!='':
+             if (pjson!='' or pcsv!='') and image_orig!='' and himage!='':
                 x1=purl+gid+'.json'
                 x2=purl+gid+'.csv'
 
@@ -1018,7 +1018,7 @@ def html_viewer(i):
 
              if image_orig!='' and himage!='':
                 h+='    <tr>\n'
-                h+='     <td valign="top"><b>Embedd original image:</b></td>\n'
+                h+='     <td valign="top"><b>Embedd original image into interactive report/paper:</b></td>\n'
                 h+='     <td valign="top"><i>\n'
                 h+='      '+himage.replace('<','&lt;').replace('>','&gt;')+'\n'
                 h+='     </i></td>\n'
