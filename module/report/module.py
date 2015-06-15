@@ -177,8 +177,16 @@ def html_viewer(i):
              h+='<i>Corresponding author: <a href="mailto:'+cauthor+'">'+cauthor+'</a></i>\n'
              h+='</span>\n'
 
-          h+='<div id="ck_entries_space4"></div>\n'
-          h+='<div id="ck_entries_space4"></div>\n'
+          if hshare!='':
+             h+='<div id="ck_entries_space4"></div>\n'
+             h+=hshare
+             h+=' <div id="ck_entries_space4"></div>\n'
+
+          h+='<div style="text-align: right;">'
+          if wurl!='':
+             h+='[&nbsp;<a href="'+wurl+'">Discussion wiki (comments, reproducibility, etc.)</a>&nbsp;]'
+          h+='</div>\n'
+
           h+='<div id="ck_entries_space4"></div>\n'
           h+='<div id="ck_entries_space4"></div>\n'
 
