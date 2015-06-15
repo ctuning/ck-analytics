@@ -12,6 +12,8 @@ work={} # Will be updated by CK (temporal data)
 ck=None # Will be updated by CK (initialized CK kernel) 
 
 # Local settings
+var_post_autorefresh='report_autorefresh'
+var_post_autorefresh_time='report_autorefresh_time'
 
 ##############################################################################
 # Initialize module
@@ -98,7 +100,29 @@ def html_viewer(i):
        dd=rx['dict']
        duid=rx['data_uid']
 
+       # Check what to do with top header
        if dd.get('top','')!='': top=dd['top']
+
+       # Check auto-refresh
+       dar=dd.get('auto_refresh','')
+       if dar=='yes':
+          ar=ap.get(var_post_autorefresh,'')
+          art=ap.get(var_post_autorefresh_time,'')
+          iart=4
+          if art!='':
+             try:
+                iart=int(art)
+             except ValueError:
+                iart=4
+
+          if ar=='on':
+             h+='\n'
+             h+='<script language="javascript">\n'
+             h+=' <!--\n'
+             h+='  setTimeout(\''+form_submit+'\','+str(iart*1000)+');\n'
+             h+=' //-->\n'
+             h+='</script>\n'
+             h+='\n'
 
        if dd.get('live','')!='yes':
           raw='yes'
@@ -176,5 +200,13 @@ def html_viewer(i):
              h+='</span\n'
 
           h+='</div>\n'
+
+          if dar=='yes':
+             h+='<center>\n'
+             checked=''
+             if ar=='on': checked=' checked '
+             h+='&nbsp;&nbsp;&nbsp;Auto-replot graph:&nbsp;<input type="checkbox" name="'+var_post_autorefresh+'" id="'+var_post_autorefresh+'" onchange="submit()"'+checked+'>,'
+             h+='&nbsp;seconds: <input type="text" name="'+var_post_autorefresh_time+'" value="'+str(iart)+'">\n'
+             h+='</center>\n'
 
     return {'return':0, 'raw':raw, 'show_top':top, 'html':h}
