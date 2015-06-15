@@ -98,6 +98,8 @@ def html_viewer(i):
        dd=rx['dict']
        duid=rx['data_uid']
 
+       if dd.get('top','')!='': top=dd['top']
+
        if dd.get('live','')!='yes':
           raw='yes'
        else:
