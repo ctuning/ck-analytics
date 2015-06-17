@@ -80,6 +80,7 @@ def plot(i):
               (out_data_uoa)                        - data uoa where to save file (when reproducing graphs for interactive articles)
 
               (save_table_to_json_file)             - save table to json file
+              (save_info_table_to_json_file)        - save info table (mtable) to json file
               (save_table_to_csv_file)              - save table to csv file (need keys)
 
               Graphical parameters:
@@ -95,6 +96,9 @@ def plot(i):
               return       - return code =  0, if successful
                                          >  0, if error
               (error)      - error text if return > 0
+
+              (html)       - html, if HTML generator such as d3
+              (style)      - style for html, if HTML generator such as d3
             }
 
     """
@@ -117,6 +121,7 @@ def plot(i):
     lsg=i.get('labels_for_separate_graphs',[])
 
     stjf=i.get('save_table_to_json_file','')
+    sitjf=i.get('save_info_table_to_json_file','')
     stcf=i.get('save_table_to_csv_file','')
 
     table=i.get('table',[])
@@ -147,6 +152,7 @@ def plot(i):
        if r['return']>0: return r
 
        table=r['table']
+       mtable=r.get('mtable',{})
 
        rk=r['real_keys']
 
@@ -199,6 +205,16 @@ def plot(i):
        rx=ck.save_json_to_file({'json_file':ppx, 'dict':table})
        if rx['return']>0: return rx
 
+    # Save info table to JSON file, if needed
+    if sitjf!='':
+       if pp!='':
+          ppx=os.path.join(pp, sitjf)
+       else:
+          ppx=sitjf
+
+       rx=ck.save_json_to_file({'json_file':ppx, 'dict':mtable})
+       if rx['return']>0: return rx
+
     # Save table to CSV file, if needed
     if stcf!='':
        if pp!='':
@@ -217,6 +233,10 @@ def plot(i):
 
     # Prepare libraries
     pt=i.get('plot_type','')
+
+    html=''
+    style=''
+
     if pt.startswith('mpl_'):
 
    #    import numpy as np
@@ -596,10 +616,37 @@ def plot(i):
 
           plt.savefig(ppx)
 
+    elif pt.startswith('d3_'):
+       # Try to load template
+       ppx=os.path.join(work['path'],'templates',pt+'.html')
+       if not os.path.isfile(ppx):
+          return {'return':1, 'error':'template for this graph is not found'}
+
+       rx=ck.load_text_file({'text_file':ppx})
+       if rx['return']>0: return rx
+
+       html=rx['string']
+
+       # Check if style is there (optional)
+       ppx=os.path.join(work['path'],'templates',pt+'.style')
+       if os.path.isfile(ppx):
+          rx=ck.load_text_file({'text_file':ppx})
+          if rx['return']>0: return rx
+          style=rx['string']
+
+       # Convert table into 
+       rx=ck.dumps_json({'dict':table['0']})
+       if rx['return']>0: return rx
+       html=html.replace('$#cm_data_json#$',rx['string'])
+       html=html.replace('$#cm_info_json#$','[]')
+
+       rx=ck.save_text_file({'text_file':'xx.html', 'string':html})
+
+
     else:
        return {'return':1, 'error':'this type of plot ('+pt+') is not supported'}
 
-    return {'return':0}
+    return {'return':0, 'html':html, 'style':style}
 
 ##############################################################################
 # Continuously updated plot
