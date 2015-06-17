@@ -82,6 +82,7 @@ def plot(i):
               (save_table_to_json_file)             - save table to json file
               (save_info_table_to_json_file)        - save info table (mtable) to json file
               (save_table_to_csv_file)              - save table to csv file (need keys)
+              (save_to_html)                        - if interactive or html-based graph, save to html
 
               Graphical parameters:
                 plot_type                  - mpl_2d_scatter
@@ -635,13 +636,39 @@ def plot(i):
           style=rx['string']
 
        # Convert table into 
-       rx=ck.dumps_json({'dict':table['0']})
+       rx=ck.dumps_json({'dict':table})
        if rx['return']>0: return rx
-       html=html.replace('$#cm_data_json#$',rx['string'])
-       html=html.replace('$#cm_info_json#$','[]')
+       stable=rx['string']
 
-       rx=ck.save_text_file({'text_file':'xx.html', 'string':html})
+       rx=ck.dumps_json({'dict':mtable})
+       if rx['return']>0: return rx
+       mtable=rx['string']
 
+       html=html.replace('$#cm_data_json#$',stable)
+       html=html.replace('$#cm_info_json#$',mtable)
+
+       # Set axes names
+       axd=i.get('axis_x_desc','')
+       html=html.replace('$#axis_x_desc#$', axd)
+
+       ayd=i.get('axis_y_desc','')
+       html=html.replace('$#axis_y_desc#$', ayd)
+
+       size_x=i.get('image_width','')
+       if size_x=='': size_x=600
+       html=html.replace('$#ck_image_width#$', str(size_x))
+
+       size_y=i.get('image_height','')
+       if size_y=='': size_y=400
+       html=html.replace('$#ck_image_height#$', str(size_y))
+
+       html=html.replace('$#ck_root_page_url#$', ck.cfg.get('wfe_url_prefix',''))
+
+       if i.get('save_to_html','')!='':
+          x='<html>\n\n'+style+'\n\n'+'<body>\n\n'+html+'\n\n</body>\n</html>\n'
+
+          rx=ck.save_text_file({'text_file':i['save_to_html'], 'string':x})
+          if rx['return']>0: return rx
 
     else:
        return {'return':1, 'error':'this type of plot ('+pt+') is not supported'}
