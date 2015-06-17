@@ -662,6 +662,18 @@ def plot(i):
        if size_y=='': size_y=400
        html=html.replace('$#ck_image_height#$', str(size_y))
 
+       xmin=i.get('xmin','')
+       html=html.replace('$#ck_xmin#$', str(xmin))
+
+       xmax=i.get('xmax','')
+       html=html.replace('$#ck_xmax#$', str(xmax))
+
+       ymin=i.get('ymin','')
+       html=html.replace('$#ck_ymin#$', str(ymin))
+
+       ymax=i.get('ymax','')
+       html=html.replace('$#ck_ymax#$', str(ymax))
+
        html=html.replace('$#ck_root_page_url#$', ck.cfg.get('wfe_url_prefix',''))
 
        if i.get('save_to_html','')!='':

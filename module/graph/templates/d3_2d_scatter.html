@@ -45,6 +45,11 @@ var tooltip = d3.select("body").append("div")
 
 
 /* Check min/max on all axis */
+pxmin="$#ck_xmin#$";
+pxmax="$#ck_xmax#$";
+pymin="$#ck_ymin#$";
+pymax="$#ck_ymax#$";
+
 xmin=-1;
 xmax=-1;
 ymin=-1;
@@ -65,17 +70,22 @@ for (graph=0; graph < 100; graph++) {
    {
      v=data[l];
 
-     if (xmin==-1 || v[0]<xmin) xmin=v[0];
-     if (xmax==-1 || v[0]>xmax) xmax=v[0];
+     if (pxmin=="" && (xmin==-1 || v[0]<xmin)) xmin=v[0];
+     if (pxmax=="" && (xmax==-1 || v[0]>xmax)) xmax=v[0];
 
-     if (ymin==-1 || v[1]<ymin) ymin=v[1];
-     if (ymax==-1 || v[1]>ymax) ymax=v[1];
+     if (pymin=="" && (ymin==-1 || v[1]<ymin)) ymin=v[1];
+     if (pymax=="" && (ymax==-1 || v[1]>ymax)) ymax=v[1];
    }
 }
 
+if (pxmin!="") xmin=parseFloat(pxmin);
+if (pxmax!="") xmax=parseFloat(pxmax);
+if (pymin!="") ymin=parseFloat(pymin);
+if (pymax!="") ymax=parseFloat(pymax);
+
 // don't want dots overlapping axis, so add in buffer to data domain
-xScale.domain([0, xmax]);
-yScale.domain([0, ymax]);
+xScale.domain([xmin, xmax]);
+yScale.domain([ymin, ymax]);
 
 // x-axis
 svg.append("g")
