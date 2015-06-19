@@ -65,6 +65,7 @@ def html_viewer(i):
     import os
 
     h=''
+    st=''
     raw='no'
     top='yes'
 
@@ -201,13 +202,20 @@ def html_viewer(i):
                 if rx['return']>0: return rx
                 th=rx['string']
 
-                th=th.replace('$#ck_root_url#$', burl)
-
              h+=th
 
              h+='</span\n'
-
           h+='</div>\n'
+
+          # Checking global style
+          xt=dd.get('style','')
+          if t!='':
+             px=os.path.join(pp,xt)
+             if os.path.isfile(px):
+                rx=ck.load_text_file({'text_file':px})
+                if rx['return']>0: return rx
+                st+=rx['string']
+          st=st.replace('$#ck_root_url#$', burl)
 
           if dar=='yes':
              h+='<center>\n'
@@ -217,4 +225,4 @@ def html_viewer(i):
              h+='&nbsp;seconds: <input type="text" name="'+var_post_autorefresh_time+'" value="'+str(iart)+'">\n'
              h+='</center>\n'
 
-    return {'return':0, 'raw':raw, 'show_top':top, 'html':h}
+    return {'return':0, 'raw':raw, 'show_top':top, 'html':h, 'style':st}

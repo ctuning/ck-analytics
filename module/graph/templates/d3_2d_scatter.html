@@ -1,4 +1,4 @@
-<script src="$#ck_root_page_url#$action=pull&common_func=yes&cid=module:graph&filename=third-party/d3/d3.v3.min.js"></script>
+<script src="$#ck_root_url#$action=pull&common_func=yes&cid=module:graph&filename=third-party/d3/d3.v3.min.js"></script>
 
 <script>
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
@@ -31,16 +31,16 @@ var yValue = function(d) { return d.y;}, // data -> value
     yAxis = d3.svg.axis().scale(yScale).orient("left");
 
 // add the graph canvas to the body of the webpage
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+var svg = d3.select("$#ck_where#$").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 // add the tooltip area to the webpage
-var tooltip = d3.select("body").append("div")
-    .attr("class", "tooltip")
-    .style("opacity", 0);
+var tooltip = d3.select("$#ck_where#$").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
 
 
 /* Check min/max on all axis */
@@ -128,7 +128,7 @@ for (graph=0; graph < 100; graph++) {
      var cid=info[q]['module_uoa']+':'+info[q]['data_uoa'];
 
      var features=info[q].features;
-     var sfeatures="<small>";
+     var sfeatures="";
      
      var keys=[];
      for (var key in features) {
@@ -143,8 +143,6 @@ for (graph=0; graph < 100; graph++) {
        key=keys[k];
        sfeatures+=key+'='+features[key]+'<br>';
      }
-
-     sfeatures+="</small>";
 
      adata.push({"x":data[q][0], "y":data[q][1], "size":ps.size, "type":ps.type, "color":ps.color, "cid":cid, "subpoint":info[q].point_uid, 
                  "info":info[q], "features":sfeatures})
@@ -171,7 +169,7 @@ svg.selectAll(".dot")
        tooltip.transition()
             .duration(200)
             .style("opacity", .9);
-       tooltip.html("x=" + xValue(d) + ", y=" + yValue(d) + "<br>"+d.features)
+       tooltip.html("<div style=\"text-align:left;background-color:yellow;opacity:0.8;filter:alpha(opacity=80);\"><small><b>x=" + xValue(d) + ", y=" + yValue(d) + "</b><br>"+d.features+"\n</small></div>")
             .style("left", (d3.event.pageX + 5) + "px")
             .style("top", (d3.event.pageY - 28) + "px");
    })

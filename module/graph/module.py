@@ -74,7 +74,10 @@ def plot(i):
               (flat_keys_index)                     - add all flat keys starting from this index 
               (flat_keys_index_end)                 - add all flat keys ending with this index (default #min)
 
-              (out_to_file)                         - save picture to file, if supported
+              (out_to_file)                         - save picture or html to file, if supported 
+                                                        (will be preserved and not replotted - useful to have a copy of an original image
+                                                         when replotting graphs in interactive papers)
+                  
               (out_repo_uoa)                        - repo uoa where to save file (when reproducing graphs for interactive articles)
               (out_module_uoa)                      - module uoa where to save file (when reproducing graphs for interactive articles)
               (out_data_uoa)                        - data uoa where to save file (when reproducing graphs for interactive articles)
@@ -82,7 +85,9 @@ def plot(i):
               (save_table_to_json_file)             - save table to json file
               (save_info_table_to_json_file)        - save info table (mtable) to json file
               (save_table_to_csv_file)              - save table to csv file (need keys)
+
               (save_to_html)                        - if interactive or html-based graph, save to html
+              (save_to_style)                       - if interactive or html-based graph, save to style (if needed)
 
               Graphical parameters:
                 plot_type                  - mpl_2d_scatter
@@ -238,6 +243,7 @@ def plot(i):
     html=''
     style=''
 
+    ####################################################################### MPL ###
     if pt.startswith('mpl_'):
 
    #    import numpy as np
@@ -617,6 +623,7 @@ def plot(i):
 
           plt.savefig(ppx)
 
+    ####################################################################### D3 ###
     elif pt.startswith('d3_'):
        # Try to load template
        ppx=os.path.join(work['path'],'templates',pt+'.html')
@@ -625,7 +632,6 @@ def plot(i):
 
        rx=ck.load_text_file({'text_file':ppx})
        if rx['return']>0: return rx
-
        html=rx['string']
 
        # Check if style is there (optional)
@@ -635,17 +641,24 @@ def plot(i):
           if rx['return']>0: return rx
           style=rx['string']
 
-       # Convert table into 
+       # Convert data table into JSON
        rx=ck.dumps_json({'dict':table})
        if rx['return']>0: return rx
        stable=rx['string']
 
+       # Convert info table into JSON
        rx=ck.dumps_json({'dict':mtable})
        if rx['return']>0: return rx
-       mtable=rx['string']
+       smtable=rx['string']
+
+       # Convert point styles into JSON
+       rx=ck.dumps_json({'dict':pst})
+       if rx['return']>0: return rx
+       spst=rx['string']
 
        html=html.replace('$#cm_data_json#$',stable)
-       html=html.replace('$#cm_info_json#$',mtable)
+       html=html.replace('$#cm_info_json#$',smtable)
+       html=html.replace('$#cm_point_style_json#$',spst)
 
        # Set axes names
        axd=i.get('axis_x_desc','')
@@ -674,10 +687,35 @@ def plot(i):
        ymax=i.get('ymax','')
        html=html.replace('$#ck_ymax#$', str(ymax))
 
-       html=html.replace('$#ck_root_page_url#$', ck.cfg.get('wfe_url_prefix',''))
+       # Save html to file (do not hardwire URLs)
+       x=i.get('out_to_file','')
+       if x!='':
+          if pp!='':
+             ppx=os.path.join(pp, x)
+          else:
+             ppx=x
 
+          rx=ck.save_text_file({'text_file':ppx, 'string':html})
+          if rx['return']>0: return rx
+
+       # Save style to file, if needed
+       x=i.get('save_to_style','')
+       if x!='':
+          if pp!='':
+             ppx=os.path.join(pp, x)
+          else:
+             ppx=x
+
+          rx=ck.save_text_file({'text_file':ppx, 'string':style})
+          if rx['return']>0: return rx
+
+       # Update URLs if needed (for example, to load .js files from CK repo)
+       html=html.replace('$#ck_root_url#$', ck.cfg.get('wfe_url_prefix',''))
+
+       # Save working html locally to visualize without CK
        if i.get('save_to_html','')!='':
-          x='<html>\n\n'+style+'\n\n'+'<body>\n\n'+html+'\n\n</body>\n</html>\n'
+          x='<html>\n\n<style>\n'+style+'</style>\n\n'+'<body>\n\n'+html+'\n\n</body>\n</html>\n'
+          x=x.replace('$#ck_where#$','body')
 
           rx=ck.save_text_file({'text_file':i['save_to_html'], 'string':x})
           if rx['return']>0: return rx
@@ -726,6 +764,10 @@ def html_viewer(i):
               url_base
               url_pull
 
+              url_cid
+
+              (subgraph)
+
               url_pull_tmp
               tmp_data_uoa
 
@@ -748,6 +790,7 @@ def html_viewer(i):
     import os
 
     h=''
+    st=''
     raw='no'
     top='no'
 
@@ -755,6 +798,8 @@ def html_viewer(i):
     burl=i['url_base']
     purl=i['url_pull']
     wurl=i.get('url_wiki','')
+
+    url_cid=i.get('url_cid','')
 
     tpurl=i['url_pull_tmp']
     tpuoa=i['tmp_data_uoa']
@@ -841,6 +886,8 @@ def html_viewer(i):
        except ValueError:
           cgraph=0
 
+#       sgraph=i.get(var_post_subgraph,'')
+#       if sgraph=='':
        sgraph=ap.get(var_post_subgraph,'')
 
        if len(graphs)>1:
@@ -883,6 +930,8 @@ def html_viewer(i):
        if igraph<len(graphs):
           g=graphs[igraph]
 
+          output=g.get('output','')
+
           gid=g.get('id','')
           if gid!='':
              # Get graph params
@@ -916,7 +965,10 @@ def html_viewer(i):
                 h+='<center>Select subgraph:&nbsp;'+hsb+'</center>\n'
 #                h+=' <hr class="ck_hr">\n'
 
-             image=gid+'.'+itype
+             if output=='html':
+                image=gid+'.html'
+             else:
+                image=gid+'.'+itype
 
              params=g.get('params',{})
 
@@ -976,9 +1028,8 @@ def html_viewer(i):
                    problem=rx['error']
 
                 purl=tpurl
-
+                
              # Prepare html
-
              size_x=params.get('size_x','')
              size_y=params.get('size_y','')
 
@@ -996,10 +1047,34 @@ def html_viewer(i):
              if problem!='':
                 h+='<br><br><span style="color:red;"><i>Problem: '+problem+'!</i></span><br>\n'
              else:
-                if image!='':
-                   if size_y!='': extra+='height="'+str(size_y)+'" '
-                   himage='<img src="'+purl+image+'" '+extra+'>'
-                   h+='   '+himage
+                if output=='html' and image!='':
+                   # Check if style exists
+                   pstyle=os.path.join(pp, gid+'.style')
+                   if os.path.isfile(pstyle): 
+                      rx=ck.load_text_file({'text_file':pstyle})
+                      if rx['return']>0: return rx
+                      st=rx['string']
+
+                   # Generate UID
+                   rx=ck.gen_uid({})
+                   if rx['return']>0: return rx
+                   uid=rx['data_uid']
+                   div_with_uid='ck_interactive_'+uid
+
+                   h+='<div id="'+div_with_uid+'">\n'
+
+                   z=muoa+':'+duoa
+                   if var_post_refresh_graph in ap:
+                      z=url_cid
+
+                   h+='$#ck_include_start#${"cid":"'+z+'", "where":"div#'+div_with_uid+'", "html":"'+image+'", "style":"2d_points_time_vs_size_with_pareto_interactive.style"}$#ck_include_stop#$\n'
+                   h+='</div>\n'
+
+                else:
+                   if image!='':
+                      if size_y!='': extra+='height="'+str(size_y)+'" '
+                      himage='<img src="'+purl+image+'" '+extra+'>'
+                      h+='   '+himage
 
              h+='   </div>\n'
              h+='  </td>\n'
@@ -1134,7 +1209,7 @@ def html_viewer(i):
 
              h+='</center>\n'
 
-    return {'return':0, 'raw':raw, 'show_top':top, 'html':h}
+    return {'return':0, 'raw':raw, 'show_top':top, 'html':h, 'style':st}
 
 ##############################################################################
 # replaying saved graph from CMD
