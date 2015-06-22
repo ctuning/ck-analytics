@@ -2298,13 +2298,14 @@ def html_viewer(i):
                      # Check variation
                      v2=None
 
-                     k2=k+'#range'
-                     if k2 in drz:
+                     k2x=k+'#all_unique'
+                     k2=k+'#range_percent'
+                     if len(drz.get(k2x,[]))>1 and k2 in drz:
                         vx=drz[k2]
 
                         fvx=-1.0
                         try:
-                           fvx=float(vx)
+                           fvx=float(vx)*100
                         except ValueError:
                            pass
 
@@ -2391,8 +2392,11 @@ def html_viewer(i):
                      if iv==len(vv)-1: xs='light_right_in_table'
 
                      xv=''
-                     if v2!=None and v2!=0.0:
-                        xv='&nbsp;(+'+str(v2)+')'
+                     if v2!=None:
+                        xv=''
+                        if v2>5:xv+='<b>'
+                        xv+='&nbsp;('+('%3.1f' % v2)+'%)'
+                        if v2>5:xv+='</b>'
                      h+='    <td valign="top" align="right" class="'+xs+'">'+e1+str(v)+xv+e2+'</td>\n'
 
                  xurl=purl+'ckp-'+str(vp)
