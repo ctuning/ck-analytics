@@ -14,6 +14,8 @@ ck=None # Will be updated by CK (initialized CK kernel)
 # Local settings
 import os
 
+var_post_subview='subview'
+
 ##############################################################################
 # Initialize module
 
@@ -2232,42 +2234,53 @@ def html_viewer(i):
 
        name=dd.get('name','')
 
-       # Check keys (TBD: make standard views for pipelines ...)
-       rk=["##choices#host_os",
-           "##choices#target_os",
-           "##features#platform#cpu#name",
-           "##features#platform#cpu#sub_name",
-           "##features#platform#cpu#num_proc",
-           "##features#compiler_version#raw@0",
-           "##characteristics#run#repeat",
-           "##characteristics#run#execution_time_kernel_0", 
-           "##characteristics#run#run_time_state#energy_a15_mem_gpu",
-           "##characteristics#run#run_time_state#energy_a7_mem_gpu",
-           "##characteristics#compile#obj_size", 
-           "##characteristics#current_freq#0",
-           "##choices#gpu_freq",
-           "##characteristics#run#accuracy", 
-           "##characteristics#run#faults", 
-           "##choices#compiler_flags#*" 
-           ]
+       sv=ap.get(var_post_subview,'')
 
-       rkd=["Host OS",
-            "Target OS",
-            "CPU name",
-            "CPU sub-name",
-            "Number of logical cores",
-            "Raw compiler name",
-            "Kernel repetitions",
-            "Execution time (sec.)", 
-            "Energy total (A15, joules)", 
-            "Energy total (A7, joules)", 
-            "Object size (bytes)", 
-            "CPU freq (MHz)",
-            "GPU freq (MHz)",
-            "Algorithm accuracy",
-            "Faults",
-            "Compiler flags"
-            ]
+       # Get list of experiment views
+       r=ck.access({'action':'list',
+                    'module_uoa':cfg['module_deps']['experiment.view'],
+                    'add_info':'yes',
+                    'add_meta':'yes'})
+       if r['return']>0: return r
+       lm=r['lst']
+
+       r=ck.access({'action':'convert_ck_list_to_select_data',
+                    'module_uoa':cfg['module_deps']['wfe'],
+                    'lst':lm, 
+                    'add_empty':'no', 
+                    'sort':'yes', 
+                    'value_uoa':sv, 
+                    'ignore_remote':'yes'})
+       if r['return']>0: return r
+       dlm=r['data']
+       if r.get('value_uid','')!='': sv=r['value_uid']
+
+       onchange=''
+
+       ii={'action':'create_selector', 
+           'module_uoa':cfg['module_deps']['wfe'],
+           'data':dlm, 
+           'name':'xyz', 
+           'onchange':onchange, 
+           'style':'width:300px;'}
+       if sv!='': ii['selected_value']=sv
+       r=ck.access(ii)
+       if r['return']>0: return r
+       h+='Select experiment view:&nbsp;&nbsp;'+r['html']
+
+       # Get keys from experiment view
+       rk=[]
+       rkd=[]
+
+       if sv=='': isv=0
+       else:
+          for isv in range(0, len(lm)):
+              if sv==q['data_uid'] or sv==q['data_uoa']:
+                 break
+
+       meta=lm[isv].get('meta',{})
+       rk=meta.get('flat_keys',[])
+       rkd=meta.get('flat_keys_desc',[])
 
        # Array with data from points
        arr=[]
