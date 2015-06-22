@@ -2149,6 +2149,25 @@ def delete_points(i):
 def html_viewer(i):
     """
     Input:  {
+              data_uoa
+
+              url_base
+              url_pull
+
+              url_cid
+
+              (subgraph)
+
+              url_pull_tmp
+              tmp_data_uoa
+
+              url_wiki
+
+              html_share
+
+              form_name     - current form name
+
+              (all_params)
             }
 
     Output: {
@@ -2159,8 +2178,197 @@ def html_viewer(i):
 
     """
 
+
     h=''
+    st=''
     raw='yes'
     top='yes'
 
-    return {'return':0, 'raw':raw, 'show_top':top, 'html':h}
+    duoa=i['data_uoa']
+    burl=i['url_base']
+    purl=i['url_pull']
+    wurl=i.get('url_wiki','')
+
+    url_cid=i.get('url_cid','')
+
+    tpurl=i['url_pull_tmp']
+    tpuoa=i['tmp_data_uoa']
+
+    ap=i.get('all_params',{})
+
+    sp=ap.get('subpoint','')
+
+    ruoa=ap.get('ck_top_repo','')
+    muoa=ap.get('ck_top_module','')
+
+    cparams=ap.get('graph_params','') # current graph params
+
+    hshare=i.get('html_share','')
+
+    # Check if data is available
+    if duoa!='':
+       # Load entry
+       rx=ck.access({'action':'load',
+                     'module_uoa':work['self_module_uid'],
+                     'data_uoa':duoa})
+       if rx['return']>0: return rx
+
+       pp=rx['path']
+
+       dd=rx['dict']
+       duid=rx['data_uid']
+       muid=rx['module_uid']
+
+       name=dd.get('name','')
+
+       # Check keys (TBD: make standard views for pipelines ...)
+       rk=["##choices#host_os",
+           "##choices#target_os",
+           "##features#platform#cpu#name",
+           "##features#platform#cpu#sub_name",
+           "##features#platform#cpu#num_proc",
+           "##features#compiler_version#raw@0",
+           "##characteristics#run#execution_time_kernel_0", 
+           "##characteristics#run#run_time_state#energy_a15_mem_gpu",
+           "##characteristics#run#run_time_state#energy_a7_mem_gpu",
+           "##characteristics#compile#obj_size", 
+           "##characteristics#current_freq#0",
+           "##choices#gpu_freq",
+           "##characteristics#run#accuracy", 
+           "##characteristics#run#faults", 
+           ]
+
+       rkd=["Host OS",
+            "Target OS",
+            "CPU name",
+            "CPU sub-name",
+            "Number of logical cores",
+            "Raw compiler name",
+            "Execution time (sec.)", 
+            "Energy total (A15, joules)", 
+            "Energy total (A7, joules)", 
+            "Object size (bytes)", 
+            "CPU freq (MHz)",
+            "GPU freq (MHz)",
+            "Algorithm accuracy",
+            "Faults"
+            ]
+
+       # Array with data from points
+       arr=[]
+       ap=[]
+
+       # Check points
+       dirList=os.listdir(pp)
+       for fn in sorted(dirList):
+           if fn.endswith('.flat.json'):
+              pp1=fn[:-10]
+              pp2=pp1[4:]
+              drz={}
+
+              fpf1=os.path.join(pp, fn)
+              rz=ck.load_json_file({'json_file':fpf1})
+              if rz['return']==0:
+                 drz=rz['dict']
+
+                 # Create vector
+                 vv=[]
+
+                 for k in rk:
+                     v=None
+                     k+='#min'
+                     if k in drz:
+                        v=drz[k]
+                     vv.append(v)
+
+                 arr.append(vv)
+                 ap.append(pp2)
+
+       # Prepare view
+#       h+='<div id="ck_entries">\n'
+
+       if len(arr)==0:
+          h+='<br>No points found!<br>\n'
+       else:
+          # add script to copy to Clipboard
+          h+='\n\n<script language="JavaScript">function copyToClipboard (text) {window.prompt ("Copy to clipboard: Ctrl+C, Enter", text);}</script>\n\n' 
+
+          h+=' <table class="ck_table" border="0">\n'
+          ss=''
+          ss1=''
+          ss2=''
+          for ip in range(-2, len(arr)):
+              if ip==-2:
+                 ############################ Prepare header
+                 h+='  <tr style="background-color:#cfcfff;">\n'
+                 h+='    <td valign="top" class="light_right_in_table"></td>\n'
+                 h+='    <td valign="top" colspan="'+str(len(rkd))+'" class="light_right_in_table" align="center"><i><b>Dimensions</b></i></td>\n'
+                 h+='    <td valign="top" colspan="3" class="light_green_in_table light_right_in_table" align="center"><i><b>Raw JSON files</b></i></td>\n'
+                 h+='    <td valign="top" class="light_right_in_table"></td>\n'
+                 h+='    <td valign="top" colspan="3" class="" align="center"><i><b></b></i></td>\n'
+                 h+'   </tr>\n'
+
+                 h+='  <tr style="background-color:#cfcfff;">\n'
+                 h+='    <td valign="top" class="light_bottom_in_table light_right_in_table"><b>#</b></td>\n'
+                 for iv in range(0, len(rkd)):
+                     v=rkd[iv]
+                     xs=''
+                     if iv==len(rkd)-1: xs='light_right_in_table'
+                     h+='    <td valign="top" align="right" class="light_bottom_in_table '+xs+'"><b>'+v+'</b></td>\n'
+
+                 h+='    <td valign="top" align="center" class="light_green_in_table light_bottom_in_table"><b>Aggregated flat data</b></td>\n'
+                 h+='    <td valign="top" align="center" class="light_green_in_table light_bottom_in_table"><b>Features</b></td>\n'
+                 h+='    <td valign="top" align="center" class="light_green_in_table light_right_in_table light_bottom_in_table"><b>Flat features</b></td>\n'
+                 h+='    <td valign="top" align="right" class="light_right_in_table light_bottom_in_table"><b>Point UID</b></td>\n'
+                 h+='    <td valign="top" align="center" class="light_bottom_in_table"><b>Replay (reproduce)</b></td>\n'
+
+              else:
+                 e1=''
+                 e2=''
+                 if ip==-1:
+                    ##################### Put as first pre-selected point (useful when clicked from interactive graphs)
+                    if sp=='' or sp not in ap: continue
+
+                    for isp in range(0, len(ap)):
+                        if ap[isp]==sp: break
+ 
+                    vv=arr[isp]
+                    vp=ap[isp]
+
+                    e1='<i>'
+                    e2='</i>'
+                    ss1='color: #7f0000;'
+                 else:
+                    vv=arr[ip]
+                    vp=ap[ip]
+
+                    if sp!='' and vp==sp: continue
+
+                    ss1=''
+
+                 h+='  <tr style="'+ss+ss1+'">\n'
+                 h+='    <td valign="top" class="light_right_in_table">'+e1+str(ip+2)+e2+'</td>\n'
+                 for iv in range(0, len(vv)):
+                     v=vv[iv]
+                     xs=''
+                     if iv==len(vv)-1: xs='light_right_in_table'
+                     h+='    <td valign="top" align="right" class="'+xs+'">'+e1+str(v)+e2+'</td>\n'
+
+                 xurl=purl+'ckp-'+str(vp)
+
+                 ss2=''
+                 if ss!='': ss2='light_green_in_table1'
+                 h+='    <td valign="top" align="center" class="'+ss2+'"><a href="'+xurl+'.flat.json'+'">View</a></td>\n'
+                 h+='    <td valign="top" align="center" class="'+ss2+'"><a href="'+xurl+'.features.json'+'">View</a></td>\n'
+                 h+='    <td valign="top" align="center" class="light_right_in_table '+ss2+'"><a href="'+xurl+'.features_flat.json'+'">View</a></td>\n'
+                 h+='    <td valign="top" align="right" class="light_right_in_table">'+e1+str(vp)+e2+'</td>\n'
+                 h+='    <td valign="top" align="center"><input type="button" class="ck_small_button" onClick="copyToClipboard(\''+'ck replay experiment:'+duoa+' --point='+str(vp)+'\');" value="Copy to clipboard"></td>\n'
+
+                 if ss=='': ss='background-color: #efefff'
+                 else: ss=''
+           
+              h+='  </tr>\n'
+          h+=' </table>\n'
+#       h+='</div>\n'
+
+    return {'return':0, 'raw':raw, 'show_top':top, 'html':h, 'style':st}
