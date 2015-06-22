@@ -2205,6 +2205,9 @@ def html_viewer(i):
     ap=i.get('all_params',{})
 
     sp=ap.get('subpoint','')
+    ts=ap.get('table_sort','')
+    its=-1
+    if ts!='': its=int(ts)
 
     ruoa=ap.get('ck_top_repo','')
     muoa=ap.get('ck_top_module','')
@@ -2245,6 +2248,7 @@ def html_viewer(i):
            "##choices#gpu_freq",
            "##characteristics#run#accuracy", 
            "##characteristics#run#faults", 
+           "##choices#compiler_flags#*" 
            ]
 
        rkd=["Host OS",
@@ -2261,13 +2265,12 @@ def html_viewer(i):
             "CPU freq (MHz)",
             "GPU freq (MHz)",
             "Algorithm accuracy",
-            "Faults"
+            "Faults",
+            "Compiler flags"
             ]
 
        # Array with data from points
        arr=[]
-       varr=[] # variation if there
-       ap=[]   # point UID
 
        # Check points
        dirList=os.listdir(pp)
@@ -2281,6 +2284,7 @@ def html_viewer(i):
               rz=ck.load_json_file({'json_file':fpf1})
               if rz['return']==0:
                  drz=rz['dict']
+                 kdrz=sorted(list(drz.keys()))
 
                  # Create vector
                  vv=[]
@@ -2288,35 +2292,48 @@ def html_viewer(i):
 
                  for k in rk:
                      v=None
-
-                     k1=k+'#min'
-                     if k1 in drz:
-                        v=drz[k1]
-
-                     vv.append(v)
-
-                     # Check variation
                      v2=None
 
-                     k2x=k+'#all_unique'
-                     k2=k+'#range_percent'
-                     if len(drz.get(k2x,[]))>1 and k2 in drz:
-                        vx=drz[k2]
+                     if '*' not in k and '?' not in k:
+                        k1=k+'#min'
+                        if k1 in drz:
+                           v=drz[k1]
 
-                        fvx=-1.0
-                        try:
-                           fvx=float(vx)*100
-                        except ValueError:
-                           pass
+                        # Check variation
+                        k2x=k+'#all_unique'
+                        k2=k+'#range_percent'
+                        if len(drz.get(k2x,[]))>1 and k2 in drz:
+                           vx=drz[k2]
 
-                        if fvx!=-1.0:
-                           v2=fvx
+                           fvx=-1.0
+                           try:
+                              fvx=float(vx)*100
+                           except ValueError:
+                              pass
 
+                           if fvx!=-1.0:
+                              v2=fvx
+
+                     else:
+                        import fnmatch
+                        v=''
+                        k1=k+'#min'
+                        for kk in kdrz:
+                            if fnmatch.fnmatch(kk,k1):
+                               vx=drz[kk]
+                               if vx!=None:
+                                  if v!='': v+=' '
+                                  v+=str(vx)
+
+                     vv.append(v)
                      vvv.append(v2)
 
-                 arr.append(vv)
-                 varr.append(vvv)
-                 ap.append(pp2)
+                 arr.append({'main':vv, 'var':vvv, 'uid':pp2})
+
+       # Sort, if needed
+       if its!=-1:
+          arr1=sorted(arr, key=lambda k: k['main'][its])
+          arr=arr1
 
        # Prepare view
 #       h+='<div id="ck_entries">\n'
@@ -2337,7 +2354,7 @@ def html_viewer(i):
                  h+='  <tr style="background-color:#cfcfff;">\n'
                  h+='    <td valign="top" class="light_right_in_table"></td>\n'
                  h+='    <td valign="top" colspan="'+str(len(rkd))+'" class="light_right_in_table" align="center"><i><b>Dimensions</b></i></td>\n'
-                 h+='    <td valign="top" colspan="3" class="light_green_in_table light_right_in_table" align="center"><i><b>Raw JSON files</b></i></td>\n'
+                 h+='    <td valign="top" colspan="3" class="light_right_in_table" align="center"><i><b>Raw JSON files</b></i></td>\n'
                  h+='    <td valign="top" class="light_right_in_table"></td>\n'
                  h+='    <td valign="top" colspan="3" class="" align="center"><i><b></b></i></td>\n'
                  h+'   </tr>\n'
@@ -2348,11 +2365,14 @@ def html_viewer(i):
                      v=rkd[iv]
                      xs=''
                      if iv==len(rkd)-1: xs='light_right_in_table'
-                     h+='    <td valign="top" align="right" class="light_bottom_in_table '+xs+'"><b>'+v+'</b></td>\n'
+                     xurl=burl+'wcid='+muid+':'+duid
+                     if sp!='': xurl+='&subpoint='+sp
+                     xurl+='&table_sort='+str(iv)
+                     h+='    <td valign="top" align="right" class="light_bottom_in_table '+xs+'"><b><a href="'+xurl+'">'+v+'</a></b></td>\n'
 
-                 h+='    <td valign="top" align="center" class="light_green_in_table light_bottom_in_table"><b>Aggregated flat data</b></td>\n'
-                 h+='    <td valign="top" align="center" class="light_green_in_table light_bottom_in_table"><b>Features</b></td>\n'
-                 h+='    <td valign="top" align="center" class="light_green_in_table light_right_in_table light_bottom_in_table"><b>Flat features</b></td>\n'
+                 h+='    <td valign="top" align="center" class="light_bottom_in_table"><b>Aggregated flat data</b></td>\n'
+                 h+='    <td valign="top" align="center" class="light_bottom_in_table"><b>Features</b></td>\n'
+                 h+='    <td valign="top" align="center" class="light_right_in_table light_bottom_in_table"><b>Flat features</b></td>\n'
                  h+='    <td valign="top" align="right" class="light_right_in_table light_bottom_in_table"><b>Point UID</b></td>\n'
                  h+='    <td valign="top" align="center" class="light_bottom_in_table"><b>Replay (reproduce)</b></td>\n'
 
@@ -2361,22 +2381,28 @@ def html_viewer(i):
                  e2=''
                  if ip==-1:
                     ##################### Put as first pre-selected point (useful when clicked from interactive graphs)
-                    if sp=='' or sp not in ap: continue
-
-                    for isp in range(0, len(ap)):
-                        if ap[isp]==sp: break
+                    if sp=='': continue
+                    
+                    found=False
+                    for isp in range(0, len(arr)):
+                        if arr[isp]['uid']==sp: 
+                           found=True
+                           break
  
-                    vv=arr[isp]
-                    vvv=varr[isp]
-                    vp=ap[isp]
+                    if found:
+                       zz=arr[isp]
+                       vv=zz['main']
+                       vvv=zz['var']
+                       vp=zz['uid']
 
-                    e1='<i>'
-                    e2='</i>'
-                    ss1='color: #7f0000;'
+                       e1='<i>'
+                       e2='</i>'
+                       ss1='color: #7f0000;'
                  else:
-                    vv=arr[ip]
-                    vvv=varr[ip]
-                    vp=ap[ip]
+                    zz=arr[ip]
+                    vv=zz['main']
+                    vvv=zz['var']
+                    vp=zz['uid']
 
                     if sp!='' and vp==sp: continue
 
@@ -2397,12 +2423,16 @@ def html_viewer(i):
                         if v2>5:xv+='<b>'
                         xv+='&nbsp;('+('%3.1f' % v2)+'%)'
                         if v2>5:xv+='</b>'
-                     h+='    <td valign="top" align="right" class="'+xs+'">'+e1+str(v)+xv+e2+'</td>\n'
+
+                     sv=str(v)+xv
+                     if len(sv)>100:
+                        sv='<input type="button" class="ck_small_button" onClick="copyToClipboard(\''+sv+'\');" value="View">'
+                     h+='    <td valign="top" align="right" class="'+xs+'">'+e1+sv+e2+'</td>\n'
 
                  xurl=purl+'ckp-'+str(vp)
 
                  ss2=''
-                 if ss!='': ss2='light_green_in_table1'
+#                 if ss!='': ss2='light_green_in_table1'
                  h+='    <td valign="top" align="center" class="'+ss2+'"><a href="'+xurl+'.flat.json'+'">View</a></td>\n'
                  h+='    <td valign="top" align="center" class="'+ss2+'"><a href="'+xurl+'.features.json'+'">View</a></td>\n'
                  h+='    <td valign="top" align="center" class="light_right_in_table '+ss2+'"><a href="'+xurl+'.features_flat.json'+'">View</a></td>\n'
