@@ -985,6 +985,7 @@ def stat_analysis(i):
     for k in d1:
         vv1=d1[k]
 
+        # If float or int, perform basic analysis
         if type(vv1)!=list: vv1=[vv1]
         for v1 in vv1:
             # Number of repetitions
@@ -995,9 +996,9 @@ def stat_analysis(i):
 
             # Put all values (useful to calculate means, deviations, etc)
             k_all=k+'#all'
-            v=d.get(k_all,[])
-            v.append(v1)
-            d[k_all]=v
+            v_all=d.get(k_all,[])
+            v_all.append(v1)
+            d[k_all]=v_all
 
             # Put only unique values 
             k_all_u=k+'#all_unique'
@@ -1005,11 +1006,14 @@ def stat_analysis(i):
             if v1 not in v: v.append(v1)
             d[k_all_u]=v
 
-            # If float or int, perform basic analysis
             if smm!='yes' and (type(v1)==float or type(v1)==int):
                # Calculate min
                k_min=k+'#min'
                vmin=d.get(k_min,v1)
+
+               for b in v_all:
+                   if b<vmin: vmin=b
+
                if v1<vmin: 
                   vmin=v1
                   mmin='yes'
@@ -1018,6 +1022,10 @@ def stat_analysis(i):
                # Calculate max
                k_max=k+'#max'
                vmax=d.get(k_max,v1)
+
+               for b in v_all:
+                   if b>vmax: vmax=b
+
                if v1>vmax: 
                   vmax=v1
                   mmax='yes'
@@ -2228,6 +2236,7 @@ def html_viewer(i):
            "##features#platform#cpu#sub_name",
            "##features#platform#cpu#num_proc",
            "##features#compiler_version#raw@0",
+           "##characteristics#run#repeat",
            "##characteristics#run#execution_time_kernel_0", 
            "##characteristics#run#run_time_state#energy_a15_mem_gpu",
            "##characteristics#run#run_time_state#energy_a7_mem_gpu",
@@ -2244,6 +2253,7 @@ def html_viewer(i):
             "CPU sub-name",
             "Number of logical cores",
             "Raw compiler name",
+            "Kernel repetitions",
             "Execution time (sec.)", 
             "Energy total (A15, joules)", 
             "Energy total (A7, joules)", 
@@ -2256,7 +2266,8 @@ def html_viewer(i):
 
        # Array with data from points
        arr=[]
-       ap=[]
+       varr=[] # variation if there
+       ap=[]   # point UID
 
        # Check points
        dirList=os.listdir(pp)
@@ -2273,15 +2284,37 @@ def html_viewer(i):
 
                  # Create vector
                  vv=[]
+                 vvv=[]
 
                  for k in rk:
                      v=None
-                     k+='#min'
-                     if k in drz:
-                        v=drz[k]
+
+                     k1=k+'#min'
+                     if k1 in drz:
+                        v=drz[k1]
+
                      vv.append(v)
 
+                     # Check variation
+                     v2=None
+
+                     k2=k+'#range'
+                     if k2 in drz:
+                        vx=drz[k2]
+
+                        fvx=-1.0
+                        try:
+                           fvx=float(vx)
+                        except ValueError:
+                           pass
+
+                        if fvx!=-1.0:
+                           v2=fvx
+
+                     vvv.append(v2)
+
                  arr.append(vv)
+                 varr.append(vvv)
                  ap.append(pp2)
 
        # Prepare view
@@ -2333,6 +2366,7 @@ def html_viewer(i):
                         if ap[isp]==sp: break
  
                     vv=arr[isp]
+                    vvv=varr[isp]
                     vp=ap[isp]
 
                     e1='<i>'
@@ -2340,6 +2374,7 @@ def html_viewer(i):
                     ss1='color: #7f0000;'
                  else:
                     vv=arr[ip]
+                    vvv=varr[ip]
                     vp=ap[ip]
 
                     if sp!='' and vp==sp: continue
@@ -2350,9 +2385,15 @@ def html_viewer(i):
                  h+='    <td valign="top" class="light_right_in_table">'+e1+str(ip+2)+e2+'</td>\n'
                  for iv in range(0, len(vv)):
                      v=vv[iv]
+                     v2=vvv[iv]
+
                      xs=''
                      if iv==len(vv)-1: xs='light_right_in_table'
-                     h+='    <td valign="top" align="right" class="'+xs+'">'+e1+str(v)+e2+'</td>\n'
+
+                     xv=''
+                     if v2!=None and v2!=0.0:
+                        xv='&nbsp;(+'+str(v2)+')'
+                     h+='    <td valign="top" align="right" class="'+xs+'">'+e1+str(v)+xv+e2+'</td>\n'
 
                  xurl=purl+'ckp-'+str(vp)
 
