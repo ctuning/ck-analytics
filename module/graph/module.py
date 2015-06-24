@@ -69,6 +69,8 @@ def plot(i):
 
               (flat_keys_list_separate_graphs)      - [ [keys], [keys], ...] - several graphs ...
 
+              (sort_index)                          - (int) dimension to sort 
+
               (labels_for_separate_graphs)          - list of labels for separate graphs
 
               (flat_keys_index)                     - add all flat keys starting from this index 
@@ -77,7 +79,7 @@ def plot(i):
               (out_to_file)                         - save picture or html to file, if supported 
                                                         (will be preserved and not replotted - useful to have a copy of an original image
                                                          when replotting graphs in interactive papers)
-                  
+
               (out_repo_uoa)                        - repo uoa where to save file (when reproducing graphs for interactive articles)
               (out_module_uoa)                      - module uoa where to save file (when reproducing graphs for interactive articles)
               (out_data_uoa)                        - data uoa where to save file (when reproducing graphs for interactive articles)
@@ -186,6 +188,8 @@ def plot(i):
 
     if len(table)==0:
        return {'return':1, 'error':'no points found'}
+
+    print (table)
 
     # Check if out to module
     pp=''
@@ -313,7 +317,7 @@ def plot(i):
                    else:
                       if v<tmin[d]: tmin[d]=v
                       if v>tmax[d]: tmax[d]=v 
-                              
+
        # If density or heatmap, find min and max for both graphs:
        if pt=='mpl_1d_density' or pt=='mpl_1d_histogram' or pt=='mpl_2d_heatmap' or pt=='mpl_3d_scatter' or pt=='mpl_3d_trisurf':
           index=0
@@ -465,10 +469,6 @@ def plot(i):
 #                           iq+=1
 #                        mx2.append(str(q))
                      mx1.append(q+width*s)
-
-                 print mx1
-                 print my
-                 print width
 
                  if yerr=='yes':
                     sp.bar(mx1, my, width=width, edgecolor=cl, facecolor=cl, align='center', yerr=myerr, label=lbl) # , error_kw=dict(lw=2))
@@ -1028,7 +1028,7 @@ def html_viewer(i):
                    problem=rx['error']
 
                 purl=tpurl
-                
+
              # Prepare html
              size_x=params.get('size_x','')
              size_y=params.get('size_y','')
@@ -1040,7 +1040,7 @@ def html_viewer(i):
              if size_x!='': extra+='width="'+str(size_x)+'" '
 
              h+='  <td valign="top" '+extra+'>\n'
-     
+
              h+='   <div id="ck_entries">\n'
 
              h+='    <b><small>Graph:</small></b>\n'
@@ -1090,7 +1090,7 @@ def html_viewer(i):
 
              if problem_converting_json!='':
                 h+='<br><br><span style="color:red;"><i>'+problem_converting_json+'</i></span><br>\n'
-                    
+
              h+='   <textarea name="graph_params" style="'+x+'">\n'
              h+=jparams+'\n'
              h+='   </textarea><br>\n'
