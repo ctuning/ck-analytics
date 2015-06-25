@@ -189,8 +189,6 @@ def plot(i):
     if len(table)==0:
        return {'return':1, 'error':'no points found'}
 
-    print (table)
-
     # Check if out to module
     pp=''
     if otf_duoa!='':
