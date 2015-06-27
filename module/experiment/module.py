@@ -2281,7 +2281,10 @@ def html_viewer(i):
               if sv==lm[isv]['data_uid'] or sv==lm[isv]['data_uoa']:
                  break
 
-       meta=lm[isv].get('meta',{})
+       if isv<len(lm):
+          meta=lm[isv].get('meta',{})
+       else:
+          meta={}
        rk=meta.get('flat_keys',[])
        rkd=meta.get('flat_keys_desc',[])
 
