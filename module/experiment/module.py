@@ -2236,6 +2236,9 @@ def html_viewer(i):
 
        sv=ap.get(var_post_subview,'')
 
+       if sv!='':
+          burl+=var_post_subview+'='+sv+'&'
+
        # Get list of experiment views
        r=ck.access({'action':'list',
                     'module_uoa':cfg['module_deps']['experiment.view'],
@@ -2255,12 +2258,12 @@ def html_viewer(i):
        dlm=r['data']
        if r.get('value_uid','')!='': sv=r['value_uid']
 
-       onchange=''
+       onchange='submit()'
 
        ii={'action':'create_selector', 
            'module_uoa':cfg['module_deps']['wfe'],
            'data':dlm, 
-           'name':'xyz', 
+           'name':var_post_subview, 
            'onchange':onchange, 
            'style':'width:300px;'}
        if sv!='': ii['selected_value']=sv
@@ -2275,7 +2278,7 @@ def html_viewer(i):
        if sv=='': isv=0
        else:
           for isv in range(0, len(lm)):
-              if sv==q['data_uid'] or sv==q['data_uoa']:
+              if sv==lm[isv]['data_uid'] or sv==lm[isv]['data_uoa']:
                  break
 
        meta=lm[isv].get('meta',{})
@@ -2303,9 +2306,16 @@ def html_viewer(i):
                  vv=[]
                  vvv=[]
 
-                 for k in rk:
+                 for iv in range(0, len(rk)):
+                     k=rk[iv]
                      v=None
                      v2=None
+
+                     dd={}
+                     if iv<len(rkd): 
+                        dd=rkd[iv]
+
+                     vak=dd.get('view_add_key','')
 
                      if '*' not in k and '?' not in k:
                         k1=k+'#min'
@@ -2336,7 +2346,15 @@ def html_viewer(i):
                                vx=drz[kk]
                                if vx!=None:
                                   if v!='': v+=' '
-                                  v+=str(vx)
+                                  if vak=='yes':
+                                     tx=kk.rfind('#')
+                                     if tx>0:
+                                        tx1=kk.rfind('#',0,tx-1)
+                                        if tx1>0:
+                                           v+=kk[tx1+1:tx]
+                                  if vx!='':
+                                     if vak=='yes': v+='='
+                                     v+=str(vx)
 
                      vv.append(v)
                      vvv.append(v2)
@@ -2374,10 +2392,11 @@ def html_viewer(i):
 
                  h+='  <tr style="background-color:#cfcfff;">\n'
                  h+='    <td valign="top" class="light_bottom_in_table light_right_in_table"><b>#</b></td>\n'
-                 for iv in range(0, len(rkd)):
-                     v=rkd[iv]
+                 for iv in range(0, len(rk)):
+                     v=''
+                     if iv<len(rkd): v=rkd[iv].get('desc','')
                      xs=''
-                     if iv==len(rkd)-1: xs='light_right_in_table'
+                     if iv==len(rk)-1: xs='light_right_in_table'
                      xurl=burl+'wcid='+muid+':'+duid
                      if sp!='': xurl+='&subpoint='+sp
                      xurl+='&table_sort='+str(iv)
@@ -2427,19 +2446,32 @@ def html_viewer(i):
                      v=vv[iv]
                      v2=vvv[iv]
 
+                     dd={}
+                     if iv<len(rkd): 
+                        dd=rkd[iv]
+
+                     tp=dd.get('type','')
+
                      xs=''
                      if iv==len(vv)-1: xs='light_right_in_table'
 
                      xv=''
                      if v2!=None:
                         xv=''
-                        if v2>5:xv+='<b>'
+                        if v2>5: xv+='<b>'
                         xv+='&nbsp;('+('%3.1f' % v2)+'%)'
-                        if v2>5:xv+='</b>'
+                        if v2>5: xv+='</b>'
 
                      sv=str(v)+xv
-                     if len(sv)>100:
-                        sv='<input type="button" class="ck_small_button" onClick="copyToClipboard(\''+sv+'\');" value="View">'
+                     
+                     if tp=='uoa':
+                        xmuoa=dd.get('module_uoa','')
+                        if xmuoa!='':
+                           sv='<a href="'+burl+'wcid='+xmuoa+':'+str(v)+'">'+sv+'</a>'
+                     else:
+                        if len(sv)>100:
+                           sv='<input type="button" class="ck_small_button" onClick="copyToClipboard(\''+sv+'\');" value="View">'
+
                      h+='    <td valign="top" align="right" class="'+xs+'">'+e1+sv+e2+'</td>\n'
 
                  xurl=purl+'ckp-'+str(vp)
