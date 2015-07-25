@@ -2462,10 +2462,16 @@ def html_viewer(i):
                      if v2!=None:
                         xv=''
                         if v2>5: xv+='<b>'
+
                         xv+='&nbsp;('+('%3.1f' % v2)+'%)'
                         if v2>5: xv+='</b>'
 
-                     sv=str(v)+xv
+                     if dd.get('format','')=='':
+                        ssv=str(v)
+                     else:
+                        ssv=(dd['format'] % v)
+
+                     sv=ssv+xv
                      
                      if tp=='uoa':
                         xmuoa=dd.get('module_uoa','')
