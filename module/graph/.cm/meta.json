@@ -19,7 +19,7 @@
   "author_email": "Grigori.Fursin@cTuning.org", 
   "author_webpage": "http://cTuning.org/lab/people/gfursin", 
   "copyright": "See CK Copyright.txt for copyright details", 
-  "desc": "various graphs for experiment", 
+  "desc": "universal graphs for experiments", 
   "license": "See CK LICENSE.txt for licensing details", 
   "module_deps": {
     "experiment": "bc0409fb61f0aa82", 

@@ -5,7 +5,7 @@
     }
   }, 
   "copyright": "See CK Copyright.txt for copyright details", 
-  "desc": "detect frontier for multi-objective optimizations (such as execution time vs energy vs code size vs faults vs price ...)", 
+  "desc": "detecting (Pareto) frontier for multi-objective optimizations", 
   "developer": "Grigori Fursin", 
   "developer_email": "Grigori.Fursin@cTuning.org", 
   "developer_webpage": "http://cTuning.org/lab/people/gfursin", 

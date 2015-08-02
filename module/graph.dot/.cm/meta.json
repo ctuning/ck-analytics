@@ -5,7 +5,7 @@
     }
   }, 
   "copyright": "See CK Copyright.txt for copyright details", 
-  "desc": "dealing with .dot graph files", 
+  "desc": ".dot graphs (graphviz - useful ot customize decision trees from predictive analytics)", 
   "developer": "Grigori Fursin", 
   "developer_email": "Grigori.Fursin@cTuning.org", 
   "developer_webpage": "http://cTuning.org/lab/people/gfursin", 
