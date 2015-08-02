@@ -1,7 +1,7 @@
 {
   "actions": {
     "filter": {
-      "desc": "filter frontier (leave only best points)"
+      "desc": "filter experiments with multiple characteristics (performance, energy, accuracy, size, etc) to leave only points on a (Pareto) frontier"
     }
   }, 
   "copyright": "See CK Copyright.txt for copyright details", 

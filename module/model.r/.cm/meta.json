@@ -1,11 +1,11 @@
 {
   "actions": {
     "build": {
-      "desc": "build model", 
+      "desc": "build predictive model", 
       "for_web": "yes"
     }, 
     "validate": {
-      "desc": "validate model", 
+      "desc": "validate predictive model", 
       "for_web": "yes"
     }
   }, 

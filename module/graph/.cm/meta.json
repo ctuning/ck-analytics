@@ -1,10 +1,10 @@
 {
   "actions": {
     "continuous_plot": {
-      "desc": "Continuously updated plot"
+      "desc": "update plot periodically (useful to demonstrate continuous experiments and active learning)"
     }, 
     "html_viewer": {
-      "desc": "view entry as html", 
+      "desc": "view graph in html", 
       "for_web": "yes"
     }, 
     "plot": {
@@ -12,7 +12,7 @@
       "for_web": "yes"
     }, 
     "replay": {
-      "desc": "replaying saved graph"
+      "desc": "replay saved graph (to always keep default graphs for interactive papers)"
     }
   }, 
   "author": "Grigori Fursin", 

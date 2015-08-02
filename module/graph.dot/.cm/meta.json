@@ -1,7 +1,7 @@
 {
   "actions": {
     "convert_to_decision_tree": {
-      "desc": "converting .dot file made by machine learning algorithms to active decision tree"
+      "desc": "convert .dot file a universal decision tree (useful before converting into C code for adaptive applications and libraries)"
     }
   }, 
   "copyright": "See CK Copyright.txt for copyright details", 

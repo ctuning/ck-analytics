@@ -1,14 +1,14 @@
 {
   "actions": {
     "build": {
-      "desc": "build model", 
+      "desc": "build predictive model", 
       "for_web": "yes"
     }, 
     "convert_categories_to_floats": {
-      "desc": "Convert categories to floats"
+      "desc": "convert categories to floats"
     }, 
     "validate": {
-      "desc": "validate model", 
+      "desc": "validate predictive model", 
       "for_web": "yes"
     }
   }, 

@@ -1,16 +1,16 @@
 {
   "actions": {
     "build": {
-      "desc": "build model"
+      "desc": "build predictive model"
     }, 
     "convert_to_csv": {
       "desc": "convert table to CSV"
     }, 
     "use": {
-      "desc": "use model"
+      "desc": "use existing model to predict values"
     }, 
     "validate": {
-      "desc": "validate model", 
+      "desc": "validate predictive model (detect mispredictions, calculate RMSE, etc)", 
       "for_web": "yes"
     }
   }, 

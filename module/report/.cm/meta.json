@@ -1,7 +1,7 @@
 {
   "actions": {
     "html_viewer": {
-      "desc": "view entry as html", 
+      "desc": "view report as html", 
       "for_web": "yes"
     }
   }, 

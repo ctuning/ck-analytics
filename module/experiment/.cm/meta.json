@@ -1,7 +1,7 @@
 {
   "actions": {
     "add": {
-      "desc": "processing and adding experiment", 
+      "desc": "process and add experiment", 
       "for_web": "yes"
     }, 
     "convert_table_to_csv": {
@@ -19,20 +19,20 @@
       "for_web": "yes"
     }, 
     "get_all_meta": {
-      "desc": "Get all meta information from all entries"
+      "desc": "get all meta information from all entries"
     }, 
     "html_viewer": {
-      "desc": "view entries as html", 
+      "desc": "view experiment as html", 
       "for_web": "yes"
     }, 
     "list_points": {
-      "desc": "list all points in an entry"
+      "desc": "list all points in a given entry"
     }, 
     "load_point": {
-      "desc": "load all info about a given point and subpoint"
+      "desc": "load all info about a given point (and subpoint)"
     }, 
     "multi_stat_analysis": {
-      "desc": "stat analysis with multiple points at the same time"
+      "desc": "perform statistical analysis (with multiple points at the same time)"
     }, 
     "replay": {
       "desc": "replay experiment == the same as reproduce"
@@ -44,15 +44,15 @@
       "desc": "rerun experiment == the same as reproduce"
     }, 
     "sort_table": {
-      "desc": "sort table, substitute index with loop", 
+      "desc": "sort table, substitute index with a sequence (html)", 
       "for_web": "yes"
     }, 
     "stat_analysis": {
-      "desc": "Process multiple experimental results and apply various stat analysis", 
+      "desc": "process multiple experimental results and perform statistial analysis (including expected values)", 
       "for_web": "yes"
     }, 
     "substitute_x_with_loop": {
-      "desc": "substitute x axis in table with loop", 
+      "desc": "substitute x axis in table with a sequence", 
       "for_web": "yes"
     }
   }, 
