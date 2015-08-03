@@ -39,7 +39,7 @@ Installation
 Modules
 =======
 
-experiment                           (ck-analytics)                    universal experiment entries
+experiment - universal experiment entries
   * add
   * convert_table_to_csv
   * delete_points
@@ -57,40 +57,40 @@ experiment                           (ck-analytics)                    universal
   * stat_analysis
   * substitute_x_with_loop
 
-experiment.view                      (ck-analytics)                    customizable views for experiments
+experiment.view - customizable views for experiments
 
-graph                                (ck-analytics)                    universal graphs for experiments
+graph - universal graphs for experiments
   * continuous_plot
   * html_viewer
   * plot
   * replay
 
-graph.dot                            (ck-analytics)                    .dot graphs (graphviz - useful ot customize decision trees from predictive analytics)
+graph.dot - .dot graphs (graphviz - useful ot customize decision trees from predictive analytics)
   * convert_to_decision_tree
 
-math.frontier                        (ck-analytics)                    detecting (Pareto) frontier for multi-objective optimizations
+math.frontier - detecting (Pareto) frontier for multi-objective optimizations
   * filter
 
-math.variation                       (ck-analytics)                    analyzing variation of experimental results (min,max,average,expected values,etc)
+math.variation - analyzing variation of experimental results (min,max,average,expected values,etc)
   * analyze
 
-model                                (ck-analytics)                    universal predictive modeling
+model - universal predictive modeling
   * build
   * convert_to_csv
   * use
   * validate
 
-model.r                              (ck-analytics)                    predictive modeling via R
+model.r - predictive modeling via R
   * build
   * validate
 
-model.sklearn                        (ck-analytics)                    predictive modeling via python-based scikit-learn
+model.sklearn - predictive modeling via python-based scikit-learn
   * build
   * convert_categories_to_floats
   * validate
 
-report                               (ck-analytics)                    preparing experimental reports (html)
+report - preparing experimental reports (html)
   * html_viewer
 
-table                                (ck-analytics)                    preparing experimental tables (txt,html)
+table - preparing experimental tables (txt,html)
   * draw
