@@ -8,11 +8,11 @@ experimentation and expose it to predictive analytics
 Dependencies
 ============
 
-* Python:
-** matplotlib
-** scipy
-** numpy
-** sklearn-kit
+Python:
+* matplotlib
+* scipy
+* numpy
+* sklearn-kit
 
 On Ubuntu, you can install packages using:
 > sudo apt-get install python-numpy python-scipy python-matplotlib python-pandas
@@ -56,31 +56,41 @@ experiment                           (ck-analytics)                    universal
   * sort_table
   * stat_analysis
   * substitute_x_with_loop
+
 experiment.view                      (ck-analytics)                    customizable views for experiments
+
 graph                                (ck-analytics)                    universal graphs for experiments
   * continuous_plot
   * html_viewer
   * plot
   * replay
+
 graph.dot                            (ck-analytics)                    .dot graphs (graphviz - useful ot customize decision trees from predictive analytics)
   * convert_to_decision_tree
+
 math.frontier                        (ck-analytics)                    detecting (Pareto) frontier for multi-objective optimizations
   * filter
+
 math.variation                       (ck-analytics)                    analyzing variation of experimental results (min,max,average,expected values,etc)
   * analyze
+
 model                                (ck-analytics)                    universal predictive modeling
   * build
   * convert_to_csv
   * use
   * validate
+
 model.r                              (ck-analytics)                    predictive modeling via R
   * build
   * validate
+
 model.sklearn                        (ck-analytics)                    predictive modeling via python-based scikit-learn
   * build
   * convert_categories_to_floats
   * validate
+
 report                               (ck-analytics)                    preparing experimental reports (html)
   * html_viewer
+
 table                                (ck-analytics)                    preparing experimental tables (txt,html)
   * draw
