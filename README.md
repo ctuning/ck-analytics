@@ -36,9 +36,8 @@ Installation
 
 > ck pull repo:ck-analytics
 
-Modules (with actions)
+Modules with actions
 ======================
-
 
 experiment - universal experiment entries
 
