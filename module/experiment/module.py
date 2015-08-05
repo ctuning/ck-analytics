@@ -2269,9 +2269,10 @@ def html_viewer(i):
        if sv!='': ii['selected_value']=sv
        r=ck.access(ii)
        if r['return']>0: return r
+
        h+='Select experiment view:&nbsp;&nbsp;'+r['html']
 
-       # Get keys from experiment view
+       # Get keys from experiment view (meta - dict of selected experiment.view entry)
        rk=[]
        rkd=[]
 
@@ -2287,6 +2288,7 @@ def html_viewer(i):
           meta={}
        rk=meta.get('flat_keys',[])
        rkd=meta.get('flat_keys_desc',[])
+       no_replay=meta.get('no_replay','')
 
        # Array with data from points
        arr=[]
@@ -2390,7 +2392,8 @@ def html_viewer(i):
                  h+='    <td valign="top" colspan="'+str(len(rkd))+'" class="light_right_in_table" align="center"><i><b>Dimensions</b></i></td>\n'
                  h+='    <td valign="top" colspan="3" class="light_right_in_table" align="center"><i><b>Raw JSON files</b></i></td>\n'
                  h+='    <td valign="top" class="light_right_in_table"></td>\n'
-                 h+='    <td valign="top" colspan="3" class="" align="center"><i><b></b></i></td>\n'
+                 if no_replay!='yes':
+                    h+='    <td valign="top" class="" align="center"><i><b></b></i></td>\n'
                  h+'   </tr>\n'
 
                  h+='  <tr style="background-color:#cfcfff;">\n'
@@ -2409,7 +2412,8 @@ def html_viewer(i):
                  h+='    <td valign="top" align="center" class="light_bottom_in_table"><b>Features</b></td>\n'
                  h+='    <td valign="top" align="center" class="light_right_in_table light_bottom_in_table"><b>Flat features</b></td>\n'
                  h+='    <td valign="top" align="right" class="light_right_in_table light_bottom_in_table"><b>Point UID</b></td>\n'
-                 h+='    <td valign="top" align="center" class="light_bottom_in_table"><b>Replay (reproduce)</b></td>\n'
+                 if no_replay!='yes':
+                    h+='    <td valign="top" align="center" class="light_bottom_in_table"><b>Replay (reproduce)</b></td>\n'
 
               else:
                  e1=''
@@ -2469,7 +2473,10 @@ def html_viewer(i):
                      if dd.get('format','')=='':
                         ssv=str(v)
                      else:
-                        ssv=(dd['format'] % v)
+                        try:
+                           ssv=(dd['format'] % float(str(v)))
+                        except ValueError:
+                           ssv=''
 
                      sv=ssv+xv
                      
@@ -2491,7 +2498,8 @@ def html_viewer(i):
                  h+='    <td valign="top" align="center" class="'+ss2+'"><a href="'+xurl+'.features.json'+'">View</a></td>\n'
                  h+='    <td valign="top" align="center" class="light_right_in_table '+ss2+'"><a href="'+xurl+'.features_flat.json'+'">View</a></td>\n'
                  h+='    <td valign="top" align="right" class="light_right_in_table">'+e1+str(vp)+e2+'</td>\n'
-                 h+='    <td valign="top" align="center"><input type="button" class="ck_small_button" onClick="copyToClipboard(\''+'ck replay experiment:'+duoa+' --point='+str(vp)+'\');" value="Copy to clipboard"></td>\n'
+                 if no_replay!='yes':
+                    h+='    <td valign="top" align="center"><input type="button" class="ck_small_button" onClick="copyToClipboard(\''+'ck replay experiment:'+duoa+' --point='+str(vp)+'\');" value="Copy to clipboard"></td>\n'
 
                  if ss=='': ss='background-color: #efefff'
                  else: ss=''
