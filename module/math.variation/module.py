@@ -104,7 +104,6 @@ def analyze(i):
        if len(ctable)>0:
           xlistx=[]
           if len(ctable)>1:
-             print ctable
              bins=i.get('bins',100)
 
              if dmin==dmax:
