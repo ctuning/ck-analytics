@@ -2247,6 +2247,9 @@ def html_viewer(i):
 
        sv=ap.get(var_post_subview,'')
 
+       if sv=='' and dd.get('subview_uoa','')!='':
+          sv=dd['subview_uoa']
+
        if sv!='':
           burl+=var_post_subview+'='+sv+'&'
 
