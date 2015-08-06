@@ -110,7 +110,9 @@ def analyze(i):
                 dmin=min(ctable)
                 dmax=max(ctable)
 
-             cf=i.get('cov_factor',-1)
+             cf=i.get('cov_factor','')
+             if cf=='': cf=0.5
+             cf=float(cf)
 
              ctable.insert(0,0.0)
              ctable.append(0.0)
@@ -119,7 +121,7 @@ def analyze(i):
                 density = gaussian_kde(ctable)
                 xlist = np.linspace(dmin,dmax,bins)
 
-                if cf!=-1:
+                if cf!=-1 and cf!='':
                    density.covariance_factor = lambda:cf
                    density._compute_covariance()
 

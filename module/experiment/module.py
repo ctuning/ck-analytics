@@ -959,6 +959,12 @@ def stat_analysis(i):
 
               (skip_expected_value) - if 'yes', do not calculute expected value
               (skip_min_max)        - if 'yes', do not calculate min, max, mean, etc
+
+                 For expected value (via gaussian_kde):
+
+              (bins)                - number of bins (int, default = 100)
+              (cov_factor)          - float covariance factor
+
             }
 
     Output: {
@@ -983,6 +989,9 @@ def stat_analysis(i):
 
     sev=i.get('skip_expected_value','')
     smm=i.get('skip_min_max','')
+
+    bins=i.get('bins','')
+    cov_factor=i.get('cov_factor','')
 
     for k in d1:
         vv1=d1[k]
@@ -1064,6 +1073,8 @@ def stat_analysis(i):
                   rx=ck.access({'action':'analyze',
                                 'module_uoa':cfg['module_deps']['math.variation'],
                                 'characteristics_table':d[k_all],
+                                'bins':bins,
+                                'cov_factor':cov_factor,
                                 'skip_fail':'yes'})
                   if rx['return']>0: return rx
 

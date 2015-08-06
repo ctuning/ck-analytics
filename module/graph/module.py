@@ -97,7 +97,14 @@ def plot(i):
 
                 x_ticks_period             - (int) for bar graphs, put periodicity when to show number 
 
+                xmin
+                xmax
+                ymin
+                ymax
 
+                  If density graph:
+                (bins)                - number of bins (int, default = 100)
+                (cov_factor)          - float covariance factor
             }
 
     Output: {
@@ -513,6 +520,7 @@ def plot(i):
            elif pt=='mpl_1d_density' or pt=='mpl_1d_histogram':
               if not start: # I.e. we got non empty points
                  xbins=i.get('bins', 100)
+                 xcov_factor=i.get('cov_factor', '')
 
                  mx=[]
                  for u in gt:
@@ -523,6 +531,7 @@ def plot(i):
                      'max':dmax,
                      'module_uoa':cfg['module_deps']['math.variation'],
                      'bins':xbins,
+                     'cov_factor':xcov_factor,
                      'characteristics_table':mx}
 
                  r=ck.access(ii)
