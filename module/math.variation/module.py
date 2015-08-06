@@ -104,7 +104,9 @@ def analyze(i):
        if len(ctable)>0:
           xlistx=[]
           if len(ctable)>1:
-             bins=i.get('bins',100)
+             bins=i.get('bins','')
+             if bins=='': bins=100
+             bins=int(bins)
 
              if dmin==dmax:
                 dmin=min(ctable)
@@ -143,6 +145,7 @@ def analyze(i):
                 xlistx=xlistxx
 
              except Exception as e:
+                ck.out('CK warning: exception in analyze math.variation ('+format(e)+')')
                 pass
 
           else:
