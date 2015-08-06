@@ -79,7 +79,7 @@ def analyze(i):
     except Exception as e: 
        has_deps=False
        if i.get('skip_fail','')!='yes':
-          return {'return':1, 'error':'Seems like some python math modules are not installed ('+format(e)+')'}
+          return {'return':1, 'error':'Seems that some scientific python modules are not installed ('+format(e)+')'}
 
     ctable1=i['characteristics_table']
     ctable=copy.deepcopy(ctable1) # since slightly changing it ...
@@ -104,6 +104,7 @@ def analyze(i):
        if len(ctable)>0:
           xlistx=[]
           if len(ctable)>1:
+             print ctable
              bins=i.get('bins',100)
 
              if dmin==dmax:
