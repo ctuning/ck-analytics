@@ -2390,7 +2390,7 @@ def html_viewer(i):
           arr1=sorted(arr, key=lambda k: k['main'][its])
           arr=arr1
        elif irts!=-1:
-          arr1=sorted(arr, key=lambda k: k['main'][its], reverse=True)
+          arr1=sorted(arr, key=lambda k: k['main'][irts], reverse=True)
           arr=arr1
 
        # Prepare view
