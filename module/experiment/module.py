@@ -2428,7 +2428,7 @@ def html_viewer(i):
                      xurl=burl+'wcid='+muid+':'+duid
                      if sp!='': xurl+='&subpoint='+sp
                      rv=''
-                     if iv==ivs: rv='reverse_'
+                     if iv==its: rv='reverse_'
                      xurl+='&'+rv+'table_sort='+str(iv)
                      h+='    <td valign="top" align="right" class="light_bottom_in_table '+xs+'"><b><a href="'+xurl+'">'+v+'</a></b></td>\n'
 
