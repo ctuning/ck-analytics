@@ -2218,9 +2218,14 @@ def html_viewer(i):
     ap=i.get('all_params',{})
 
     sp=ap.get('subpoint','')
+
     ts=ap.get('table_sort','')
     its=-1
     if ts!='': its=int(ts)
+
+    rts=ap.get('reverse_table_sort','')
+    irts=-1
+    if rts!='': irts=int(rts)
 
     ruoa=ap.get('ck_top_repo','')
     muoa=ap.get('ck_top_module','')
@@ -2384,6 +2389,9 @@ def html_viewer(i):
        if its!=-1:
           arr1=sorted(arr, key=lambda k: k['main'][its])
           arr=arr1
+       elif irts!=-1:
+          arr1=sorted(arr, key=lambda k: k['main'][its], reverse=True)
+          arr=arr1
 
        # Prepare view
 #       h+='<div id="ck_entries">\n'
@@ -2419,7 +2427,9 @@ def html_viewer(i):
                      if iv==len(rk)-1: xs='light_right_in_table'
                      xurl=burl+'wcid='+muid+':'+duid
                      if sp!='': xurl+='&subpoint='+sp
-                     xurl+='&table_sort='+str(iv)
+                     rv=''
+                     if iv==ivs: rv='reverse_'
+                     xurl+='&'+rv+'table_sort='+str(iv)
                      h+='    <td valign="top" align="right" class="light_bottom_in_table '+xs+'"><b><a href="'+xurl+'">'+v+'</a></b></td>\n'
 
                  h+='    <td valign="top" align="center" class="light_bottom_in_table"><b>Aggregated flat data</b></td>\n'
