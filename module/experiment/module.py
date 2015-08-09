@@ -42,6 +42,8 @@ def add(i):
     Input:  {
               dict                          - format prepared for predictive analytics
                                               {
+                                                ("dict")               - add to meta of the entry (useful for subview_uoa, for example)
+
                                                 ("meta")               - coarse grain meta information to distinct entries (species)
                                                 ("tags")               - tags (separated by comma)
                                                 ("subtags")            - subtags to write to a point
@@ -142,6 +144,9 @@ def add(i):
 
     dd=i.get('dict',{})
     ddx=copy.deepcopy(dd) # To avoid changing original input !!! 
+
+    ddd=ddx.get('dict','')
+    if ddd=='': ddd={}
 
     meta=ddx.get('meta','')
     if meta=='': meta={}
@@ -248,7 +253,7 @@ def add(i):
            'data_uoa':euoa,
            'data_uid':euid,
            'module_uoa': work['self_module_uoa'],
-           'dict':{}}
+           'dict':ddd}
 
        if euoa=='' and euid=='':
           ii['action']='add'
@@ -304,6 +309,7 @@ def add(i):
 
     p=r['path']
     dde=r['dict']
+    if len(ddd)>0: dde.update(ddd)
     lock_uid=r['lock_uid']
     ipoints=int(dde.get('points','0'))
 
@@ -532,7 +538,8 @@ def get(i):
 
               (skip_processing)                        - if 'yes', do not load data (useful to return points for frontier detection)
               (get_all_points)                         - if 'yes', add all points
-              (load_json_files)                        - list of json files to load ...
+              (load_json_files)                        - list of json files to load for a given point 
+                                                         (features, features_flat, flat, 0001, 0002, etc ...)
               (get_keys_from_json_files)               - which keys to get from json files (useful for frontier) ...
 
               (flat_keys_list)                      - list of flat keys to extract from points into table
@@ -720,30 +727,30 @@ def get(i):
                      if o=='con' and not skip:
                         ck.out('     Found point with related features ('+ruoa+':'+muoa+':'+duoa+'/'+pp2+') ...')
 
-                     ppx={'repo_uoa':ruoa, 'repo_uid':ruid, 'module_uoa':muoa, 'module_uid':muid, 'data_uoa':duoa, 'data_uid':duid, 'point_uid':pp2}
-                     
-                     # If load json files ...
-                     if len(ljf)>0:
-                        for jf in ljf:
-                            pj=os.path.join(p,pp1+'.'+jf+'.json')
-
-                            rx=ck.load_json_file({'json_file':pj})
-                            if rx['return']>0: return rx
-                            
-                            dpj=rx['dict']
-
-                            if len(gkjf)>0:
-                               x={}
-                               for k in gkjf:
-                                   x[k]=dpj.get(k, None)
-                               dpj=x
-
-                            ppx[jf]=dpj
-
-                     points.append(ppx)
-
                   if skip:
                      continue
+
+                  ppx={'repo_uoa':ruoa, 'repo_uid':ruid, 'module_uoa':muoa, 'module_uid':muid, 'data_uoa':duoa, 'data_uid':duid, 'point_uid':pp2}
+                  
+                  # If load json files ...
+                  if len(ljf)>0:
+                     for jf in ljf:
+                         pj=os.path.join(p,pp1+'.'+jf+'.json')
+
+                         rx=ck.load_json_file({'json_file':pj})
+                         if rx['return']>0: return rx
+                         
+                         dpj=rx['dict']
+
+                         if len(gkjf)>0:
+                            x={}
+                            for k in gkjf:
+                                x[k]=dpj.get(k, None)
+                            dpj=x
+
+                         ppx[jf]=dpj
+
+                  points.append(ppx)
 
                   added=True
 
@@ -2406,6 +2413,8 @@ def html_viewer(i):
           ss=''
           ss1=''
           ss2=''
+
+          px=0
           for ip in range(-2, len(arr)):
               if ip==-2:
                  ############################ Prepare header
@@ -2445,6 +2454,8 @@ def html_viewer(i):
                  if ip==-1:
                     ##################### Put as first pre-selected point (useful when clicked from interactive graphs)
                     if sp=='': continue
+
+                    px+=1
                     
                     found=False
                     for isp in range(0, len(arr)):
@@ -2462,6 +2473,8 @@ def html_viewer(i):
                        e2='</i>'
                        ss1='color: #7f0000;'
                  else:
+                    px+=1
+
                     zz=arr[ip]
                     vv=zz['main']
                     vvv=zz['var']
@@ -2472,7 +2485,7 @@ def html_viewer(i):
                     ss1=''
 
                  h+='  <tr style="'+ss+ss1+'">\n'
-                 h+='    <td valign="top" class="light_right_in_table">'+e1+str(ip+2)+e2+'</td>\n'
+                 h+='    <td valign="top" class="light_right_in_table">'+e1+str(px)+e2+'</td>\n'
                  for iv in range(0, len(vv)):
                      v=vv[iv]
                      v2=vvv[iv]
