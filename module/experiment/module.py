@@ -712,12 +712,10 @@ def get(i):
 
                   fpf1=os.path.join(p, pp1+'.features_flat.json')
                   rz=ck.load_json_file({'json_file':fpf1})
-                  if rz['return']>0: 
-                     skip=True
-                  else:
+                  if rz['return']==0: 
                      drz=rz['dict']
 
-                  if (not skip and len(ffeatures)>0) or gop=='yes': 
+                  if gop=='yes' or (len(drz)>0 and len(ffeatures)>0):
                      if gop!='yes':
                         rx=ck.compare_flat_dicts({'dict1':drz, 'dict2':ffeatures, 'ignore_case':'yes', 'space_as_none':'yes', 'keys_to_ignore':fkti})
                         if rx['return']>0: return rx

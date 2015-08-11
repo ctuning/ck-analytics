@@ -79,6 +79,7 @@ def build(i):
     mf2x=i['model_file']+'.modelx.dot'
     mf2y=i['model_file']+'.modely.dot'
     mf3=i['model_file']+'.model.pdf'
+    mf3x=i['model_file']+'.model.png'
     mf4=i['model_file']+'.model.ft.txt'
     mf5=i['model_file']+'.model.inp.ft.json'
     mf6=i['model_file']+'.model.inp.char.json'
@@ -146,6 +147,7 @@ def build(i):
     if os.path.isfile(mf2): os.remove(mf2)
     if os.path.isfile(mf2x): os.remove(mf2x)
     if os.path.isfile(mf3): os.remove(mf3)
+    if os.path.isfile(mf3x): os.remove(mf3x)
     if os.path.isfile(mf5): os.remove(mf5)
     if os.path.isfile(mf6): os.remove(mf6)
     if os.path.isfile(mf7): os.remove(mf7)
@@ -197,6 +199,18 @@ def build(i):
 
        # Save as pdf
        s='dot -Tpdf '+mf2+' -o '+mf3
+       if o=='out':
+          ck.out('')
+          ck.out('Executing command: '+x)
+          ck.out('')
+       os.system(s)
+
+       # Save as png
+       s='dot -Tpng '+mf2+' -o '+mf3x
+       if o=='out':
+          ck.out('')
+          ck.out('Executing command: '+x)
+          ck.out('')
        os.system(s)
 
 #       from sklearn.externals.six import StringIO  

@@ -1,4 +1,6 @@
-* 2015.08.09 FGG: * add extra dict when recording experiments (useful to record name and subview_uoa, for example)
+* 2015.08.11 FGG: * added output of decision trees to png (for interactive reports and articles via CK)
+
+* 2015.08.09 FGG: * added extra dict when recording experiments (useful to record name and subview_uoa, for example)
                   * fixing a few bugs in experiment viewing
 
-* 2015.08.07 Adding reverse sorting in experiment tables
+* 2015.08.07 added reverse sorting in experiment tables
