@@ -102,6 +102,13 @@ def plot(i):
                 ymin
                 ymax
 
+                bound_lines           - if 'yes', plot lines bounding all points ...
+                 bound_style          - ':' by default
+                 bound_color          - 'r' by default
+
+                h_lines               - list of X for horizontal lines
+                v_lines               - list of Y for vertical lines
+
                   If density graph:
                 (bins)                - number of bins (int, default = 100)
                 (cov_factor)          - float covariance factor
@@ -296,6 +303,9 @@ def plot(i):
           plt.grid(True)
 
        bl=i.get('bound_lines','')
+
+       hlines=i.get('h_lines',[])
+       vlines=i.get('v_lines',[])
 
        if pt=='mpl_3d_scatter' or pt=='mpl_3d_trisurf':
           from mpl_toolkits.mplot3d import Axes3D
@@ -600,12 +610,36 @@ def plot(i):
        if pt=='mpl_2d_heatmap' or pt=='mpl_3d_trisurf':
           plt.colorbar(heatmap, orientation=xpst.get('colorbar_orietation','horizontal'), label=xpst.get('colorbar_label',''))
 
+       # For lines
+       dxmin=tmin[0]
+       if xmin!='': dxmin=float(xmin)
+       dxmax=tmax[0]
+       if xmax!='': dxmax=float(xmax)
+       dymin=tmin[1]
+       if ymin!='': dymin=float(ymin)
+       dymax=tmax[1]
+       if ymax!='': dymax=float(ymax)
+
        # If bounds
        if bl=='yes':
           xbs=i.get('bound_style',':')
           xbc=i.get('bound_color','r')
           sp.plot([tmin[0],tmax[0]],[tmin[1],tmin[1]], linestyle=xbs, c=xbc)
           sp.plot([tmin[0],tmin[0]],[tmin[1],tmax[1]], linestyle=xbs, c=xbc)
+
+       # If horizontal lines
+       if len(hlines)>0:
+          xbs=i.get('h_lines_style','--')
+          xbc=i.get('h_lines_color','r')
+          for q in hlines:
+              sp.plot([dxmin,dxmax],[q,q], linestyle=xbs, c=xbc)
+
+       # If horizontal lines
+       if len(vlines)>0:
+          xbs=i.get('v_lines_style','--')
+          xbc=i.get('v_lines_color','r')
+          for q in vlines:
+              sp.plot([q,q],[dymin,dymax], linestyle=xbs, c=xbc)
 
        # Set axes names
        axd=i.get('axis_x_desc','')
