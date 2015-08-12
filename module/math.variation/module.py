@@ -145,7 +145,7 @@ def analyze(i):
                 xlistx=xlistxx
 
              except Exception as e:
-                ck.out('CK warning: exception in analyze math.variation ('+format(e)+')')
+                ck.out('CK warning: '+format(e)+' in analyze math.variation ...')
                 pass
 
           else:
