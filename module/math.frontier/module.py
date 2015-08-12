@@ -43,7 +43,14 @@ def init(i):
 def filter(i):
     """
     Input:  {
-              points    - dict with points, each has dict with optimization dimensions (should have the same names)
+              points         - dict with points, each has dict with optimization dimensions (should have the same names)
+
+              (frontier_keys) - list of keys to leave only best points during multi-objective autotuning
+                                 (multi-objective optimization)
+                                If omited, use all keys
+
+              (reverse_keys) - list of values associated with above keys. If True, reverse sorting for a give key
+                               (by default descending) - can't be used without "frontier_keys" due to lack of order in python dicts2
             }
 
     Output: {
@@ -69,6 +76,10 @@ def filter(i):
     if oo=='con':
        ck.out('Original number of points:        '+str(lp))
 
+    fk=i.get('frontier_keys',[])
+    fkr=i.get('reverse_keys',[])
+    lrk=len(fkr)
+
     if lp>1:
        for l0 in range(0,lp,1):
            ul0=uids[l0]
@@ -85,7 +96,15 @@ def filter(i):
                      p1=points[ul1]
 
                      better=True
-                     for d0 in p0:
+
+                     if len(fk)>0:
+                        ks=fk
+                     else:
+                        ks=list(p0.keys())
+
+                     for dim in range(0, len(ks)):
+                         d0=ks[dim]
+
                          v0=p0[d0]
                          if v0!=None and v0!='':
                             v0=float(v0)
@@ -93,11 +112,15 @@ def filter(i):
                             v1=p1.get(d0,None)
                             if v1!=None and v1!='':
                                v1=float(v1)
-                               if v0<v1:
+
+                               if dim<lrk and fkr[dim]==True:
+                                  if v0>v1:
+                                     better=False
+                                     break
+                               elif v0<v1:
                                   better=False
-
-
                                   break
+
                      if better:
                         keep=False
                         break
