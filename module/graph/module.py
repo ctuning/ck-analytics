@@ -1260,13 +1260,13 @@ def html_viewer(i):
                 h+='    </tr>\n'
 
 
-             h+='    <tr>\n'
-             h+='     <td valign="top"><b>Replay graph from CMD:</b></td>\n'
-             h+='     <td valign="top"><i>\n'
-             h+='      ck replay graph:'+duoa+' id='+gid+'\n'
-             h+='     </i></td>\n'
-             h+='    </tr>\n'
-
+             if output!='html':
+                h+='    <tr>\n'
+                h+='     <td valign="top"><b>Replay graph from CMD:</b></td>\n'
+                h+='     <td valign="top"><i>\n'
+                h+='      ck replay graph:'+duoa+' id='+gid+'\n'
+                h+='     </i></td>\n'
+                h+='    </tr>\n'
 
              h+='   </table>\n'
 
@@ -1283,19 +1283,23 @@ def html_viewer(i):
                 h+='     </td>\n'
                 h+='    </tr>\n'
 
-             if (pjson!='' or pcsv!='') and image_orig!='' and himage!='':
-                x1=purl+gid+'.json'
-                x2=purl+gid+'.csv'
+             refresh=False
+             if var_post_refresh_graph in ap: refresh=True
 
-                h+='    <tr>\n'
-                h+='     <td valign="top"><b>Experiment table:</b></td>\n'
-                h+='     <td valign="top"><i>\n'
-                if pjson!='':
-                   h+='      <a href="'+x1+'">Download in JSON</a>;&nbsp;&nbsp'
-                if pcsv!='':
-                   h+='      <a href="'+x2+'">Download in CSV</a>\n'
-                h+='     </i></td>\n'
-                h+='    </tr>\n'
+#             if (pjson!='' or pcsv!='') and image_orig!='' and himage!='':
+#             if (pjson!='' or pcsv!='') and not refresh: # if refresh, table may change
+             x1=purl+gid+'.json'
+             x2=purl+gid+'.csv'
+
+             h+='    <tr>\n'
+             h+='     <td valign="top"><b>Original experiment table:</b></td>\n'
+             h+='     <td valign="top"><i>\n'
+             if pjson!='':
+                h+='      <a href="'+x1+'">Download in JSON</a>;&nbsp;&nbsp'
+             if pcsv!='':
+                h+='      <a href="'+x2+'">Download in CSV</a>\n'
+             h+='     </i></td>\n'
+             h+='    </tr>\n'
 
              if image_orig!='' and himage!='':
                 h+='    <tr>\n'
