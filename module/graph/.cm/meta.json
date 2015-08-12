@@ -67,5 +67,20 @@
       "marker": "v", 
       "size": "30"
     }
-  ]
+  ],
+ "remove_keys_for_interactive_graphs":[
+   "action",
+   "cid",
+   "cids",
+   "module_uoa",
+   "out",
+   "out_common_meta",
+   "out_data_uoa",
+   "out_graph_extra_meta",
+   "out_id",
+   "out_repo_uoa",
+   "out_to_file",
+   "save_to_style",
+   "xcids"
+ ]
 }

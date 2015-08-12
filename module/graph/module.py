@@ -84,6 +84,10 @@ def plot(i):
               (out_module_uoa)                      - module uoa where to save file (when reproducing graphs for interactive articles)
               (out_data_uoa)                        - data uoa where to save file (when reproducing graphs for interactive articles)
 
+              (out_id)                              - graph ID in the created graph entry
+              (out_common_meta)                     - graph common meta in the created graph entry
+              (out_graph_extra_meta)                - graph extra meta (parameters and description)
+
               (save_table_to_json_file)             - save table to json file
               (save_info_table_to_json_file)        - save info table (mtable) to json file
               (save_table_to_csv_file)              - save table to csv file (need keys)
@@ -206,12 +210,68 @@ def plot(i):
     # Check if out to module
     pp=''
     if otf_duoa!='':
+       import os
+
        if otf_muoa=='': otf_muoa=work['self_module_uid']
+
+       # Check extra params
+       o_id=os.path.splitext(os.path.basename(otf))[0]
+
+       o_cm=i.get('out_common_meta','')
+       o_gem=i.get('out_graph_extra_meta',{})
+
+       # Try to load first
+       ddd={}
+       xid=-1
+
+       ii={'action':'load',
+           'module_uoa':otf_muoa,
+           'repo_uoa':otf_ruoa,
+           'data_uoa':otf_duoa}
+       rx=ck.access(ii)
+       if rx['return']==0: 
+          ddd=rx['dict']
+
+          dddx=ddd.get('graphs',[])
+
+          if o_id!='':
+             for q in range(0, len(dddx)):
+                 if dddx[q].get('id','')==o_id:
+                    xid=q
+                    break
+
+       # Updating
+       if 'graphs' not in ddd: 
+          ddd['graphs']=[]
+
+       ddd.update(o_cm)
+
+       # Prepare graph params
+       import copy
+       ii=copy.deepcopy(i)
+       for q in cfg['remove_keys_for_interactive_graphs']:
+           if q in ii: del(ii[q])
+
+       dddg={'params':ii}
+       dddg.update(o_gem)
+
+       if o_id!='':
+          dddg['id']=o_id
+       else:
+          dddg['id']='default'
+
+       if xid!=-1:
+          ddd['graphs'][xid]=dddg
+       else:
+          ddd['graphs'].append(dddg)
+
        # Try to update this entry to be sure that we can record there, and get path
        ii={'action':'update',
            'module_uoa':otf_muoa,
            'repo_uoa':otf_ruoa,
            'data_uoa':otf_duoa,
+           'dict':ddd,
+           'substitute':'yes',
            'ignore_update':'yes'}
        rx=ck.access(ii)
        if rx['return']>0: return rx
@@ -850,6 +910,8 @@ def html_viewer(i):
     ruoa=ap.get('ck_top_repo','')
     muoa=ap.get('ck_top_module','')
 
+    if muoa=='': muoa=work['self_module_uid']
+
     cparams=ap.get('graph_params','') # current graph params
 
     hshare=i.get('html_share','')
@@ -894,7 +956,7 @@ def html_viewer(i):
     if duoa!='':
        # Load entry
        rx=ck.access({'action':'load',
-                     'module_uoa':work['self_module_uid'],
+                     'module_uoa':muoa,
                      'data_uoa':duoa})
        if rx['return']>0: return rx
 
@@ -1108,7 +1170,10 @@ def html_viewer(i):
                    if var_post_refresh_graph in ap:
                       z=url_cid
 
-                   h+='$#ck_include_start#${"cid":"'+z+'", "where":"div#'+div_with_uid+'", "html":"'+image+'", "style":"2d_points_time_vs_size_with_pareto_interactive.style"}$#ck_include_stop#$\n'
+                   import os
+                   image_st=os.path.splitext(image)[0]+'.style'
+
+                   h+='$#ck_include_start#${"cid":"'+z+'", "where":"div#'+div_with_uid+'", "html":"'+image+'", "style":"'+image_st+'"}$#ck_include_stop#$\n'
                    h+='</div>\n'
 
                 else:

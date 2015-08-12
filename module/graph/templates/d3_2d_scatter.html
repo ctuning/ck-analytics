@@ -98,7 +98,7 @@ svg.append("g")
    .attr("x", width)
    .attr("y", -6)
    .style("text-anchor", "end")
-   .text("Binary file size (bytes)");
+   .text("$#axis_x_desc#$");
 
 // y-axis
 svg.append("g")
@@ -110,7 +110,7 @@ svg.append("g")
    .attr("y", 6)
    .attr("dy", ".71em")
    .style("text-anchor", "end")
-   .text("Whole execution time, expected value (sec.)");
+   .text("$#axis_y_desc#$");
 
 // Convert to internal format
 for (graph=0; graph < 100; graph++) {
