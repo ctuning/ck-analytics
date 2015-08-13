@@ -111,7 +111,12 @@ def plot(i):
                  bound_color          - 'r' by default
 
                 h_lines               - list of X for horizontal lines
+                h_lines_style
+                h_lines_color
+
                 v_lines               - list of Y for vertical lines
+                v_lines_style
+                v_lines_color
 
                   If density graph:
                 (bins)                - number of bins (int, default = 100)
