@@ -2333,11 +2333,13 @@ def html_viewer(i):
                  # Create vector
                  vv=[]
                  vvv=[]
+                 vvn=[]
 
                  for iv in range(0, len(rk)):
                      k=rk[iv]
                      v=None
                      v2=None
+                     v3=None
 
                      dd={}
                      if iv<len(rkd): 
@@ -2365,6 +2367,10 @@ def html_viewer(i):
                            if fvx!=-1.0:
                               v2=fvx
 
+                              # Check number of experiments
+                              if k+'#all' in drz:
+                                 v3=len(drz[k+'#all'])
+
                      else:
                         import fnmatch
                         v=''
@@ -2386,6 +2392,7 @@ def html_viewer(i):
 
                      vv.append(v)
                      vvv.append(v2)
+                     vvn.append(v3)
 
                  arr.append({'main':vv, 'var':vvv, 'uid':pp2})
 
@@ -2501,7 +2508,12 @@ def html_viewer(i):
                         xv=''
                         if v2>5: xv+='<b>'
 
-                        xv+='&nbsp;('+('%3.1f' % v2)+'%)'
+                        xv+='&nbsp;&plusmn;&nbsp;'+('%3.1f' % v2)+'%'
+
+                        v3=vvn[iv]
+                        if v3!='None':
+                           xv+='&nbsp;<i>('+str(v3)+')</i>'
+
                         if v2>5: xv+='</b>'
 
                      if dd.get('format','')=='':
