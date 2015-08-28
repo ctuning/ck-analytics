@@ -147,7 +147,7 @@ def analyze(i):
              except Exception as e:
                 x=format(e)
                 if x.find('singular matrix')<0:
-                   ck.out('CK warning: '+format(e)+' in analyze math.variation ...')
+                   ck.out('CK warning: '+x+' in analyze math.variation ...')
                 pass
 
           else:
