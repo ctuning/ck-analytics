@@ -145,7 +145,9 @@ def analyze(i):
                 xlistx=xlistxx
 
              except Exception as e:
-                ck.out('CK warning: '+format(e)+' in analyze math.variation ...')
+                x=format(e)
+                if x.find('singular matrix')<0:
+                   ck.out('CK warning: '+format(e)+' in analyze math.variation ...')
                 pass
 
           else:
