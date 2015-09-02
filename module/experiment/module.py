@@ -543,6 +543,7 @@ def get(i):
               (get_keys_from_json_files)               - which keys to get from json files (useful for frontier) ...
 
               (flat_keys_list)                      - list of flat keys to extract from points into table
+              (flat_keys_list_ext)                  - add this extension to all above keys (useful to add #min)
 
               (flat_keys_list_separate_graphs)      - [ [keys], [keys], ...] - several graphs ...
 
@@ -590,6 +591,7 @@ def get(i):
     fkie=i.get('flat_keys_index_end','#min')
     fkied=i.get('flat_keys_index_end_range','')
     fkl=i.get('flat_keys_list',[])
+    xfkl=i.get('flat_keys_list_ext','')
 
     fkti=i.get('features_keys_to_ignore',[])
 
@@ -801,7 +803,8 @@ def get(i):
                             if len(trfkl)!=0:
                                rfkl=trfkl
                          else:
-                            for k in fkl:
+                            for kx in fkl:
+                                k=kx+xfkl
                                 v=df.get(k,None)
                                 if v==None: has_none=True
                                 if v=='': has_empty_string=True

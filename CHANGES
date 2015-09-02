@@ -1,3 +1,5 @@
+* 2015.09.02 FGG: * adding extension to keys when retreiving experiments
+
 * 2015.08.12 FGG: * adding possibility to reverse key order in Pareto frontier filter during multi-objective autotuning 
                     (useful for FPS in slambench, for example)
                   * improving interactive graphs for interactive articles
