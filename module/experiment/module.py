@@ -2507,7 +2507,7 @@ def html_viewer(i):
                      if iv==len(vv)-1: xs='light_right_in_table'
 
                      xv=''
-                     if v2!=None:
+                     if v2!=None and v2!=0.0:
                         xv=''
                         if v2>5: xv+='<b>'
 
