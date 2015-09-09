@@ -327,9 +327,7 @@ def plot(i):
     ####################################################################### MPL ###
     if pt.startswith('mpl_'):
 
-   #    import numpy as np
        import matplotlib as mpl
-
 
        if ck.cfg.get('use_internal_engine_for_plotting','')=='yes':
           mpl.use('agg') # if XWindows is not installed, use internal engine

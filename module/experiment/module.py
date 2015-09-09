@@ -99,6 +99,8 @@ def add(i):
 
               (skip_flatten)                - if 'yes', skip flattinging and analyzing data (including stat analysis) ...
 
+              (skip_stat_analysis)          - if 'yes', just flatten array and add #min
+
               (process_multi_keys)          - list of keys (starts with) to perform stat analysis on flat array,
                                               by default ['##characteristics#*', '##features#*' '##choices#*'],
                                               if empty, no stat analysis
@@ -141,6 +143,8 @@ def add(i):
 
     oo=''
     if o=='con': oo=o
+
+    ssa=i.get('skip_stat_analysis','')
 
     dd=i.get('dict',{})
     ddx=copy.deepcopy(dd) # To avoid changing original input !!! 
@@ -418,9 +422,12 @@ def add(i):
           ddflat=r['dict']
 
        # Perform statistical analysis of (multiple statistical) characteristics
+
+
        rsa=multi_stat_analysis({'flat_dict':ddflat,
                                 'dict_to_add':ddx,
                                 'process_multi_keys':sak,
+                                'skip_stat_analysis':ssa,
                                 'out':oo})
        if rsa['return']>0: return rsa
 
@@ -973,6 +980,7 @@ def stat_analysis(i):
               (bins)                - number of bins (int, default = 100)
               (cov_factor)          - float covariance factor
 
+              (skip_stat_analysis)  - if 'yes', just flatten array and add #min
             }
 
     Output: {
@@ -987,6 +995,10 @@ def stat_analysis(i):
             }
 
     """
+
+    issa=False
+    ssa=i.get('skip_stat_analysis','')
+    if ssa=='yes': issa=True
 
     d=i['dict']
     d1=i['dict1']
@@ -1007,25 +1019,26 @@ def stat_analysis(i):
         # If float or int, perform basic analysis
         if type(vv1)!=list: vv1=[vv1]
         for v1 in vv1:
-            # Number of repetitions
-            k_repeats=k+'#repeats'
-            vr=d.get(k_repeats,0)
-            vr+=1
-            d[k_repeats]=vr
+            if not issa:
+               # Number of repetitions
+               k_repeats=k+'#repeats'
+               vr=d.get(k_repeats,0)
+               vr+=1
+               d[k_repeats]=vr
 
-            # Put all values (useful to calculate means, deviations, etc)
-            k_all=k+'#all'
-            v_all=d.get(k_all,[])
-            v_all.append(v1)
-            d[k_all]=v_all
+               # Put all values (useful to calculate means, deviations, etc)
+               k_all=k+'#all'
+               v_all=d.get(k_all,[])
+               v_all.append(v1)
+               d[k_all]=v_all
 
-            # Put only unique values 
-            k_all_u=k+'#all_unique'
-            v=d.get(k_all_u,[])
-            if v1 not in v: v.append(v1)
-            d[k_all_u]=v
+               # Put only unique values 
+               k_all_u=k+'#all_unique'
+               v=d.get(k_all_u,[])
+               if v1 not in v: v.append(v1)
+               d[k_all_u]=v
 
-            if smm!='yes' and (type(v1)==float or type(v1)==int):
+            if not issa and smm!='yes' and (type(v1)==float or type(v1)==int):
                # Calculate min
                k_min=k+'#min'
                vmin=d.get(k_min,v1)
@@ -1976,6 +1989,8 @@ def multi_stat_analysis(i):
               (process_multi_keys)          - list of keys (starts with) to perform stat analysis on flat array,
                                               by default ['##characteristics#*', '##features#*' '##choices#*'],
                                               if empty, no stat analysis
+
+              (skip_stat_analysis)          - if 'yes', just flatten array and add #min
             }
 
     Output: {
@@ -2067,6 +2082,9 @@ def multi_stat_analysis(i):
         if ich!=len(chl):
            ii['skip_expected_value']='yes'
            ii['skip_min_max']='yes'
+
+        if i.get('skip_stat_analysis','')!='':
+           ii['skip_stat_analysis']=i['skip_stat_analysis']
 
         r=stat_analysis(ii)
         if r['return']>0: return r
