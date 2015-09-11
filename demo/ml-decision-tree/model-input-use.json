@@ -1,0 +1,8 @@
+{
+  "features": [20, 1], 
+
+  "model_module_uoa":"model.sklearn",
+  "model_name":"dtc",
+  "model_file":"model-sklearn-dtc"
+
+}

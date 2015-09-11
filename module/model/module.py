@@ -31,24 +31,60 @@ def init(i):
     return {'return':0}
 
 ##############################################################################
-# use model
+# Use model (universal)
 
 def use(i):
     """
 
-    Input:  {}
+    Input:  {
+              features                                - Features [f1,f2,...]
+              model_module_uoa                        - model module
+              model_name                              - model name
+              model_file                              - model file
+            }
 
     Output: {
               return       - return code =  0, if successful
                                          >  0, if error
               (error)      - error text if return > 0
+
+              prediction                              - [value]
             }
 
     """
 
-    print ('use model')
+    o=i.get('out','')
+    i['out']=''
 
-    return {'return':0}
+    mmuoa=i['model_module_uoa']
+    mn=i['model_name']
+    mf=i['model_file']
+
+    # Get table through experiment module for features
+    features=i['features']
+    ftable=[features]
+
+    # Calling model
+    ii={'action':'validate',
+        'module_uoa':mmuoa,
+        'model_name':mn,
+        'model_file':mf,
+        'features_table': ftable,
+        'out':o
+       }
+    r=ck.access(ii)
+    if r['return']>0: return r
+
+    prediction=r['prediction_table'][0]
+
+    if o=='con':
+       ck.out('Features:')
+       for ft in range(0, len(features)):
+           ck.out('  ft'+str(ft)+' -> '+str(features[ft]))
+       ck.out('Prediction:')
+       ck.out('  '+str(prediction))
+
+    return {'return':0, 'prediction':prediction}
 
 ##############################################################################
 # build model (universal)

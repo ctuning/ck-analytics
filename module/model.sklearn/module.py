@@ -267,7 +267,6 @@ def validate(i):
               model_file            - file with model (object) code
 
               features_table        - features table (in experiment module format)
-              features_keys         - features flat keys 
 
               (keep_temp_files)     - if 'yes', keep temp files 
             }
@@ -291,7 +290,6 @@ def validate(i):
     mf7=i['model_file']+'.model.decision_tree.json'
 
     ftable=i['features_table']
-    fkeys=i['features_keys']
 
     ktf=i.get('keep_temp_files','')
 
