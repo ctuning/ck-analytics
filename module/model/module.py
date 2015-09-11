@@ -62,23 +62,23 @@ def use(i):
     o=i.get('out','')
     i['out']=''
 
-    mmuoa=i['model_module_uoa']
-
     mduoa=i.get('model_data_uoa','')
     mruoa=i.get('model_repo_uoa','')
 
     if mduoa=='':
+       mmuoa=i['model_module_uoa']
        mn=i['model_name']
        mf=i['model_file']
     else:
        r=ck.access({'action':'load',
-                    'module_uoa':mmuoa,
+                    'module_uoa':work['self_module_uid'],
                     'data_uoa':mduoa,
                     'repo_uoa':mruoa})
        if r['return']>0: return r
        p=r['path']
        d=r['dict']
 
+       mmuoa=d['model_module_uoa']
        mn=d['model_name']
        mf=d['model_file']
        
@@ -316,10 +316,11 @@ def build(i):
     mruoa=i.get('model_repo_uoa','')
     if mduoa!='':
        r=ck.access({'action':'update',
-                    'module_uoa':mmuoa,
+                    'module_uoa':work['self_module_uid'],
                     'data_uoa':mduoa,
                     'repo_uoa':mruoa,
-                    'dict':{'model_file':mof,
+                    'dict':{'model_module_uoa':mmuoa,
+                            'model_file':mof,
                             'model_name':mn},
                     'substitute':'yes',
                     'sort_keys':'yes'})
@@ -407,6 +408,9 @@ def validate(i):
                 model_file                              - model file
                 (keep_temp_files)                       - if 'yes', keep temp files 
                 (remove_points_with_none)               - if 'yes', remote points with None
+
+                (model_data_uoa)                       - record to this data_uoa (container: model_module_uoa)
+                (model_repo_uoa)                       - use this repo to record model
             }
 
     Output: {
@@ -431,9 +435,27 @@ def validate(i):
 
     rpwn=i.get('remove_points_with_none','')
 
-    mmuoa=i['model_module_uoa']
-    mn=i['model_name']
-    mf=i['model_file']
+    mduoa=i.get('model_data_uoa','')
+    mruoa=i.get('model_repo_uoa','')
+
+    if mduoa=='':
+       mmuoa=i['model_module_uoa']
+       mn=i['model_name']
+       mf=i['model_file']
+    else:
+       r=ck.access({'action':'load',
+                    'module_uoa':work['self_module_uid'],
+                    'data_uoa':mduoa,
+                    'repo_uoa':mruoa})
+       if r['return']>0: return r
+       p=r['path']
+       d=r['dict']
+
+       mmuoa=d['model_module_uoa']
+       mn=d['model_name']
+       mf=d['model_file']
+       
+       mf=os.path.join(p,mf)
 
     mf8=mf+'.model.validation-with-labels.csv'
     if os.path.isfile(mf8): os.remove(mf8)
