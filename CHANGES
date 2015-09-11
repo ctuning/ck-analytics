@@ -1,5 +1,7 @@
 * 2015.09.11 FGG: * adding demo/ml-decision-tree - simple decision tree maker (suggested by Sergey Yakushkin)
                   * adding 'use' in 'model' to perform predictions
+                  * adding model recording to CK entry and using model from CK entry 
+                    (to share and collaboratively improve predictive models)
 
 * 2015.09.10 FGG: * adding 'advice' module (about experiments, bugs, models, features, optimizations, adaptation, community remarks ...)
 

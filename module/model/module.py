@@ -41,6 +41,10 @@ def use(i):
               model_module_uoa                        - model module
               model_name                              - model name
               model_file                              - model file
+
+              (model_data_uoa)                        - get model from this data_uoa (container: model_module_uoa)
+              (model_repo_uoa)                        - use this repo to record model
+
             }
 
     Output: {
@@ -53,12 +57,32 @@ def use(i):
 
     """
 
+    import os
+
     o=i.get('out','')
     i['out']=''
 
     mmuoa=i['model_module_uoa']
-    mn=i['model_name']
-    mf=i['model_file']
+
+    mduoa=i.get('model_data_uoa','')
+    mruoa=i.get('model_repo_uoa','')
+
+    if mduoa=='':
+       mn=i['model_name']
+       mf=i['model_file']
+    else:
+       r=ck.access({'action':'load',
+                    'module_uoa':mmuoa,
+                    'data_uoa':mduoa,
+                    'repo_uoa':mruoa})
+       if r['return']>0: return r
+       p=r['path']
+       d=r['dict']
+
+       mn=d['model_name']
+       mf=d['model_file']
+       
+       mf=os.path.join(p,mf)
 
     # Get table through experiment module for features
     features=i['features']
@@ -137,6 +161,9 @@ def build(i):
                 (keep_temp_files)                       - if 'yes', keep temp files 
                 (remove_points_with_none)               - if 'yes', remote points with None
                 (caption)                               - add caption to graphs, if needed
+
+                (model_data_uoa)                       - record to this data_uoa (container: model_module_uoa)
+                (model_repo_uoa)                       - use this repo to record model
 
               (csv_file)                                - if !='', only record prepared table to CSV ...
             }
@@ -283,6 +310,24 @@ def build(i):
     mmuoa=i['model_module_uoa']
     mn=i['model_name']
     mof=i.get('model_file','')
+
+    # Check if need to crate container (CK entry)
+    mduoa=i.get('model_data_uoa','')
+    mruoa=i.get('model_repo_uoa','')
+    if mduoa!='':
+       r=ck.access({'action':'update',
+                    'module_uoa':mmuoa,
+                    'data_uoa':mduoa,
+                    'repo_uoa':mruoa,
+                    'dict':{'model_file':mof,
+                            'model_name':mn},
+                    'substitute':'yes',
+                    'sort_keys':'yes'})
+       if r['return']>0: return r
+       p=r['path']
+
+       mof=os.path.join(p, mof)
+
     if mof!='' and os.path.isfile(mof): os.remove(mof)
 
     # Calling model
