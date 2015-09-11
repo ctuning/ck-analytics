@@ -1,0 +1,40 @@
+{
+  "ftable":
+     [
+       [20, "O3"], 
+       [20, "O2"],
+       [20, "Os"] 
+     ],
+
+   "fkeys":
+     [
+        "program_size",
+        "opt_flag"
+     ],
+
+   "features_flat_keys_desc": {
+      "program_size":{"name":"Program Size"},
+      "opt_flag":{"name":"Optimization Flag"}
+   },
+
+
+  "ctable":
+     [
+       [false], 
+       [true], 
+       [true] 
+     ],
+
+   "ckeys":
+     [
+        "is_cmov_expected"
+     ],
+
+  "keep_temp_files":"yes",
+
+  "model_module_uoa":"model.sklearn",
+  "model_name":"dtc",
+  "model_file":"model-sklearn-dtc",
+  "model_params":{"max_depth":3}
+
+}

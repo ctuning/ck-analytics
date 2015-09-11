@@ -132,6 +132,24 @@ def build(i):
     fconv1=r['conv1']
     ftable1=r['table']
 
+    if len(ftable)>0 and len(fconv)>0 and o=='con':
+       ck.out('')
+       ck.out('Converting categories to floats:')
+       ck.out('')
+
+       fll=len(ftable[0])
+       for fi in range(0,fll):
+           sfi=str(fi)
+           x=fconv.get(sfi, {})
+           if len(x)>0:
+              ck.out('  Dimension: '+sfi)
+              import operator
+              for y in sorted(x.items(), key=operator.itemgetter(1)):
+                  yk=y[1]
+                  yv=y[0]
+                  ck.out('   '+str(yk)+' -> '+str(yv))        
+       ck.out('')
+
     # Prepare (temporary) out model file
     fn2=mf
     if fn2=='' or i.get('web','')=='yes':

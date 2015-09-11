@@ -57,7 +57,18 @@ def build(i):
     """
 
     Input:  {
-              Select entries:
+              Use data for modeling directly
+                (ftable)                                - Feature table
+                                                            [ [f1,f2,...], [f1,f2,...], ...]
+                (fkeys)                                 - Key names
+                                                            [ "f1 name", "f2 name", ...]
+
+                (ctable)                                - Outcome to model
+                                                            [ [value], [value], ... ]
+                (ckeys)                                 - Key names
+                                                            [ "value name" ]
+              
+              OR select entries:
 
                 (repo_uoa) or (experiment_repo_uoa)     - can be wild cards
                 (remote_repo_uoa)                       - if remote access, use this as a remote repo UOA
@@ -133,32 +144,38 @@ def build(i):
            fdesc1[q+ffke]=fdesc[q]
        fdesc=fdesc1
 
-    iif=copy.deepcopy(i)
-    iif['action']='get'
-    iif['module_uoa']=cfg['module_deps']['experiment']
-    iif['flat_keys_list']=ffkl
-    iif['flat_keys_index']=i.get('features_flat_keys_index','')
-    r=ck.access(iif)
-    if r['return']>0: return r
-    ftable=r['table'].get('0',[])
-    fkeys=r['real_keys']
-
+    ftable=i.get('ftable',[])
+    fkeys=i.get('fkeys',[])
     if len(ftable)==0:
-       return {'return':1, 'error':'no points found'}
+       iif=copy.deepcopy(i)
+       iif['action']='get'
+       iif['module_uoa']=cfg['module_deps']['experiment']
+       iif['flat_keys_list']=ffkl
+       iif['flat_keys_index']=i.get('features_flat_keys_index','')
+       r=ck.access(iif)
+       if r['return']>0: return r
+       ftable=r['table'].get('0',[])
+       fkeys=r['real_keys']
+
+       if len(ftable)==0:
+          return {'return':1, 'error':'no points found'}
 
     # Get table through experiment module for characteristics
-    iic=copy.deepcopy(i)
-    iic['action']='get'
-    iic['module_uoa']=cfg['module_deps']['experiment']
-    iic['flat_keys_list']=i.get('characteristics_flat_keys_list',[])
-    iic['flat_keys_index']=i.get('characteristics_flat_keys_index','')
-    r=ck.access(iic)
-    if r['return']>0: return r
-    ctable=r['table'].get('0',[])
-    ckeys=r['real_keys']
-
+    ctable=i.get('ctable',[])
+    ckeys=i.get('ckeys',[])
     if len(ctable)==0:
-       return {'return':1, 'error':'no points found'}
+       iic=copy.deepcopy(i)
+       iic['action']='get'
+       iic['module_uoa']=cfg['module_deps']['experiment']
+       iic['flat_keys_list']=i.get('characteristics_flat_keys_list',[])
+       iic['flat_keys_index']=i.get('characteristics_flat_keys_index','')
+       r=ck.access(iic)
+       if r['return']>0: return r
+       ctable=r['table'].get('0',[])
+       ckeys=r['real_keys']
+
+       if len(ctable)==0:
+          return {'return':1, 'error':'no points found'}
 
     if rpwn=='yes':
        ftable1=[]
@@ -269,8 +286,18 @@ def validate(i):
     """
 
     Input:  {
-              Select entries:
+              Use data for modeling directly
+                (ftable)                                - Feature table
+                                                            [ [f1,f2,...], [f1,f2,...], ...]
+                (fkeys)                                 - Key names
+                                                            [ "f1 name", "f2 name", ...]
 
+                (ctable)                                - Outcome to model
+                                                            [ [value], [value], ... ]
+                (ckeys)                                 - Key names
+                                                            [ "value name" ]
+              
+              OR select entries:
                 (repo_uoa) or (experiment_repo_uoa)     - can be wild cards
                 (remote_repo_uoa)                       - if remote access, use this as a remote repo UOA
                 (module_uoa) or (experiment_module_uoa) - can be wild cards
@@ -349,32 +376,40 @@ def validate(i):
        fdesc=fdesc1
 
     # Get table through experiment module for features
-    iif=copy.deepcopy(i)
-    iif['action']='get'
-    iif['module_uoa']=cfg['module_deps']['experiment']
-    iif['flat_keys_list']=ffkl
-    iif['flat_keys_index']=i.get('features_flat_keys_index','')
-    r=ck.access(iif)
-    if r['return']>0: return r
-    ftable=r['table'].get('0',[])
-    fkeys=r['real_keys']
+    ftable=i.get('ftable',[])
+    fkeys=i.get('fkeys',[])
+    mtable=i.get('mtable',[])
 
     if len(ftable)==0:
-       return {'return':1, 'error':'no points found'}
+       iif=copy.deepcopy(i)
+       iif['action']='get'
+       iif['module_uoa']=cfg['module_deps']['experiment']
+       iif['flat_keys_list']=ffkl
+       iif['flat_keys_index']=i.get('features_flat_keys_index','')
+       r=ck.access(iif)
+       if r['return']>0: return r
+       ftable=r['table'].get('0',[])
+       fkeys=r['real_keys']
 
-    mtable=r['mtable'].get('0',[])
+       if len(ftable)==0:
+          return {'return':1, 'error':'no points found'}
+
+       mtable=r['mtable'].get('0',[])
 
     # Get table through experiment module for characteristics
-    iic=copy.deepcopy(i)
-    iic['action']='get'
-    iic['module_uoa']=cfg['module_deps']['experiment']
-    iic['flat_keys_list']=i.get('characteristics_flat_keys_list',[])
-    iic['flat_keys_index']=i.get('characteristics_flat_keys_index','')
-    r=ck.access(iic)
-    if r['return']>0: return r
+    ctable=i.get('ctable',[])
+    ckeys=i.get('ckeys',[])
+    if len(ctable)==0:
+       iic=copy.deepcopy(i)
+       iic['action']='get'
+       iic['module_uoa']=cfg['module_deps']['experiment']
+       iic['flat_keys_list']=i.get('characteristics_flat_keys_list',[])
+       iic['flat_keys_index']=i.get('characteristics_flat_keys_index','')
+       r=ck.access(iic)
+       if r['return']>0: return r
 
-    ctable=r['table'].get('0',[])
-    ckeys=r['real_keys']
+       ctable=r['table'].get('0',[])
+       ckeys=r['real_keys']
 
     if rpwn=='yes':
        ftable1=[]
@@ -449,7 +484,8 @@ def validate(i):
 
         label=lt[k][0]
 
-        kk=mtable[k].get('features',{}).get('features',{})
+        if k<len(mtable):
+           kk=mtable[k].get('features',{}).get('features',{})
 
         sdiff=''
         correct=True
