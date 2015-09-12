@@ -5,6 +5,10 @@ This is a relatively stable repository used to simplify and unify
 experimentation and expose it to predictive analytics
 (statistical analysis, feature selection, machine learning).
 
+Prerequisites
+=============
+* Collective Knowledge Framework: http://github.com/ctuning/ck
+
 Dependencies
 ============
 
