@@ -1,5 +1,5 @@
 {
-  "features": [20, 1], 
+  "features": [10, 1], 
 
   "model_module_uoa":"model.sklearn",
   "model_name":"dtc",
