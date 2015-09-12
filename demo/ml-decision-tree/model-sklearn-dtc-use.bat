@@ -1,1 +1,1 @@
-ck use model: @model-input-use.json
+ck use model @model-input-use.json

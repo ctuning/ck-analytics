@@ -1,1 +1,1 @@
-ck build model: @model-input.json
+ck build model @model-input.json
