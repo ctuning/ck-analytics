@@ -1,3 +1,5 @@
+* 2015.09.19 FGG: * adding 'skip' flag to skip comparison of results during experiment 'replay'
+
 * 2015.09.11 FGG: * adding demo/ml-decision-tree - simple decision tree maker (suggested by Sergey Yakushkin)
                   * adding 'use' in 'model' to perform predictions
                   * adding model recording to CK entry and using model from CK entry 
