@@ -487,6 +487,7 @@ def plot(i):
            xpst=pst.get(g,{})
 
            elw=int(xpst.get('elinewidth',0))
+           xfmt=xpst.get('fmt','')
 
            cl=xpst.get('color','')
            if cl=='': cl=gs[s]['color']
@@ -562,13 +563,13 @@ def plot(i):
 
               else:
                  if xerr=='yes' and yerr=='yes':
-                    sp.errorbar(mx, my, xerr=mxerr, yerr=myerr, ls='none', c=cl, elinewidth=elw, label=lbl)
+                    sp.errorbar(mx, my, xerr=mxerr, yerr=myerr, ls='none', c=cl, elinewidth=elw, label=lbl, fmt=xfmt)
                  elif xerr=='yes' and yerr!='yes':
-                    sp.errorbar(mx, my, xerr=mxerr, ls='none',  c=cl, elinewidth=elw, label=lbl)
+                    sp.errorbar(mx, my, xerr=mxerr, ls='none',  c=cl, elinewidth=elw, label=lbl, fmt=xfmt)
                  elif yerr=='yes' and xerr!='yes':
-                     sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw, label=lbl)
+                     sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw, label=lbl, fmt=xfmt)
                  else:
-                    sp.scatter(mx, my, s=int(sz), edgecolor=cl, c=cl, marker=mrk, label=lbl)
+                    sp.scatter(mx, my, s=int(sz), edgecolor=cl, c=cl, marker=mrk, label=lbl, fmt=xfmt)
 
                  if xpst.get('frontier','')=='yes':
                     # not optimal solution, but should work (need to sort to draw proper frontier)
