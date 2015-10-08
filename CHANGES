@@ -1,4 +1,5 @@
 * 2015.10.08 FGG: * adding 'fmt' parameter to graphs
+                  * adding 'font' parameters for graphs (size, weight, family)
 
 * 2015.09.19 FGG: * adding 'skip' flag to skip comparison of results during experiment 'replay'
 

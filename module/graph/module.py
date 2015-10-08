@@ -336,12 +336,16 @@ def plot(i):
 
        import matplotlib.pyplot as plt
 
+       fsize=int(i.get('font_size','10'))
+       fweight=i.get('font_weight','normal')
+       ffamily=i.get('font_family','arial')
+
        # Set font
        font=i.get('font',{})
        if len(font)==0:
-          font = {'family':'arial', 
-                  'weight':'normal', 
-                  'size': 10}
+          font = {'family':ffamily, 
+                  'weight':fweight, 
+                  'size': fsize}
 
        plt.rc('font', **font)
 
