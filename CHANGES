@@ -1,6 +1,7 @@
 * 2015.10.09 FGG: * added "zmin" and "zmax" params for 3D graphs
-                  * added "invert_x_axis", "invert_y_axis" and "invert_z_axis"
-                  * added "x_ticks_scale", "y_ticks_scale", "z_ticks_scale"
+                  * added "invert_x_axis", "invert_y_axis" and "invert_z_axis" to 3D graphs
+                  * added "x_ticks_scale", "y_ticks_scale", "z_ticks_scale" to 3D graphs
+                  * added "color_dict" to 3D graphs
 
 * 2015.10.08 FGG: * added 'fmt' parameter to graphs
                   * added 'font' parameters for graphs (size, weight, family)

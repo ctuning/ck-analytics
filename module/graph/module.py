@@ -438,7 +438,11 @@ def plot(i):
        # If heatmap, prepare colorbar
        if pt=='mpl_2d_heatmap' or pt=='mpl_3d_trisurf':
           from matplotlib import cm
-          xcmap = plt.cm.get_cmap('coolwarm')
+
+          if len(i.get('color_dict',{}))>0:
+             xcmap = mpl.colors.LinearSegmentedColormap('my_colormap', i['color_dict'], 1024)
+          else:
+             xcmap = plt.cm.get_cmap('coolwarm')
 
        # Check forced min/max for different axis
        xmin=i.get('xmin','')
@@ -682,7 +686,8 @@ def plot(i):
                 elif pt=='mpl_3d_scatter':
                    heatmap=sp.scatter(mx,my,mz, c=cl, s=int(sz), marker=mrk, lw=elw)
                 elif pt=='mpl_3d_trisurf':
-                   heatmap=sp.plot_trisurf(mx,my,mz,cmap=cm.coolwarm, lw=elw)
+#                   heatmap=sp.plot_trisurf(mx,my,mz,cmap=cm.coolwarm, lw=elw)
+                   heatmap=sp.plot_trisurf(mx,my,mz,cmap=xcmap, lw=elw)
            s+=1
            if s>=len(gs):s=0
 
@@ -720,7 +725,6 @@ def plot(i):
           xbc=i.get('v_lines_color','r')
           for q in vlines:
               sp.plot([q,q],[dymin,dymax], linestyle=xbs, c=xbc)
-
 
        # Checking scaling
        if i.get('x_ticks_scale','')!='':
