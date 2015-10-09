@@ -440,7 +440,7 @@ def plot(i):
           from matplotlib import cm
           xcmap = plt.cm.get_cmap('coolwarm')
 
-
+       # Check forced min/max for different axis
        xmin=i.get('xmin','')
        xmax=i.get('xmax','')
        ymin=i.get('ymin','')
@@ -461,6 +461,12 @@ def plot(i):
        if zmax!='':
           sp.set_zlim(top=float(zmax))
 
+       # Check if invert axis
+       if i.get('invert_x_axis','')=='yes': plt.gca().invert_xaxis()
+       if i.get('invert_y_axis','')=='yes': plt.gca().invert_yaxis()
+       if i.get('invert_z_axis','')=='yes': plt.gca().invert_zaxis()
+
+       # Check if display error bars
        xerr=i.get('display_x_error_bar','')
        yerr=i.get('display_y_error_bar','')
        zerr=i.get('display_z_error_bar','')

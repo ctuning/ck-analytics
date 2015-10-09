@@ -1,4 +1,5 @@
 * 2015.10.09 FGG: * adding "zmin" and "zmax" params for 3D graphs
+                  * adding "invert_x_axis", "invert_y_axis" and "invert_z_axis"
 
 * 2015.10.08 FGG: * adding 'fmt' parameter to graphs
                   * adding 'font' parameters for graphs (size, weight, family)
