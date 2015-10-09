@@ -1,26 +1,27 @@
-* 2015.10.09 FGG: * adding "zmin" and "zmax" params for 3D graphs
-                  * adding "invert_x_axis", "invert_y_axis" and "invert_z_axis"
+* 2015.10.09 FGG: * added "zmin" and "zmax" params for 3D graphs
+                  * added "invert_x_axis", "invert_y_axis" and "invert_z_axis"
+                  * added "x_ticks_scale", "y_ticks_scale", "z_ticks_scale"
 
-* 2015.10.08 FGG: * adding 'fmt' parameter to graphs
-                  * adding 'font' parameters for graphs (size, weight, family)
+* 2015.10.08 FGG: * added 'fmt' parameter to graphs
+                  * added 'font' parameters for graphs (size, weight, family)
 
-* 2015.09.19 FGG: * adding 'skip' flag to skip comparison of results during experiment 'replay'
+* 2015.09.19 FGG: * added 'skip' flag to skip comparison of results during experiment 'replay'
 
-* 2015.09.11 FGG: * adding demo/ml-decision-tree - simple decision tree maker (suggested by Sergey Yakushkin)
-                  * adding 'use' in 'model' to perform predictions
-                  * adding model recording to CK entry and using model from CK entry 
+* 2015.09.11 FGG: * added demo/ml-decision-tree - simple decision tree maker (suggested by Sergey Yakushkin)
+                  * added 'use' in 'model' to perform predictions
+                  * added model recording to CK entry and using model from CK entry 
                     (to share and collaboratively improve predictive models)
 
-* 2015.09.10 FGG: * adding 'advice' module (about experiments, bugs, models, features, optimizations, adaptation, community remarks ...)
+* 2015.09.10 FGG: * added 'advice' module (about experiments, bugs, models, features, optimizations, adaptation, community remarks ...)
 
-* 2015.09.09 FGG: * adding 'skip_stat_analysis' to compact recorded data when stat analysis is not needed
+* 2015.09.09 FGG: * added 'skip_stat_analysis' to compact recorded data when stat analysis is not needed
                     (useful for CLSmith)
 
 * 2015.09.03 FGG: * fixed bug in showing +- % when 0 (noticed by Anton)
 
-* 2015.09.02 FGG: * adding extension to keys when retreiving experiments
+* 2015.09.02 FGG: * added extension to keys when retreiving experiments
 
-* 2015.08.12 FGG: * adding possibility to reverse key order in Pareto frontier filter during multi-objective autotuning 
+* 2015.08.12 FGG: * added possibility to reverse key order in Pareto frontier filter during multi-objective autotuning 
                     (useful for FPS in slambench, for example)
                   * improving interactive graphs for interactive articles
 

@@ -721,6 +721,20 @@ def plot(i):
           for q in vlines:
               sp.plot([q,q],[dymin,dymax], linestyle=xbs, c=xbc)
 
+
+       # Checking scaling
+       if i.get('x_ticks_scale','')!='':
+          xticks = sp.get_xticks()/float(i['x_ticks_scale'])
+          sp.set_xticklabels(xticks)
+
+       if i.get('y_ticks_scale','')!='':
+          yticks = sp.get_yticks()/float(i['y_ticks_scale'])
+          sp.set_yticklabels(yticks)
+
+       if i.get('z_ticks_scale','')!='':
+          zticks = sp.get_zticks()/float(i['z_ticks_scale'])
+          sp.set_zticklabels(zticks)
+
        # Set axes names
        axd=i.get('axis_x_desc','')
        if axd!='': plt.xlabel(axd)
