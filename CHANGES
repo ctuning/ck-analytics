@@ -1,3 +1,5 @@
+* 2015.10.09 FGG: * adding "zmin" and "zmax" params for 3D graphs
+
 * 2015.10.08 FGG: * adding 'fmt' parameter to graphs
                   * adding 'font' parameters for graphs (size, weight, family)
 

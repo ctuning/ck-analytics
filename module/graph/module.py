@@ -445,6 +445,8 @@ def plot(i):
        xmax=i.get('xmax','')
        ymin=i.get('ymin','')
        ymax=i.get('ymax','')
+       zmin=i.get('zmin','')
+       zmax=i.get('zmax','')
 
        if xmin!='':
           sp.set_xlim(left=float(xmin))
@@ -454,6 +456,10 @@ def plot(i):
           sp.set_ylim(bottom=float(ymin))
        if ymax!='':
           sp.set_ylim(top=float(ymax))
+       if zmin!='':
+          sp.set_zlim(bottom=float(zmin))
+       if zmax!='':
+          sp.set_zlim(top=float(zmax))
 
        xerr=i.get('display_x_error_bar','')
        yerr=i.get('display_y_error_bar','')
