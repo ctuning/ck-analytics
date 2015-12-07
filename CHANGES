@@ -1,35 +1,37 @@
-* 2015.10.09 FGG: * added "zmin" and "zmax" params for 3D graphs
-                  * added "invert_x_axis", "invert_y_axis" and "invert_z_axis" to 3D graphs
-                  * added "x_ticks_scale", "y_ticks_scale", "z_ticks_scale" to 3D graphs
-                  * added "color_dict" to 3D graphs
+* 2015.12.07 * taking statistical repetition number from the entry when replaying a given experiment
 
-* 2015.10.08 FGG: * added 'fmt' parameter to graphs
-                  * added 'font' parameters for graphs (size, weight, family)
+* 2015.10.09 * added "zmin" and "zmax" params for 3D graphs
+             * added "invert_x_axis", "invert_y_axis" and "invert_z_axis" to 3D graphs
+             * added "x_ticks_scale", "y_ticks_scale", "z_ticks_scale" to 3D graphs
+             * added "color_dict" to 3D graphs
 
-* 2015.09.19 FGG: * added 'skip' flag to skip comparison of results during experiment 'replay'
+* 2015.10.08 * added 'fmt' parameter to graphs
+             * added 'font' parameters for graphs (size, weight, family)
 
-* 2015.09.11 FGG: * added demo/ml-decision-tree - simple decision tree maker (suggested by Sergey Yakushkin)
-                  * added 'use' in 'model' to perform predictions
-                  * added model recording to CK entry and using model from CK entry 
-                    (to share and collaboratively improve predictive models)
+* 2015.09.19 * added 'skip' flag to skip comparison of results during experiment 'replay'
 
-* 2015.09.10 FGG: * added 'advice' module (about experiments, bugs, models, features, optimizations, adaptation, community remarks ...)
+* 2015.09.11 * added demo/ml-decision-tree - simple decision tree maker (suggested by Sergey Yakushkin)
+             * added 'use' in 'model' to perform predictions
+             * added model recording to CK entry and using model from CK entry 
+               (to share and collaboratively improve predictive models)
 
-* 2015.09.09 FGG: * added 'skip_stat_analysis' to compact recorded data when stat analysis is not needed
-                    (useful for CLSmith)
+* 2015.09.10 * added 'advice' module (about experiments, bugs, models, features, optimizations, adaptation, community remarks ...)
 
-* 2015.09.03 FGG: * fixed bug in showing +- % when 0 (noticed by Anton)
+* 2015.09.09 * added 'skip_stat_analysis' to compact recorded data when stat analysis is not needed
+               (useful for CLSmith)
 
-* 2015.09.02 FGG: * added extension to keys when retreiving experiments
+* 2015.09.03 * fixed bug in showing +- % when 0 (noticed by Anton)
 
-* 2015.08.12 FGG: * added possibility to reverse key order in Pareto frontier filter during multi-objective autotuning 
-                    (useful for FPS in slambench, for example)
-                  * improving interactive graphs for interactive articles
+* 2015.09.02 * added extension to keys when retreiving experiments
 
-* 2015.08.11 FGG: * added output of decision trees to png (for interactive reports and articles via CK)
-                  * added horizontal and vertical lines for graphs (used in graphs for adaptive scheduling (predictive modeling and active learning))
+* 2015.08.12 * added possibility to reverse key order in Pareto frontier filter during multi-objective autotuning 
+               (useful for FPS in slambench, for example)
+             * improving interactive graphs for interactive articles
 
-* 2015.08.09 FGG: * added extra dict when recording experiments (useful to record name and subview_uoa, for example)
-                  * fixing a few bugs in experiment viewing
+* 2015.08.11 * added output of decision trees to png (for interactive reports and articles via CK)
+             * added horizontal and vertical lines for graphs (used in graphs for adaptive scheduling (predictive modeling and active learning))
+
+* 2015.08.09 * added extra dict when recording experiments (useful to record name and subview_uoa, for example)
+             * fixing a few bugs in experiment viewing
 
 * 2015.08.07 added reverse sorting in experiment tables

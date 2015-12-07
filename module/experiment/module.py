@@ -1754,6 +1754,11 @@ def reproduce(i):
     if len(ch)==0:
        return {'return':1, 'error':'no flat characteristics in the point to compare'}
 
+    ft=dd.get('features',{})
+    choices=ft.get('choices',{})
+    rpt=choices.get('repeat','')
+    if rpt!='' and repetitions=='': repetitions=rpt
+
     cf=dd.get('features',{}) # choices and features
     if 'sub_points' in cf: del(cf['sub_points'])
 
