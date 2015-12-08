@@ -1,4 +1,6 @@
 * 2015.12.07 * taking statistical repetition number from the entry when replaying a given experiment
+             * passing 'local_platform' and 'skip_clean_after' to program pipeline when
+               replaying such experiments ...
 
 * 2015.10.09 * added "zmin" and "zmax" params for 3D graphs
              * added "invert_x_axis", "invert_y_axis" and "invert_z_axis" to 3D graphs

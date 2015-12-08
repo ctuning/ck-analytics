@@ -1589,19 +1589,19 @@ def rerun(i):
 def reproduce(i):
     """
     Input:  {
-               data_uoa              - experiment data UOA (can have wildcards)
-               (repo_uoa)            - experiment repo UOA (can have wildcards)
-               (experiment_repo_uoa) - use it, if repository is remote
-               (remote_repo_uoa)     - if repo above is remote, use this repo on remote machine
+               data_uoa                      - experiment data UOA (can have wildcards)
+               (repo_uoa)                    - experiment repo UOA (can have wildcards)
+               (experiment_repo_uoa)         - use it, if repository is remote
+               (remote_repo_uoa)             - if repo above is remote, use this repo on remote machine
 
                (module_uoa)
-               (tags)            - search by tags
+               (tags)                        - search by tags
 
-               (point)           - point (or skip, if there is only one), can be of format UID-<subpoint>
-               (subpoint)        - subpoint (or skip, if there is only one)
+               (point)                       - point (or skip, if there is only one), can be of format UID-<subpoint>
+               (subpoint)                    - subpoint (or skip, if there is only one)
 
-               (repetitions)     - statistical repetitions (default=4)
-               (pipeline_update) - customize pipeline with this dict (useful to update already prepared pipeline from file)
+               (repetitions)                 - statistical repetitions (default=4)
+               (pipeline_update)             - customize pipeline with this dict (useful to update already prepared pipeline from file)
 
                (dims_to_check)               - list of dims to check, can have wildcards (if empty, check all)
                (end_of_dims_to_check)        - list of endings of dimensions to compare ...
@@ -1612,6 +1612,13 @@ def reproduce(i):
                (record_reproduced_flat_json) - file to record flag dict with reproduced results
 
                (skip)                        - if 'yes', do not perform comparison
+
+               ==============================
+                 Some productivity keys specifically for autotuning pipeline (ck-autotuning repo):
+
+               (local_platform)              - use parameters of a local platform (to retarget experiment)
+               (skip_clean_after)            - do not clean program pipeline after execution 
+                                               (keeping low level scripts in tmp directory for low-level debugging)
             }
 
     Output: {
@@ -1646,6 +1653,9 @@ def reproduce(i):
 
     pipeline_update=i.get('pipeline_update',{})
     repetitions=i.get('repetitions','')
+
+    if i.get('local_platform','')!='': pipeline_update['local_platform']=i['local_platform']
+    if i.get('skip_clean_after','')!='': pipeline_update['skip_clean_after']=i['skip_clean_after']
 
     pp=os.getcwd()+os.path.sep
 
