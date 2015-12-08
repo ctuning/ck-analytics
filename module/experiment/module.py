@@ -1839,6 +1839,7 @@ def reproduce(i):
 
        dd=[]
        inot_found=0
+       ifound=0
        for q in sorted(ch):
            v=ch[q]
            if type(v)!=list and type(v)!=dict:
@@ -1867,6 +1868,7 @@ def reproduce(i):
                  if q not in chn:
                     inot_found+=1
                  else:
+                    ifound+=1
                     v1=chn[q]
                     if v!=v1:
                        if (type(v)==int or type(v)==float) and v!=0:
@@ -1884,10 +1886,12 @@ def reproduce(i):
        if o=='con':
           ck.out('')
           if inot_found!=0:
-             ck.out(str(inot_found)+' dimensions (keys) not found in replicated experiment!')
+             ck.out('Warning: '+str(inot_found)+' keys not found in the output dictionary of the replicated experiment!')
 
-          if len(dd)==0:
-             ck.out('All existing dimension are the same (within statistical margin '+str(ttc*100)+'%)!')
+          if ifound==0:
+             ck.out('Warning: no other keys found in the output dictionary of the replicated experiment (possibly failed experiment)!')
+          elif len(dd)==0:
+             ck.out('All existing dimensions are the same (within statistical margin '+str(ttc*100)+'%)!')
 
        r['different_dims']=dd
 

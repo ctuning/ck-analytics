@@ -589,7 +589,7 @@ def plot(i):
                  elif yerr=='yes' and xerr!='yes':
                      sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw, label=lbl, fmt=xfmt)
                  else:
-                    sp.scatter(mx, my, s=int(sz), edgecolor=cl, c=cl, marker=mrk, label=lbl, fmt=xfmt)
+                    sp.scatter(mx, my, s=int(sz), edgecolor=cl, c=cl, marker=mrk, label=lbl)
 
                  if xpst.get('frontier','')=='yes':
                     # not optimal solution, but should work (need to sort to draw proper frontier)
