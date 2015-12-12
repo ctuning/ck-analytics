@@ -1825,7 +1825,7 @@ def reproduce(i):
        # Comparing dicts
        if o=='con':
           ck.out('')
-          ck.out('Performing comparison on all dimensions...')
+          ck.out('Performing comparison on all dimensions (original vs new results) ...')
           ck.out('')
 
        ends=i.get('end_of_dims_to_check',[])
