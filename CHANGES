@@ -1,3 +1,10 @@
+* 2015.12.13 * improving reproducibility (experiment replay): 
+               * adding '--deps' flag to reuse all SW deps when reproducing
+                 experiment on the same machine; 
+               * adding '--dims' to compare only one flat key (or use wildcards)
+               * fixing bug with statistical repetitions 
+                 (now taking the correct number from a given experiment)
+ 
 * 2015.12.07 * taking statistical repetition number from the entry when replaying a given experiment
              * passing 'local_platform' and 'skip_clean_after' to program pipeline when
                replaying such experiments ...

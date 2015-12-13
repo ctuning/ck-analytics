@@ -68,6 +68,15 @@ def add(i):
                                                                          (needed to deal properly with bencmarks like slambench
                                                                          which report kernel times for all frames)
 
+                                                (pipeline_state)       - final state of the pipeline
+                                                                          {
+                                                                           'repetitions':
+                                                                           'fail_reason'
+                                                                           'fail'
+                                                                           'fail_bool'
+                                                                          }
+                                        
+
                                                 (choices_desc)         - choices descrpition
                                                 (features_desc)        - features description
                                                 (characteristics_desc) - characteristic description
@@ -204,7 +213,7 @@ def add(i):
     sf=i.get('skip_flatten','')
 
     sak=i.get('process_multi_keys','') # Keys to perform stat analysis
-    if sak=='': sak=['##characteristics#*', '##features#*', '##choices#*']
+    if sak=='': sak=['##characteristics#*', '##features#*', '##choices#*', '##pipeline_state#*']
 
     dpoint={}
     point=0
@@ -422,8 +431,6 @@ def add(i):
           ddflat=r['dict']
 
        # Perform statistical analysis of (multiple statistical) characteristics
-
-
        rsa=multi_stat_analysis({'flat_dict':ddflat,
                                 'dict_to_add':ddx,
                                 'process_multi_keys':sak,
@@ -1603,7 +1610,8 @@ def reproduce(i):
                (repetitions)                 - statistical repetitions (default=4)
                (pipeline_update)             - customize pipeline with this dict (useful to update already prepared pipeline from file)
 
-               (dims_to_check)               - list of dims to check, can have wildcards (if empty, check all)
+               (dims_to_check) or (dims)     - list of dimensions to check, can have wildcards (if empty, check all); 
+                                               alternatively can use a string (useful for CMD)
                (end_of_dims_to_check)        - list of endings of dimensions to compare ...
 
                (threshold_to_compare)        - % threshold to decide whether dim is different or not
@@ -1616,8 +1624,9 @@ def reproduce(i):
                ==============================
                  Some productivity keys specifically for autotuning pipeline (ck-autotuning repo):
 
-               (local_platform)              - use parameters of a local platform (to retarget experiment)
-               (skip_clean_after)            - do not clean program pipeline after execution 
+               (local_platform) or (local)   - if 'yes', use parameters of a local platform (to retarget experiment)
+               (deps)                        - if 'yes', use recorded deps (to run on the same platform)
+               (skip_clean_after)            - if 'yes', do not clean program pipeline after execution 
                                                (keeping low level scripts in tmp directory for low-level debugging)
             }
 
@@ -1655,6 +1664,7 @@ def reproduce(i):
     repetitions=i.get('repetitions','')
 
     if i.get('local_platform','')!='': pipeline_update['local_platform']=i['local_platform']
+    if i.get('local','')!='':          pipeline_update['local_platform']=i['local']
     if i.get('skip_clean_after','')!='': pipeline_update['skip_clean_after']=i['skip_clean_after']
 
     pp=os.getcwd()+os.path.sep
@@ -1766,8 +1776,14 @@ def reproduce(i):
 
     ft=dd.get('features',{})
     choices=ft.get('choices',{})
-    rpt=choices.get('repeat','')
-    if rpt!='' and repetitions=='': repetitions=rpt
+
+    # Trying to get number of statistical repetitions from the entry
+    if repetitions=='':
+       rpt=ch.get('##pipeline_state#repetitions#min','')
+       if rpt=='': rpt=choices.get('repeat','')
+       if rpt!='': 
+          rpt=int(rpt)
+          repetitions=rpt
 
     cf=dd.get('features',{}) # choices and features
     if 'sub_points' in cf: del(cf['sub_points'])
@@ -1778,8 +1794,15 @@ def reproduce(i):
     pipeline_uid=rx['pipeline_uid']
     pipeline=rx['pipeline']
 
-    pipeline.update(cf)
-    pipeline.update({'dependencies':deps})
+    if i.get('deps','')=='yes':
+       pipeline.update(cf)
+       pdeps=pipeline.get('dependencies',{})
+       rz=ck.merge_dicts({'dict1':pdeps, 'dict2':deps})
+       if rz['return']>0: return rz
+       pdeps=rz['dict1']
+    else:
+       pdeps={}
+    pipeline['dependencies']=pdeps
 
     if len(pipeline)==0:
        return {'return':1, 'error':'pipeline not found in the entry'}
@@ -1790,19 +1813,24 @@ def reproduce(i):
  
     # Attempt to run pipeline
     ii={'action':'run',
+        'out':o,
         'module_uoa':cfg['module_deps']['pipeline'],
         'data_uoa':pipeline_uid,
         'pipeline':pipeline,
         'repetitions':repetitions,
-        'pipeline_update':pipeline_update}
+        'pipeline_update':pipeline_update,
+        'skip_done':'yes'}
     r=ck.access(ii)
     if r['return']>0: return r
 
+    rlio=r.get('last_iteration_output',{})
+    fail=rlio.get('fail','')
+
     # Check that didn't fail (or failed, if reproducing a bug)
-    if r.get('fail','')=='yes':
+    if fail=='yes':
        if o=='con':
           ck.out('')
-          ck.out('Pipeline failed ('+r.get('fail_reason','')+')')
+          ck.out('Pipeline failed during replay ('+rlio.get('fail_reason','')+')')
 
     # Flattening characteristics
     chn=r.get('last_stat_analysis',{}).get('dict_flat',{})
@@ -1820,8 +1848,7 @@ def reproduce(i):
        if rx['return']>0: return rx
 
     # Check if skip comparison
-    if i.get('skip','')!='yes':
-
+    if fail!='yes' and i.get('skip','')!='yes':
        # Comparing dicts
        if o=='con':
           ck.out('')
@@ -1836,6 +1863,9 @@ def reproduce(i):
        import fnmatch
 
        dc=i.get('dims_to_check',[])
+       if len(dc)==0:
+          dc=i.get('dims',[])
+       if type(dc)!=list: dc=[dc]
 
        dd=[]
        inot_found=0
