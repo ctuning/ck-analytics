@@ -1,3 +1,5 @@
+* 2015.12.14 * fixing bug in replay (by accident removed update of choices in pipeline)
+
 * 2015.12.13 * improving reproducibility (experiment replay): 
                * adding '--deps' flag to reuse all SW deps when reproducing
                  experiment on the same machine; 

@@ -1794,8 +1794,8 @@ def reproduce(i):
     pipeline_uid=rx['pipeline_uid']
     pipeline=rx['pipeline']
 
+    pipeline.update(cf)
     if i.get('deps','')=='yes':
-       pipeline.update(cf)
        pdeps=pipeline.get('dependencies',{})
        rz=ck.merge_dicts({'dict1':pdeps, 'dict2':deps})
        if rz['return']>0: return rz
