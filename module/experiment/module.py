@@ -1810,6 +1810,7 @@ def replay(i):
         'pipeline':pipeline,
         'repetitions':repetitions,
         'pipeline_update':pipeline_update,
+        'force_pipeline_update':'yes',
         'skip_done':'yes'}
     r=ck.access(ii)
     if r['return']>0: return r
