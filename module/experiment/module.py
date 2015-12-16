@@ -575,7 +575,12 @@ def get(i):
               (ignore_graph_separation)             - if 'yes', ignore separating different entries into graphs 
               (separate_subpoints_to_graphs)        - if 'yes', separate each subpoint of entry into a new graph
 
+              (vector_thresholds)                   - List of values: if a given value in this vector is !=None and more than
+                                                        a value in a processed vector - skip it
+              (vector_thresholds_conditions)        - specify threshold conditions for above vector values ("<" - default or ">")
+
               (expand_list)                         - if 'yes', expand list to separate values (useful for histogram)
+                                                         (all checks for valid vectors or thresholds are currently turned off)
             }
 
     Output: {
@@ -627,6 +632,9 @@ def get(i):
     gkjf=i.get('get_keys_from_json_files',[])
 
     el=i.get('expand_list','') # useful for histograms
+
+    vt=i.get('vector_thresholds',[])
+    vtc=i.get('vector_thresholds_conditions',[])
 
     points=[]
 
@@ -829,12 +837,13 @@ def get(i):
                                          v=v[0]
                                 vect.append(v)
 
-                         # Add vector
+                         # Add vector (if valid)
                          sigraph=str(igraph)
 
                          if sigraph not in table: 
                             table[sigraph]=[]
                             mtable[sigraph]=[]
+
                          if el=='yes':
                             max_length=0
                             for ih in range(0, len(vect)):
@@ -852,7 +861,23 @@ def get(i):
                                 table[sigraph].append(vect1)
                          else:
                             if (ipin!='yes' or not has_none) and (ipies!='yes' or not has_empty_string):
-                               table[sigraph].append(vect)
+                               skip=False
+
+                               if len(vt)>0:
+                                  for o in range(0, len(vt)):
+                                      vx=vt[o]
+                                      vxo=vect[o]
+                                      if vx!=None:
+                                         xvtc='<'
+                                         if len(vtc)>0 and o<len(vtc) and vtc[o]!=None:
+                                            xvtc=vtc[o]
+
+                                         if (xvtc=='<' and vxo>vx) or (xvtc=='>' and vxo<vx): 
+                                            skip=True
+                                            break
+
+                               if not skip:
+                                  table[sigraph].append(vect)
 
                          # Add misc info:
                          mi={'repo_uoa':ruid, 'module_uoa':muid, 'data_uoa':duid,
@@ -1560,41 +1585,6 @@ def list_points(i):
 
 def replay(i):
     """
-    Input:  { see 'reproduce'
-            }
-
-    Output: {
-              return       - return code =  0, if successful
-                                         >  0, if error
-              (error)      - error text if return > 0
-            }
-
-    """
-
-    return reproduce(i)
-
-##############################################################################
-# rerun experiment == the same as reproduce
-
-def rerun(i):
-    """
-    Input:  { see 'reproduce'
-            }
-
-    Output: {
-              return       - return code =  0, if successful
-                                         >  0, if error
-              (error)      - error text if return > 0
-            }
-    """
-
-    return reproduce(i)
-
-##############################################################################
-# reproduce a given experiment
-
-def reproduce(i):
-    """
     Input:  {
                data_uoa                      - experiment data UOA (can have wildcards)
                (repo_uoa)                    - experiment repo UOA (can have wildcards)
@@ -1628,6 +1618,7 @@ def reproduce(i):
                (deps)                        - if 'yes', use recorded deps (to run on the same platform)
                (skip_clean_after)            - if 'yes', do not clean program pipeline after execution 
                                                (keeping low level scripts in tmp directory for low-level debugging)
+               (all)                         - print all comparisons of keys (not only when there is a difference)
             }
 
     Output: {
@@ -1810,7 +1801,7 @@ def reproduce(i):
     if o=='con':
        ck.out('Restarting pipeline ...')
        ck.out('')
- 
+
     # Attempt to run pipeline
     ii={'action':'run',
         'out':o,
@@ -1849,10 +1840,12 @@ def reproduce(i):
 
     # Check if skip comparison
     if fail!='yes' and i.get('skip','')!='yes':
+       al=i.get('all','')
+
        # Comparing dicts
        if o=='con':
           ck.out('')
-          ck.out('Performing comparison on all dimensions (original vs new results) ...')
+          ck.out('Performing comparison on output dimensions (original vs new results) ...')
           ck.out('')
 
        ends=i.get('end_of_dims_to_check',[])
@@ -1868,10 +1861,19 @@ def reproduce(i):
        if type(dc)!=list: dc=[dc]
 
        dd=[]
-       inot_found=0
-       ifound=0
-       for q in sorted(ch):
-           v=ch[q]
+
+       # Create a list of all keys in original and new output
+       lk=list(ch.keys())
+       for q in chn:
+           if q not in lk:
+              lk.append(q)
+
+       # Compare
+       ichecked=0
+       for q in sorted(lk):
+           v=ch.get(q,None)
+           v1=chn.get(q, None)
+
            if type(v)!=list and type(v)!=dict:
               check=False
 
@@ -1895,37 +1897,65 @@ def reproduce(i):
                            break
 
               if check:
-                 if q not in chn:
-                    inot_found+=1
-                 else:
-                    ifound+=1
-                    v1=chn[q]
-                    if v!=v1:
-                       if (type(v)==int or type(v)==float) and v!=0:
-                          vx=abs(v1-v)/v
-                          if vx>ttc:
-                             if o=='con':
-                                ck.out(q+':  '+str(v)+'  vs  '+str(v1)+'    diff='+( '%3.1f'% (vx*100))+'%')
-                             dd.append(q)
-                       else:
-                          if o=='con':
-                             ck.out(q+':  '+str(v)+'  vs  '+str(v1))
-                          dd.append(q)
+                 ichecked+=1
 
+                 ss=q+':  '+str(v)+'  vs  '+str(v1)
+                 if v!=v1:
+                    if (type(v)==int or type(v)==float) and (type(v1)==int or type(v1)==float) and v!=0:
+                       vx=abs(v1-v)/v
+                       if vx>ttc:
+                          ss+='    diff='+( '%3.1f'% (vx*100))+'%'
+                          dd.append(q)
+                    else:
+                       dd.append(q)
+
+                 if o=='con' and (v!=v1 or al=='yes'):
+                    ck.out(ss)
                                                                              
        if o=='con':
           ck.out('')
-          if inot_found!=0:
-             ck.out('Warning: '+str(inot_found)+' keys not found in the output dictionary of the replicated experiment!')
-
-          if ifound==0:
-             ck.out('Warning: no other keys found in the output dictionary of the replicated experiment (possibly failed experiment)!')
+          if ichecked==0:
+             ck.out('Warning: no matched keys found in the output dictionary of the replicated experiment (possibly failed experiment)!')
           elif len(dd)==0:
              ck.out('All existing dimensions are the same (within statistical margin '+str(ttc*100)+'%)!')
 
        r['different_dims']=dd
 
     return r
+
+##############################################################################
+# rerun experiment == the same as reproduce
+
+def rerun(i):
+    """
+    Input:  { see 'replay'
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+    """
+
+    return replay(i)
+
+##############################################################################
+# reproduce a given experiment
+
+def reproduce(i):
+    """
+    Input:  { see 'replay'
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+    """
+
+    return replay(i)
 
 ##############################################################################
 # load all info about a given point and subpoint

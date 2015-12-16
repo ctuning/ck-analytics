@@ -155,10 +155,15 @@ def analyze(i):
              ylist=[100.0]
              xlistx=[0]
 
+          # Convert from numpy to float
+          for q in range(0, len(xlist)):
+              xlist[q]=float(xlist[q])
+              ylist[q]=float(ylist[q])
+
           if len(xlistx)>0:
              for q in xlistx:
-                 xlist2.append(xlist[q])
-                 ylist2.append(ylist[q])
+                 xlist2.append(float(xlist[q]))
+                 ylist2.append(float(ylist[q]))
 
              ylist2s, xlist2s = (list(t) for t in zip(*sorted(zip(ylist2, xlist2),reverse=True)))
 

@@ -1,3 +1,7 @@
+* 2015.12.15 * adding support to prune experimental vectors by threshold (when retrieving results):
+                 "vector_thresholds" and "vector_thresholds_conditions" - useful to keep or skip
+                 points with high variation, for example.
+
 * 2015.12.14 * fixing bug in replay (by accident removed update of choices in pipeline)
 
 * 2015.12.13 * improving reproducibility (experiment replay): 
