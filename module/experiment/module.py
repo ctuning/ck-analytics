@@ -1612,6 +1612,15 @@ def replay(i):
                (skip)                        - if 'yes', do not perform comparison
 
                ==============================
+                 If one would like to compare results with another point (for example, to check speedups 
+                 rather than just reproducing a given point)
+
+               (compare_data_uoa)
+               (compare_repo_uoa)
+               (compare_point)
+               (compare_subpoint)
+
+               ==============================
                  Some productivity keys specifically for autotuning pipeline (ck-autotuning repo):
 
                (local_platform) or (local)   - if 'yes', use parameters of a local platform (to retarget experiment)
@@ -1762,11 +1771,46 @@ def replay(i):
     dd=rx['dict']
 
     ch=dd.get('flat',{})
-    if len(ch)==0:
-       return {'return':1, 'error':'no flat characteristics in the point to compare'}
 
     ft=dd.get('features',{})
     choices=ft.get('choices',{})
+
+    cf=dd.get('features',{}) # choices and features
+    if 'sub_points' in cf: del(cf['sub_points'])
+
+    deps=dd.get('deps',{})
+
+    # Check if compare with results from another point *******************************
+    cduoa=i.get('compare_data_uoa','')
+    cruoa=i.get('compare_repo_uoa','')
+    cpuid=i.get('compare_point','')
+    csp=i.get('compare_subpoint','')
+    if cpuid.find('-')>=0:
+       cpuid,csp=cpuid.split('-')
+    cpuid=cpuid.strip()
+    cspid=csp.strip()
+
+    if cduoa!='' or cpuid!='' or cspid!='':
+       if o=='con':
+          ck.out('Loading dimensions to compare from different entry '+cduoa+' ...')
+          ck.out('')
+
+       ii={'repo_uoa':cruoa,
+           'module_uoa':muoa,
+           'data_uoa':cduoa,
+           'point':cpuid,
+           'subpoint':cspid,
+           'action':'load_point'}
+       rx=ck.access(ii)
+       if rx['return']>0: return rx
+
+       cdd=rx['dict']
+
+       ch=dd.get('flat',{})
+
+    #******************************************************************
+    if len(ch)==0:
+       return {'return':1, 'error':'no flat characteristics in the point to compare'}
 
     # Trying to get number of statistical repetitions from the entry
     if repetitions=='':
@@ -1775,12 +1819,8 @@ def replay(i):
        if rpt!='': 
           rpt=int(rpt)
           repetitions=rpt
-
-    cf=dd.get('features',{}) # choices and features
-    if 'sub_points' in cf: del(cf['sub_points'])
-
-    deps=dd.get('deps',{})
-
+    
+    #******************************************************************
     pipeline_uoa=rx['pipeline_uoa']
     pipeline_uid=rx['pipeline_uid']
     pipeline=rx['pipeline']
@@ -1798,6 +1838,7 @@ def replay(i):
     if len(pipeline)==0:
        return {'return':1, 'error':'pipeline not found in the entry'}
 
+    #******************************************************************
     if o=='con':
        ck.out('Restarting pipeline ...')
        ck.out('')
@@ -1859,6 +1900,8 @@ def replay(i):
        dc=i.get('dims_to_check',[])
        if len(dc)==0:
           dc=i.get('dims',[])
+          # On Linux from CMD substitute ^ with #
+          dc=dc.replace('^','#')
        if type(dc)!=list: dc=[dc]
 
        dd=[]
