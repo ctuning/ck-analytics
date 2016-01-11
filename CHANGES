@@ -1,3 +1,6 @@
+* 2016.01.11 * Adding ck crowdsource experiment - universal experiment crowdsourcing engine
+               (to support our collaborative OpenCL/CUDA/compiler flag program optimization) 
+
 * 2015.12.18 * When reproducing a given experiment, allow to compare results with another experiment
                (for example with default one) using --compare_data_uoa
              * When reproducing experiment in Linux and specifiying dimensions to check from CMD, 
