@@ -1,0 +1,16 @@
+{
+"points": {
+  "1737e16da44696ad": {
+    "##characteristics#compile#binary_size#min": 1.2 
+  }, 
+  "475435a893244532": {
+    "##characteristics#compile#binary_size#min": 1.1 
+  }, 
+  "1b4886ae4b04cbc3": {
+    "##characteristics#compile#binary_size#min": 1.5 
+  }, 
+  "d78424dbab0ab4c2": {
+    "##characteristics#compile#binary_size#min": 1.9 
+  }
+ }
+}
