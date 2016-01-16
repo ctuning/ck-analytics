@@ -1,3 +1,6 @@
+* 2016.01.15 * Adding margins when comparing values on Pareto frontieer 
+               (used to monitor only significant speedups when crowdsourcing autotuning)
+
 * 2016.01.11 * Adding ck crowdsource experiment - universal experiment crowdsourcing engine
                (to support our collaborative OpenCL/CUDA/compiler flag program optimization) 
 

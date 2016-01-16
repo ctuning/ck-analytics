@@ -43,14 +43,17 @@ def init(i):
 def filter(i):
     """
     Input:  {
-              points         - dict with points, each has dict with optimization dimensions (should have the same names)
-
+              points          - dict with points, each has dict with optimization dimensions (should have the same names)
+                              
               (frontier_keys) - list of keys to leave only best points during multi-objective autotuning
                                  (multi-objective optimization)
                                 If omited, use all keys
 
-              (reverse_keys) - list of values associated with above keys. If True, reverse sorting for a give key
-                               (by default descending) - can't be used without "frontier_keys" due to lack of order in python dicts2
+              (reverse_keys)  - list of values associated with above keys. If True, reverse sorting for a give key
+                                (by default descending) - can't be used without "frontier_keys" due to lack of order in python dicts2
+
+              (margins)        - list of margins when comparing values, i.e. Vold/Vnew < this number (such as 1.10 instead of 1).
+                                 will be used if !=None  
             }
 
     Output: {
@@ -79,6 +82,9 @@ def filter(i):
     fk=i.get('frontier_keys',[])
     fkr=i.get('reverse_keys',[])
     lrk=len(fkr)
+
+    mar=i.get('margins',[])
+    lmar=len(mar)
 
     if lp>1:
        for l0 in range(0,lp,1):
@@ -113,11 +119,17 @@ def filter(i):
                             if v1!=None and v1!='':
                                v1=float(v1)
 
+                               if v1==0: v1=0.01
+
+                               m=1.0
+                               if dim<lrk and mar[dim]!=None: 
+                                  m=mar[dim]
+
                                if dim<lrk and fkr[dim]==True:
-                                  if v0>v1:
+                                  if v1==0 or (v0/v1)>m:
                                      better=False
                                      break
-                               elif v0<v1:
+                               elif v0==0 or (v0/v1)<m:
                                   better=False
                                   break
 

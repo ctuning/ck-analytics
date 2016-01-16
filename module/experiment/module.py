@@ -138,6 +138,10 @@ def add(i):
 
               flat_features - flat dict of real features of the recorded point (can be later used to search the same points)
 
+              recorded_uid  - UID of a recorded experiment
+              point         - recorded point
+              sub_point     - recorded subpoint
+
               elapsed_time  - elapsed time (useful for debugging - to speed up processing of "big data" ;) )
             }
 
@@ -363,6 +367,7 @@ def add(i):
 
     # Find related point by features and/or choices
     fpoint=''
+    fpoint_uid=''
     if euid!='' and spbf=='yes':
        if o=='con': ck.out('    Searching points by features (and choices if needed) ...')
 
@@ -376,7 +381,8 @@ def add(i):
           return {'return':1, 'error':'ambiguity - more than one point found with the same features'}
 
        if len(points)==1:
-          fpoint='ckp-'+points[0]
+          fpoint_uid=fpoints[0]
+          fpoint='ckp-'+fpoint_uid
 
        if fpoint!='':
           if o=='con': 
@@ -408,6 +414,7 @@ def add(i):
        if rx['return']>0: return rx
        uid=rx['data_uid']
  
+       fpoint_uid=uid
        fpoint='ckp-'+uid
 
        dde['points']=str(ipoints)
@@ -512,7 +519,14 @@ def add(i):
 
     et=time.time() - start_time
 
-    return {'return':0, 'elapsed_time':str(et), 'update_dict':r, 'dict_flat':ddflat, 'stat_analysis':rsa, 'flat_features':fddft}
+    return {'return':0, 'elapsed_time':str(et), 
+                        'update_dict':r, 
+                        'dict_flat':ddflat, 
+                        'stat_analysis':rsa, 
+                        'flat_features':fddft,
+                        'recorded_uid':euid,
+                        'point':fpoint_uid,
+                        'sub_point':sp}
 
 ##############################################################################
 # get points from multiple entries
