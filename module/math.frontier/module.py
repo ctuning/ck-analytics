@@ -122,7 +122,7 @@ def filter(i):
                                if v1==0: v1=0.01
 
                                m=1.0
-                               if dim<lrk and mar[dim]!=None: 
+                               if dim<lmar and mar[dim]!=None: 
                                   m=mar[dim]
 
                                if dim<lrk and fkr[dim]==True:
