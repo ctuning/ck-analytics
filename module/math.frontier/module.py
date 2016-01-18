@@ -119,6 +119,7 @@ def filter(i):
                             if v1!=None and v1!='':
                                v1=float(v1)
 
+                               if v1==0: v1=v0/10
                                if v1==0: v1=0.01
 
                                m=1.0
