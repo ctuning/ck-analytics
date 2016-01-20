@@ -1912,11 +1912,14 @@ def replay(i):
        import fnmatch
 
        dc=i.get('dims_to_check',[])
-       if len(dc)==0:
-          dc=i.get('dims',[])
-          # On Linux from CMD substitute ^ with #
-          dc=dc.replace('^','#')
+
+       if len(dc)==0: dc=i.get('dims',[])
+
        if type(dc)!=list: dc=[dc]
+
+       # On Linux from CMD substitute ^ with #
+       for q in range(0, len(dc)):
+           dc[q]=dc[q].replace('^','#')
 
        dd=[]
 
