@@ -16,6 +16,8 @@ import os
 
 var_post_subview='subview'
 
+line='****************************************************************'
+
 ##############################################################################
 # Initialize module
 
@@ -2728,7 +2730,22 @@ def html_viewer(i):
 def crowdsource(i):
     """
     Input:  {
-              (scenario)   - UOA of a module with crowdsourcing scenario
+              (scenario)         - UOA of a module with crowdsourcing scenario
+              (tags)             - extra tags to prunce experimental scenarios
+
+              (quiet)            - do not ask questions, but select random ...
+              (skip_welcome)     - if 'yes', do not print welcome header
+              
+              (skip_exchange)    - if 'yes', do not exchange platform info
+                                   (development mode)
+
+              (change_user)      - if yes', change user
+
+              (local)            - if 'yes', use local repo for exchange (local autotuning/benchmarking)
+              (exchange_repo)    - which repo to record/update info (remote-ck by default)
+              (exchange_subrepo) - if remote, remote repo UOA
+
+              (once)             - if 'yes', run scenario ones (useful for autotuning a given program)
             }
 
     Output: {
@@ -2746,60 +2763,104 @@ def crowdsource(i):
 
     scenario=i.get('scenario','')
 
-    if scenario=='':
+    et=i.get('tags','')
+    if et!='': et+=','
+    et+='crowdsource,experiments'
+
+    quiet=i.get('quiet','')
+
+    finish=False
+    sit=0
+    sdeps={}
+
+    once=i.get('once','')
+
+    while not finish:
+       sit+=1
+
+       # Selecting scenario
        if o=='con':
-          ck.out('Detecting available scenarios to crowdsource experiments ...')
+          ck.out(line)
+          ck.out('Scenario iteration: '+str(sit))
 
-       ii={'action':'search',
-           'module_uoa':cfg['module_deps']['module'],
-           'add_meta':'yes',
-           'scenario':scenario,
-           'tags':'crowdsource experiments'}
-       r=ck.access(ii)
-       if r['return']>0: return r
-
-       lst=r['lst']
-
-       if len(lst)==0:
-          if o=='con':ck.out('')
-          return {'return':1, 'error':'no local scenarios to crowdsource experiments found!\n\nYou may install "ck-crowdtuning" shared repository via\n  $ ck pull repo:ck-crowdtuning\n\nThis will let you participate in collaborative program optimization and benchmarking'}  
-       elif len(lst)==1:
-          scenario=lst[0].get('data_uid','')
-       else:
-          zss=sorted(lst, key=lambda v: (int(v.get('meta',{}).get('priority',0)), v['data_uoa']))
-
-          if quiet=='yes':
-             scenario=zss[0]['data_uid']
-          else:
+          if scenario=='':
              ck.out('')
-             ck.out('More than one scenario found to crowdsource experiments:')
+             ck.out('Detecting available crowdsourcing scenarios ...')
+
+             ii={'action':'search',
+                 'module_uoa':cfg['module_deps']['module'],
+                 'add_meta':'yes',
+                 'add_info':'yes',
+                 'scenario':scenario,
+                 'tags':et}
+             r=ck.access(ii)
+             if r['return']>0: return r
+
+             lst=r['lst']
+
+             if len(lst)==0:
+                if o=='con':ck.out('')
+                return {'return':1, 'error':'no local scenarios to crowdsource experiments found!\n\nYou can install "ck-crowdtuning" shared repository via\n  $ ck pull repo:ck-crowdtuning\n\nThis will let you participate in collaborative program optimization and benchmarking'}  
+             elif len(lst)==1:
+                scenario=lst[0].get('data_uid','')
+             else:
+                zss=sorted(lst, key=lambda v: (int(v.get('meta',{}).get('priority',0)), v['data_uoa']))
+
+                if quiet=='yes':
+                   scenario=zss[0]['data_uid']
+                else:
+                   ck.out('')
+                   ck.out('More than one experimental scenario found:')
+                   ck.out('')
+                   zz={}
+                   iz=0
+                   for z1 in zss:
+                       z=z1['data_uid']
+                       zu=z1['data_uoa']
+
+                       zux=z1.get('info',{}).get('data_name','')
+                       if zux!='': zu=zux
+
+                       zs=str(iz)
+                       zz[zs]=z
+
+                       ck.out(zs+') '+zu+' ('+z+')')
+
+                       iz+=1
+
+                   ck.out('')
+                   rx=ck.inp({'text':'Select scenario number you want to participate in (or Enter to select 0): '})
+                   x=rx['string'].strip()
+                   if x=='': x='0'
+
+                   if x not in zz:
+                      return {'return':1, 'error':'scenario number is not recognized'}
+
+                   scenario=zz[x]
+             
+          # Print selected scenario
+          ii={'action':'load',
+              'module_uoa':cfg['module_deps']['module'],
+              'data_uoa':scenario}
+          rs=ck.access(ii)
+          if rs['return']>0: return rs
+          d=rs['dict']
+
+          sn=d.get('desc','')
+          if sn=='': sn=scenario
+          else:      sn+=' ('+scenario+')'
+
+          if o=='con':
              ck.out('')
-             zz={}
-             iz=0
-             for z1 in zss:
-                 z=z1['data_uid']
-                 zu=z1['data_uoa']
-
-                 zux=z1.get('meta',{}).get('crowd_desc','')
-                 if zux!='': zu=zux
-
-                 zs=str(iz)
-                 zz[zs]=z
-
-                 ck.out(zs+') '+zu+' ('+z+')')
-
-                 iz+=1
-
+             ck.out('Executing scenario "'+sn+'" ...')
              ck.out('')
-             rx=ck.inp({'text':'Select scenario UOA (or Enter to select 0): '})
-             x=rx['string'].strip()
-             if x=='': x='0'
 
-             if x not in zz:
-                return {'return':1, 'error':'scenario number is not recognized'}
+          i['module_uoa']=scenario
 
-             scenario=zz[x]
+          r=ck.access(i)
+          if r['return']>0: return r
 
-    i['module_uoa']=scenario
+       if once=='yes':
+          finish=True
 
-    return ck.access(i)
+    return {'return':0}
