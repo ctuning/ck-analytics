@@ -2775,6 +2775,9 @@ def crowdsource(i):
 
     once=i.get('once','')
 
+    pi={}
+    sw=''
+
     while not finish:
        sit+=1
 
@@ -2844,6 +2847,7 @@ def crowdsource(i):
               'data_uoa':scenario}
           rs=ck.access(ii)
           if rs['return']>0: return rs
+
           d=rs['dict']
 
           sn=d.get('desc','')
@@ -2855,12 +2859,32 @@ def crowdsource(i):
              ck.out('Executing scenario "'+sn+'" ...')
              ck.out('')
 
+          # Executing scenario
           i['module_uoa']=scenario
+          i['platform_info']=pi
+          i['skip_welcome']=sw
 
           r=ck.access(i)
-          if r['return']>0: return r
+          if r['return']>0: 
+             if o=='con':
+                ck.out(line)
+                ck.out('Scenario FAILED: '+r['error'])
+                ck.out('')
+
+                if quiet!='yes':
+                   ck.inp({'text':'Press Enter to continue: '})
+
+             if o!='con' or quiet=='yes':
+                import time
+                time.sleep(4)
+          else:
+             pi=r.get('platform_info',{})
+             sw='yes'
 
        if once=='yes':
           finish=True
+
+    ck.out(line)
+    ck.out('Experiment crowdsourcing completed - thank you very much for participation!')
 
     return {'return':0}
