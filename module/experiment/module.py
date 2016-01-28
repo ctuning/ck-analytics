@@ -2885,6 +2885,6 @@ def crowdsource(i):
           finish=True
 
     ck.out(line)
-    ck.out('Experiment crowdsourcing completed - thank you very much for participation!')
+    ck.out('Experiments completed!')
 
     return {'return':0}
