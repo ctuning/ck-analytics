@@ -2776,7 +2776,7 @@ def crowdsource(i):
     once=i.get('once','')
 
     pi={}
-    sw=''
+    sw=i.get('skip_welcome','')
 
     while not finish:
        sit+=1
