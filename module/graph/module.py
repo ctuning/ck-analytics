@@ -184,8 +184,15 @@ def plot(i):
 
        table=r['table']
        mtable=r.get('mtable',{})
-
        rk=r['real_keys']
+
+       merged_meta=r.get('merged_meta',{})
+       pifs=r.get('plot_info_from_scenario',{})
+       if len(pifs)>0:
+          import copy
+          ii=copy.deepcopy(i)
+          i=pifs
+          i.update(ii)
 
        i['action']=tmp_a
        i['module_uoa']=tmp_mu

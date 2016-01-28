@@ -597,6 +597,8 @@ def get(i):
 
               (expand_list)                         - if 'yes', expand list to separate values (useful for histogram)
                                                          (all checks for valid vectors or thresholds are currently turned off)
+
+              (skip_scenario_info)                  - if 'yes', do not attempt to pre-load info from the experiment scenario
             }
 
     Output: {
@@ -613,6 +615,9 @@ def get(i):
               points       - list of points {'repo_uoa','repo_uid','module_uoa','module_uid','data_uoa','data_uid','point_uid', '<file_extension_name>'=dict ...}}
 
               real_keys    - all added keys (useful when flat_keys_index is used)
+
+              merged_meta  - merged meta from all entries
+              plot_info_from_scenario - dict with plot info if experimental scenario is found in the first experiment entry
             }
 
     """
@@ -652,7 +657,16 @@ def get(i):
     vt=i.get('vector_thresholds',[])
     vtc=i.get('vector_thresholds_conditions',[])
 
+    ssi=i.get('skip_scenario_info','')
+
     points=[]
+
+    mm={}
+    plot_info_from_scenario={}
+
+    si=i.get('sort_index','')
+    sxwl=i.get('substitute_x_with_loop','')
+    axl=i.get('add_x_loop','')
 
     if len(table)==0:
        ruoa=i.get('repo_uoa','')
@@ -738,6 +752,29 @@ def get(i):
            dd=r['dict']
 
            meta=dd.get('meta',{})
+
+           # Check if scenario
+           if ssi!='yes':
+              sm_uoa=meta.get('scenario_module_uoa','')
+              if sm_uoa!='':
+                 # Trying to pre-load graph params
+                 rx=ck.access({'action':'load',
+                               'module_uoa':cfg['module_deps']['module'],
+                               'data_uoa':sm_uoa})
+                 if rx['return']==0:
+                    dx=rx['dict']
+                    plot_info_from_scenario=dx.get('plot',{})
+                    if len(plot_info_from_scenario)>0:
+                       if len(fkl)==0: 
+                          fkl=plot_info_from_scenario.get('flat_keys_list',[])
+                          if i.get('flat_keys_list_separate_graphs','')=='' and len(fkl)>0: fkls=[fkl]
+                       if xfkl=='': xfkl=plot_info_from_scenario.get('flat_keys_list_ext','')
+
+                       if si=='': si=plot_info_from_scenario.get('sort_index','')
+                       if sxwl=='': sxwl=plot_info_from_scenario.get('substitute_x_with_loop','')
+                       if axl=='': axl=plot_info_from_scenario.get('add_x_loop','')
+
+              mm.update(meta)
 
            dirList=os.listdir(p)
 
@@ -911,7 +948,6 @@ def get(i):
        rfkl=fkls[0]
 
     # If sort/substitute
-    si=i.get('sort_index','')
     if si!='':
        rx=sort_table({'table':table, 'sort_index':si})
        if rx['return']>0: return rx
@@ -919,14 +955,15 @@ def get(i):
 
     # Substitute all X with a loop (usually to sort Y and compare with predictions in scatter graphs, etc)
     ii={'table':table}
-    if i.get('substitute_x_with_loop','')=='yes' or i.get('add_x_loop','')=='yes':
-       if i.get('add_x_loop','')=='yes':
+    if sxwl=='yes' or axl=='yes':
+       if axl=='yes':
           ii['add_x_loop']='yes'
        rx=substitute_x_with_loop(ii)
        if rx['return']>0: return rx
        table=rx['table']
 
-    return {'return':0, 'table':table, 'mtable':mtable, 'real_keys':rfkl, 'points':points}
+    return {'return':0, 'table':table, 'mtable':mtable, 'real_keys':rfkl, 'points':points, 
+                        'merged_meta':mm, 'plot_info_from_scenario':plot_info_from_scenario}
 
 ##############################################################################
 # Convert experiment table to CSV
