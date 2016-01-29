@@ -88,6 +88,8 @@ def add(i):
                                                 (pipeline_uid)         -   if experiment comes from CK pipeline (from some repo), record UOA
                                                                            (to be able to reproduce experiments, test other choices 
                                                                            and improve pipeline by the community/workgroups)
+                                                (dict_to_compare)      - flat dict to calculate improvements
+
                                               }
 
               (experiment_repo_uoa)         - if defined, use it instead of repo_uoa
@@ -127,6 +129,8 @@ def add(i):
 
               (record_deps_at_each_point)   - if 'yes', record dependencies for each point and not just an entry.
                                                 Useful if descriptions change at each point (say different program may require different libs)
+
+              (record_permanent)            - if 'yes', mark as permanent (to avoid being deleted by Pareto filter)
             }
 
     Output: {
@@ -167,6 +171,8 @@ def add(i):
     ddd=ddx.get('dict','')
     if ddd=='': ddd={}
 
+    dddc=dd.get('dict_to_compare', {})
+
     meta=ddx.get('meta','')
     if meta=='': meta={}
 
@@ -180,6 +186,8 @@ def add(i):
     ddeps=ddx.get('dependencies',{})
 
     ch=ddx.get('characteristics', {})
+
+    recp=i.get('record_permanent','')
 
     # Check if characteristics lits (to add a number of experimental results at the same time,
     #   otherwise point by point processing can become very slow
@@ -442,6 +450,7 @@ def add(i):
        # Perform statistical analysis of (multiple statistical) characteristics
        rsa=multi_stat_analysis({'flat_dict':ddflat,
                                 'dict_to_add':ddx,
+                                'dict_to_compare':dddc,
                                 'process_multi_keys':sak,
                                 'skip_stat_analysis':ssa,
                                 'out':oo})
@@ -480,6 +489,9 @@ def add(i):
        # Save subpoint dict to file
        r=ck.save_json_to_file({'json_file':fssp1, 'dict':dds, 'sort_keys':sk})
        if r['return']>0: return r
+
+    if recp=='yes':
+       ddft['permanent']='yes'
 
     # Save features file (that include subpoint)
     pfp=os.path.join(p, fpoint)+'.features.json'
@@ -591,6 +603,8 @@ def get(i):
               (ignore_graph_separation)             - if 'yes', ignore separating different entries into graphs 
               (separate_subpoints_to_graphs)        - if 'yes', separate each subpoint of entry into a new graph
 
+              (separate_permanent_to_graphs)        - if 'yes', separate permanent to new graphs (first is always non-permanent ...)(
+
               (vector_thresholds)                   - List of values: if a given value in this vector is !=None and more than
                                                         a value in a processed vector - skip it
               (vector_thresholds_conditions)        - specify threshold conditions for above vector values ("<" - default or ">")
@@ -599,6 +613,7 @@ def get(i):
                                                          (all checks for valid vectors or thresholds are currently turned off)
 
               (skip_scenario_info)                  - if 'yes', do not attempt to pre-load info from the experiment scenario
+              (separate_permanent_points)           - if 'yes', add permanent points to ppoints ('features' file should be loaded)
             }
 
     Output: {
@@ -614,6 +629,8 @@ def get(i):
 
               points       - list of points {'repo_uoa','repo_uid','module_uoa','module_uid','data_uoa','data_uid','point_uid', '<file_extension_name>'=dict ...}}
 
+              ppoints      - list of permanent points
+
               real_keys    - all added keys (useful when flat_keys_index is used)
 
               merged_meta  - merged meta from all entries
@@ -626,6 +643,8 @@ def get(i):
 
     table=i.get('table',{})
     mtable=i.get('mtable',{})
+
+    spp=i.get('separate_permanent_points','')
 
     fki=i.get('flat_keys_index','')
     fkie=i.get('flat_keys_index_end','#min')
@@ -652,6 +671,10 @@ def get(i):
     ljf=i.get('load_json_files',[])
     gkjf=i.get('get_keys_from_json_files',[])
 
+    sptg=i.get('separate_permanent_to_graphs','')
+    if sptg=='yes':
+       if 'features' not in ljf: ljf.append('features')
+
     el=i.get('expand_list','') # useful for histograms
 
     vt=i.get('vector_thresholds',[])
@@ -660,6 +683,7 @@ def get(i):
     ssi=i.get('skip_scenario_info','')
 
     points=[]
+    ppoints=[]
 
     mm={}
     plot_info_from_scenario={}
@@ -773,6 +797,9 @@ def get(i):
                        if si=='': si=plot_info_from_scenario.get('sort_index','')
                        if sxwl=='': sxwl=plot_info_from_scenario.get('substitute_x_with_loop','')
                        if axl=='': axl=plot_info_from_scenario.get('add_x_loop','')
+                       if sptg=='': sptg=plot_info_from_scenario.get('separate_permanent_to_graphs','')
+                       if sptg=='yes':
+                          if 'features' not in ljf: ljf.append('features')
 
               mm.update(meta)
 
@@ -780,6 +807,7 @@ def get(i):
 
            added=False
            for fn in sorted(dirList):
+               permanent=False
                if fn.endswith('.flat.json'):
                   pp1=fn[:-10]
                   pp2=pp1[4:]
@@ -821,11 +849,23 @@ def get(i):
                             x={}
                             for k in gkjf:
                                 x[k]=dpj.get(k, None)
+
+                            y=dpj.get('permanent','')
+                            if y!='': x['permanent']=y
+
                             dpj=x
 
                          ppx[jf]=dpj
 
-                  points.append(ppx)
+                  # If separate permanent points
+                  u1=ppx.get('features',{}).get('permanent','')
+                  if sptg=='yes' and u1=='yes':
+                     permanent=True
+
+                  if spp=='yes' and u1=='yes':
+                     ppoints.append(ppx)
+                  else:
+                     points.append(ppx)
 
                   added=True
 
@@ -897,6 +937,11 @@ def get(i):
                             table[sigraph]=[]
                             mtable[sigraph]=[]
 
+                         sigraph1=str(igraph+1)
+                         if permanent:
+                            table[sigraph1]=[]
+                            mtable[sigraph1]=[]
+
                          if el=='yes':
                             max_length=0
                             for ih in range(0, len(vect)):
@@ -911,7 +956,10 @@ def get(i):
                                     if q<len(h): v1=h[q]
                                     else: v1=h[len(h)-1]
                                     vect1.append(v1)
-                                table[sigraph].append(vect1)
+                                if permanent:
+                                   table[sigraph1].append(vect1)
+                                else:
+                                   table[sigraph].append(vect1)
                          else:
                             if (ipin!='yes' or not has_none) and (ipies!='yes' or not has_empty_string):
                                skip=False
@@ -930,13 +978,19 @@ def get(i):
                                             break
 
                                if not skip:
-                                  table[sigraph].append(vect)
+                                  if permanent:
+                                     table[sigraph1].append(vect)
+                                  else:
+                                     table[sigraph].append(vect)
 
                          # Add misc info:
                          mi={'repo_uoa':ruid, 'module_uoa':muid, 'data_uoa':duid,
                              'point_uid':pp2, 'features':drz}
 
-                         mtable[sigraph].append(mi)
+                         if permanent:
+                            mtable[sigraph1].append(mi)
+                         else:
+                            mtable[sigraph].append(mi)
 
                          if sstg=='yes' or len(fkls)>1:
                             igraph+=1
@@ -962,7 +1016,7 @@ def get(i):
        if rx['return']>0: return rx
        table=rx['table']
 
-    return {'return':0, 'table':table, 'mtable':mtable, 'real_keys':rfkl, 'points':points, 
+    return {'return':0, 'table':table, 'mtable':mtable, 'real_keys':rfkl, 'points':points, 'ppoints':ppoints, 
                         'merged_meta':mm, 'plot_info_from_scenario':plot_info_from_scenario}
 
 ##############################################################################
@@ -1057,6 +1111,8 @@ def stat_analysis(i):
               dict1                 - new flat dict to add
                                       if empty, no stat analysis
 
+              (dict_compare)        - calculate improvements over this dict if present
+
               (skip_expected_value) - if 'yes', do not calculute expected value
               (skip_min_max)        - if 'yes', do not calculate min, max, mean, etc
 
@@ -1087,6 +1143,12 @@ def stat_analysis(i):
 
     d=i['dict']
     d1=i['dict1']
+
+    dc=i.get('dict_compare',{})
+
+    compare=False
+    if len(dc)>0:
+       compare=True
 
     max_range_percent=0
     mmin=''
@@ -1136,6 +1198,11 @@ def stat_analysis(i):
                   mmin='yes'
                d[k_min]=vmin
 
+               if compare:
+                  cvmin=dc.get(k_min, None)
+                  if cvmin!=None and vmin!=0 and vmin!=0.0:
+                     d[k+'#min_imp']=cvmin/vmin
+
                # Calculate max
                k_max=k+'#max'
                vmax=d.get(k_max,v1)
@@ -1160,7 +1227,13 @@ def stat_analysis(i):
 
                # Calculate #halfrange (max-min)/2
                k_center=k+'#center'
-               d[k_center]=vmin+vhrange
+               vcenter=vmin+vhrange
+               d[k_center]=vcenter
+
+               if compare:
+                  cvcenter=dc.get(k_center, None)
+                  if cvcenter!=None and vcenter!=0 and vcenter!=0.0:
+                     d[k+'#center_imp']=cvcenter/vcenter
 
                # Calculate #range percent (max-min)/min
                if vmin!=0:
@@ -1173,6 +1246,11 @@ def stat_analysis(i):
                k_mean=k+'#mean'
                va=sum(d[k_all])/float(vr)
                d[k_mean]=va
+
+               if compare:
+                  cva=dc.get(k_mean, None)
+                  if cva!=None and va!=0 and va!=0.0:
+                     d[k+'#mean_imp']=cva/va
 
                if sev!='yes':
                   # Check density, expected value and peaks
@@ -1189,7 +1267,13 @@ def stat_analysis(i):
 
                   if len(valx)>0:
                      k_exp=k+'#exp'
-                     d[k_exp]=valx[0]
+                     vexp=valx[0]
+                     d[k_exp]=vexp
+
+                     if compare:
+                        cvexp=dc.get(k_exp, None)
+                        if cvexp!=None and vexp!=0 and vexp!=0.0:
+                           d[k+'#exp_imp']=cvexp/vexp
 
                      k_exp_allx=k+'#exp_allx'
                      d[k_exp_allx]=valx
@@ -2170,6 +2254,8 @@ def multi_stat_analysis(i):
 
               dict_to_add                   - data to analyze and add to dict
 
+              (dict_to_compare)             - flat dict to calculate improvements
+
               (process_multi_keys)          - list of keys (starts with) to perform stat analysis on flat array,
                                               by default ['##characteristics#*', '##features#*' '##choices#*'],
                                               if empty, no stat analysis
@@ -2196,6 +2282,8 @@ def multi_stat_analysis(i):
 
     ddflat=i.get('flat_dict',{})
     dd=i.get('dict',{})
+
+    dtc=i.get('dict_to_compare',{})
 
     # Select keys to prune and flat
     sak=i.get('process_multi_keys','')
@@ -2262,6 +2350,9 @@ def multi_stat_analysis(i):
 
         # Prepare input for statistical analysis
         ii={'dict':ddflat, 'dict1':cddf}
+
+        if len(dtc)>0: 
+           ii['dict_compare']=dtc
 
         if ich!=len(chl):
            ii['skip_expected_value']='yes'

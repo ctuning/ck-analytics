@@ -1,3 +1,9 @@
+* 2016.01.29 * general improvements
+             * adding calculation of multi-dimensional improvements
+             * adding universal conditions on solutions during auto-tuning
+               (such as improve energy without sacrificing execution time,
+                or improve execution time without increasing code size ...)
+
 * 2016.01.28 * adding a few functions to automatically detect scenario 
                (such as multi-objective autotuning) and pick up parameters
                when plotting graphs
@@ -14,7 +20,7 @@
 
 * 2015.12.18 * When reproducing a given experiment, allow to compare results with another experiment
                (for example with default one) using --compare_data_uoa
-             * When reproducing experiment in Linux and specifiying dimensions to check from CMD, 
+             * When reproducing experiment in Linux and specifying dimensions to check from CMD, 
                add possibility to substitute ^ with # (to check long flat keys)
 
 * 2015.12.15 * adding support to prune experimental vectors by threshold (when retrieving results):
@@ -58,7 +64,7 @@
 
 * 2015.09.03 * fixed bug in showing +- % when 0 (noticed by Anton)
 
-* 2015.09.02 * added extension to keys when retreiving experiments
+* 2015.09.02 * added extension to keys when retrieving experiments
 
 * 2015.08.12 * added possibility to reverse key order in Pareto frontier filter during multi-objective autotuning 
                (useful for FPS in slambench, for example)
