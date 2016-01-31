@@ -1185,7 +1185,7 @@ def stat_analysis(i):
                if v1 not in v: v.append(v1)
                d[k_all_u]=v
 
-            if not issa and smm!='yes' and (type(v1)==float or type(v1)==int):
+            if not issa and smm!='yes' and (type(v1)==float or type(v1)==int or type(v1)==long):
                # Calculate min
                k_min=k+'#min'
                vmin=d.get(k_min,v1)
@@ -1201,7 +1201,7 @@ def stat_analysis(i):
                if compare:
                   cvmin=dc.get(k_min, None)
                   if cvmin!=None and vmin!=0 and vmin!=0.0:
-                     d[k+'#min_imp']=cvmin/vmin
+                     d[k+'#min_imp']=float(cvmin)/float(vmin)
 
                # Calculate max
                k_max=k+'#max'
@@ -1233,7 +1233,7 @@ def stat_analysis(i):
                if compare:
                   cvcenter=dc.get(k_center, None)
                   if cvcenter!=None and vcenter!=0 and vcenter!=0.0:
-                     d[k+'#center_imp']=cvcenter/vcenter
+                     d[k+'#center_imp']=float(cvcenter)/float(vcenter)
 
                # Calculate #range percent (max-min)/min
                if vmin!=0:
@@ -1250,7 +1250,7 @@ def stat_analysis(i):
                if compare:
                   cva=dc.get(k_mean, None)
                   if cva!=None and va!=0 and va!=0.0:
-                     d[k+'#mean_imp']=cva/va
+                     d[k+'#mean_imp']=float(cva)/float(va)
 
                if sev!='yes':
                   # Check density, expected value and peaks
@@ -1273,7 +1273,7 @@ def stat_analysis(i):
                      if compare:
                         cvexp=dc.get(k_exp, None)
                         if cvexp!=None and vexp!=0 and vexp!=0.0:
-                           d[k+'#exp_imp']=cvexp/vexp
+                           d[k+'#exp_imp']=float(cvexp)/float(vexp)
 
                      k_exp_allx=k+'#exp_allx'
                      d[k_exp_allx]=valx
@@ -2354,7 +2354,7 @@ def multi_stat_analysis(i):
         if len(dtc)>0: 
            ii['dict_compare']=dtc
 
-        if ich!=len(chl):
+        if ich!=1 and ich!=len(chl): # we need to run it at least once for the first iteration, otherwise we will miss compile info (autotuning)
            ii['skip_expected_value']='yes'
            ii['skip_min_max']='yes'
 
