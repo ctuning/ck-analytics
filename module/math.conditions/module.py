@@ -103,7 +103,11 @@ def check(i):
                      fine=False
                      break
 
-                  if x=='=' and dv!=y:
+                  if x=='==' and dv!=y:
+                     fine=False
+                     break
+
+                  if x=='!=' and dv==y:
                      fine=False
                      break
 

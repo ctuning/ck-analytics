@@ -1293,6 +1293,13 @@ def stat_analysis(i):
                   mmin='yes'
                   d[k_min]=v1
 
+               if compare:
+                  cvmin=dc.get(k_min, None)
+                  if cvmin==vmin:
+                     d[k+'#min_imp']=1
+                  else:
+                     d[k+'#min_imp']=0
+
     return {'return':0, 'dict':d, 'max_range_percent':max_range_percent, 'min':mmin, 'max':mmax}
 
 ##############################################################################
