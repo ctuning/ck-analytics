@@ -1,5 +1,7 @@
 * 2016.02.01 * added mode to skip recording pipeline/desc info to experiment 
                (to avoid sending huge files between servers during optimization crowdsourcing)
+             * added support to pack experiments (to be able to send via Internet
+               (during experiment crowdsourcing such as program crowdtuning)
 
 * 2016.01.31 * fixing calculation of improvements during multi-objective autotuning
              * adding more conditions "==" & "!="

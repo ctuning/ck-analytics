@@ -3029,3 +3029,51 @@ def crowdsource(i):
     ck.out('Experiments completed!')
 
     return {'return':0}
+
+##############################################################################
+# pack experiments
+
+def pack(i):
+    """
+    Input:  {
+              (experiment_module_uoa) - use it instead of 'experiment' module
+              data_uoa                - experiment data UOA
+              (points)                - points to pack. If empty, pack all points
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+
+              Output from kernel 'pull':
+
+              file_content_base64
+            }
+
+    """
+
+    muoa=i.get('experiment_module_uoa','')
+    if muoa=='': 
+       muoa=work['self_module_uid']
+
+    duoa=i['data_uoa']
+
+    points=i.get('points',[])
+
+    # Prepare list of files
+    patterns=[]
+    for k in points:
+        kk='ckp-'+k+'*'
+        patterns.append(kk)
+
+    # Prepare pack
+    ii={'action':'pull',
+        'module_uoa':muoa,
+        'data_uoa':duoa,
+        'patterns':patterns,
+        'out':'json'} # to prepare pack that can be sent via Internet (for experiment crowdsourcing)
+    r=ck.access(ii)
+    if r['return']>0: return r
+
+    return r
