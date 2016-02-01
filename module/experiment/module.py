@@ -3072,7 +3072,7 @@ def pack(i):
         'module_uoa':muoa,
         'data_uoa':duoa,
         'patterns':patterns,
-        'out':'json'} # to prepare pack that can be sent via Internet (for experiment crowdsourcing)
+        'encode_file':'yes'} # to prepare pack that can be sent via Internet (for experiment crowdsourcing)
     r=ck.access(ii)
     if r['return']>0: return r
 
