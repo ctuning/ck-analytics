@@ -131,6 +131,9 @@ def add(i):
                                                 Useful if descriptions change at each point (say different program may require different libs)
 
               (record_permanent)            - if 'yes', mark as permanent (to avoid being deleted by Pareto filter)
+
+              (skip_record_pipeline)        - if 'yes', do not record pipeline (to avoid saving too much stuff during crowd-tuning)
+              (skip_record_desc)            - if 'yes', do not record desc (to avoid saving too much stuff during crowd-tuning)
             }
 
     Output: {
@@ -164,6 +167,9 @@ def add(i):
     if o=='con': oo=o
 
     ssa=i.get('skip_stat_analysis','')
+
+    srp=i.get('skip_record_pipeline','')
+    srd=i.get('skip_record_desc','')
 
     dd=i.get('dict',{})
     ddx=copy.deepcopy(dd) # To avoid changing original input !!! 
@@ -351,7 +357,7 @@ def add(i):
        ck.out('  Loaded and locked successfully (lock UID='+lock_uid+') ...')
 
     # Check if pipeline was recorded or record new
-    if len(pipeline)>0:
+    if len(pipeline)>0 and srp!='yes':
        ppf=os.path.join(p,'pipeline.json')
        if not os.path.isfile(ppf):
           r=ck.save_json_to_file({'json_file':ppf, 'dict':pipeline})
@@ -363,7 +369,7 @@ def add(i):
            'choices_desc':choices_desc,
            'characteristics_desc':ch_desc}
 
-    if not os.path.isfile(ppfd):
+    if srd!='yes' and not os.path.isfile(ppfd):
        r=ck.save_json_to_file({'json_file':ppfd, 'dict':ddesc})
        if r['return']>0: return r
 
