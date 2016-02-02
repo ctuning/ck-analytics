@@ -2872,7 +2872,7 @@ def crowdsource(i):
     """
     Input:  {
               (scenario)         - UOA of a module with crowdsourcing scenario
-              (tags)             - extra tags to prunce experimental scenarios
+              (tags)             - tags to prune experimental scenarios
 
               (quiet)            - do not ask questions, but select random ...
               (skip_welcome)     - if 'yes', do not print welcome header
@@ -2905,8 +2905,8 @@ def crowdsource(i):
     scenario=i.get('scenario','')
 
     et=i.get('tags','')
-    if et!='': et+=','
-    et+='crowdsource,experiments'
+    if et=='':
+       et+='crowdsource,experiments'
 
     quiet=i.get('quiet','')
 
