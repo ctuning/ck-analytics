@@ -124,6 +124,4 @@ def check(i):
               else:
                  dpoints.append(q)
 
-           raw_input('xyz')
-
     return {'return':0, 'good_points':points, 'points_to_delete':dpoints}
