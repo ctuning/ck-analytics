@@ -83,7 +83,7 @@ def check(i):
                      import json
                      return {'return':1, 'error':'condition length !=4 ('+json.dumps(c)+')'}
 
-                  kt=c[0]+mk+c[1]
+                  kt=(c[0]+c[1]).replace('$#objective#$',mk)
                   x=c[2]
                   y=c[3]
 
@@ -123,5 +123,7 @@ def check(i):
                  points.append(q)
               else:
                  dpoints.append(q)
+
+           raw_input('xyz')
 
     return {'return':0, 'good_points':points, 'points_to_delete':dpoints}

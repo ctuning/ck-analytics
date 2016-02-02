@@ -1,3 +1,6 @@
+* 2016.02.02 * slightly changing the logic of conditions for multi-objective optimization
+             * fixing a minor bug in experiment processing
+
 * 2016.02.01 * added mode to skip recording pipeline/desc info to experiment 
                (to avoid sending huge files between servers during optimization crowdsourcing)
              * added support to pack experiments (to be able to send via Internet

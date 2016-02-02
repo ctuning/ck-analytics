@@ -397,7 +397,7 @@ def add(i):
           return {'return':1, 'error':'ambiguity - more than one point found with the same features'}
 
        if len(points)==1:
-          fpoint_uid=fpoints[0]
+          fpoint_uid=points[0]
           fpoint='ckp-'+fpoint_uid
 
        if fpoint!='':
