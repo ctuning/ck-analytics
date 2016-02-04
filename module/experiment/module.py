@@ -1191,7 +1191,7 @@ def stat_analysis(i):
                if v1 not in v: v.append(v1)
                d[k_all_u]=v
 
-            if not issa and smm!='yes' and (type(v1)==float or type(v1)==int or type(v1)==long):
+            if not issa and smm!='yes' and (type(v1)==float or type(v1)==int or type(v1)==ck.type_long):
                # Calculate min
                k_min=k+'#min'
                vmin=d.get(k_min,v1)

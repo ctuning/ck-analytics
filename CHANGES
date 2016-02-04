@@ -1,3 +1,5 @@
+* 2016.02.03 * adding ck.type_long for Python2/3 compatibility
+
 * 2016.02.02 * slightly changing the logic of conditions for multi-objective optimization
              * fixing a minor bug in experiment processing
 
