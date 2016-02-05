@@ -121,6 +121,8 @@ def plot(i):
                   If density graph:
                 (bins)                - number of bins (int, default = 100)
                 (cov_factor)          - float covariance factor
+
+                d3_div                - div ID (ck_interactive). "body" if empty
             }
 
     Output: {
@@ -156,6 +158,7 @@ def plot(i):
     stcf=i.get('save_table_to_csv_file','')
 
     table=i.get('table',[])
+    mtable=[]
 
     rk=i.get('real_keys',[])
 
@@ -856,12 +859,26 @@ def plot(i):
           if rx['return']>0: return rx
 
        # Update URLs if needed (for example, to load .js files from CK repo)
-       html=html.replace('$#ck_root_url#$', ck.cfg.get('wfe_url_prefix',''))
+       url0=i.get('wfe_url','')
+       if url0=='': url0=ck.cfg.get('wfe_url_prefix','')
+
+       html=html.replace('$#ck_root_url#$', url0)
 
        # Save working html locally to visualize without CK
+       y=i.get('d3_div','')
+       y1=''
+       y2=''
+       if y=='': 
+          y='body'
+       else:
+          y1='<div id="'+y+'">\n\n'
+          y2='\n</div>\n'
+          y='div#'+y
+          html=html.replace('$#ck_where#$',y)
+
        if i.get('save_to_html','')!='':
-          x='<html>\n\n<style>\n'+style+'</style>\n\n'+'<body>\n\n'+html+'\n\n</body>\n</html>\n'
-          x=x.replace('$#ck_where#$','body')
+          x='<html>\n\n<style>\n'+style+'</style>\n\n'+'<body>\n\n'+y1+html+y2+'\n\n</body>\n</html>\n'
+          x=x.replace('$#ck_where#$',y)
 
           rx=ck.save_text_file({'text_file':i['save_to_html'], 'string':x})
           if rx['return']>0: return rx

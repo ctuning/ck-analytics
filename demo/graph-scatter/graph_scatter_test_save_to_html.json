@@ -1,0 +1,29 @@
+{
+  "table":{"0":[[171941, 0.017235], [171941,0.012235], [171277,0.018795], [185101,0.05366], [169381,0.016395],[171277,0.01786]], 
+           "1":[[171941,0.012235],[169381,0.016395]]},
+
+  "add_x_loop":"yes",
+
+  "ignore_point_if_none":"yes",
+
+  "plot_type":"d3_2d_scatter",
+
+  "display_y_error_bar":"no",
+
+  "title":"Powered by Collective Knowledge",
+
+  "axis_x_desc":"No",
+  "axis_y_desc":"Value",
+
+  "plot_grid":"yes",
+
+  "d3_div":"ck_interactive",
+
+  "image_width":"900",
+  "image_height":"400",
+
+  "wfe_url":"http://localhost/ck/repo/web.php?",
+
+  "save_to_html":"graph_scatter_test_save_to_html.html",
+  "save_to_style":"graph_scatter_test_save_to_html.style"
+}

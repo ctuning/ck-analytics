@@ -1,0 +1,256 @@
+<script src="$#ck_root_url#$action=pull&common_func=yes&cid=module:graph&filename=third-party/d3/d3.v3.min.js"></script>
+
+<script>
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = $#ck_image_width#$ - margin.left - margin.right,
+    height = $#ck_image_height#$ - margin.top - margin.bottom;
+
+/* 
+ * value accessor - returns the value to encode for a given data object.
+ * scale - maps value to a visual display encoding, such as a pixel position.
+ * map function - maps from data value to display value
+ * axis - sets up axis
+ */ 
+
+var n=0;
+var m=0;
+
+var xdata=$#cm_data_json#$;
+
+var xinfo=$#cm_info_json#$;
+
+var xps=$#cm_point_style_json#$;
+
+
+var data=[];
+
+/* Check min/max on all axis */
+pymin="$#ck_ymin#$";
+pymax="$#ck_ymax#$";
+
+ymin=-1;
+ymax=-1;
+
+var data;
+var adata=[];
+var sgraph;
+var ps;
+
+for (graph=0; graph < 100; graph++) {
+
+   sgraph=graph.toString();
+
+   if (!(sgraph in xdata)) break;
+
+   m+=1;
+
+   datx=xdata[sgraph];
+
+   if (datx.length>n) n=datx.length;
+
+   for (l=0; l<datx.length; l++)
+   {
+     var v=datx[l][1];
+
+     if (pymin=="" && (ymin==-1 || v<ymin)) ymin=v;
+     if (pymax=="" && (ymax==-1 || v>ymax)) ymax=v;
+   }
+}
+
+if (pymin!="") ymin=parseFloat(pymin);
+if (pymax!="") ymax=parseFloat(pymax);
+
+// Convert to internal format
+for (graph=0; graph < 100; graph++) {
+
+   sgraph=graph.toString();
+
+   if (!(sgraph in xdata)) break;
+
+   datx=xdata[sgraph];
+
+   var dat=[];
+
+   for (q=0; q<datx.length; q++)
+   {
+     var v=datx[q][1];
+     dat.push(v);
+   }
+
+   data.push(dat);
+}
+
+var xstr=[]
+
+// Convert to internal format
+for (graph=0; graph < 100; graph++) {
+
+   sgraph=graph.toString();
+
+   if (!(sgraph in xdata)) break;
+
+   datax=xdata[sgraph];
+   ps={}; 
+   if (sgraph in xps) ps=xps[sgraph];
+   info={}
+   if (sgraph in xinfo) info=xinfo[sgraph];
+
+   var dat5=[];
+
+   for (q=0; q<datax.length; q++)
+   {
+     var inf={};
+     if (q in info) inf=info[q];
+
+     cid=''
+     if (('module_uoa' in inf) && ('data_uoa' in inf))
+        cid=info[q]['module_uoa']+':'+info[q]['data_uoa'];
+
+     var features={}
+     var sfeatures="";
+
+     var dat={}
+
+     if ('features' in inf) {
+        features=inf.features;
+     
+        var keys=[];
+        for (var key in features) {
+          if (features.hasOwnProperty(key)) {
+            keys.push(key);
+          }
+        }
+        keys.sort();
+
+        for (k=0; k<keys.length; k++)
+        {
+          key=keys[k];
+          sfeatures+=key+'='+features[key]+'<br>';
+        }
+     }
+
+     var size=5;
+     if ("size" in ps) size=ps.size;
+
+     var color="#0000bf";
+     if ("color" in ps) color=ps.color;
+
+     if ('point_uid' in inf) dat['subpoint']=inf.point_uid
+     if (cid!='') dat['cid']=cid   
+     if ('type'in ps) dat['type']=ps.type; 
+
+     if (graph==0) xstr.push(datax[q][0]);
+
+     dat['x']=datax[q][0];
+     dat['y']=datax[q][1];
+     dat['size']=size;
+     dat['color']=color;
+     dat['features']=sfeatures;
+     dat['info']=inf
+
+     dat5.push(dat);
+   }
+
+   adata.push(dat5);
+}
+
+//var data=[[10,5,2,8,7],[2,4,2,5,3]];
+
+var margin = {top: 20, right: 30, bottom: 30, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var y = d3.scale.linear()
+    .domain([ymin, ymax])
+    .range([height,0]);
+
+var x0 = d3.scale.ordinal()
+      .domain(d3.range(n))
+      .rangeBands([0, width], .2);
+
+var x0x = d3.scale.ordinal()
+      .domain(['a','b','c','d'])
+      .rangeBands([0, width], .2);
+
+var x1 = d3.scale.ordinal()
+    .domain(d3.range(m))
+    .rangeBands([0, x0.rangeBand()]);
+
+var z = d3.scale.category10();
+
+var xAxis = d3.svg.axis()
+    .scale(x0x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+var svg = d3.select("$#ck_where#$").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("svg:g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+svg.append("g")
+   .attr("class", "y axis")
+   .call(yAxis)
+   .append("text")
+   .attr("class", "label")
+   .attr("transform", "rotate(-90)")
+   .attr("y", 6)
+   .attr("dy", ".71em")
+   .style("text-anchor", "end")
+   .text("$#axis_y_desc#$");
+
+svg.append("g")
+   .attr("class", "x axis")
+   .attr("transform", "translate(0," + height + ")")
+   .call(xAxis)
+   .append("text")
+   .attr("class", "label")
+   .attr("x", width)
+   .attr("y", +16)
+   .style("text-anchor", "end")
+   .text("$#axis_x_desc#$");
+
+// add the tooltip area to the webpage
+var tooltip = d3.select("$#ck_where#$").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+svg.append("g").selectAll("g")
+    .data(adata)
+  .enter().append("g")
+    .style("fill", function(d, i) { return z(i); })
+    .attr("transform", function(d, i) { return "translate(" + x1(i) + ",0)"; })
+  .selectAll("bar")
+    .data(function(d) { return d; })
+  .enter().append("rect")
+    .attr("class", "bar")
+    .attr("x", function(d, i) { return x0(i); })
+    .attr("width", x1.rangeBand())
+    .attr("y", function(d) { return y(d.y); })
+    .attr("height", function(d) { return height - y(d.y); })
+
+   .on("click", function(d) {
+      window.open("http://gmail.com");
+   })
+
+   .on("mouseover", function(d) {
+       tooltip.transition()
+            .duration(200)
+            .style("opacity", .9);
+       tooltip.html("<div style=\"text-align:left;background-color:yellow;opacity:0.8;filter:alpha(opacity=80);\"><small><b>value=" + d.y + "</b><br>"+d.features+"\n</small></div>")
+            .style("left", (d3.event.pageX + 5) + "px")
+            .style("top", (d3.event.pageY - 28) + "px");
+   })
+
+   .on("mouseout", function(d) {
+       tooltip.transition()
+            .duration(500)
+            .style("opacity", 0);
+   });
+
+
+</script>

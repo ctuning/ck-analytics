@@ -1,0 +1,27 @@
+{
+  "table":{"0":[["a", 10], ["b",30], ["c",20], ["d",18]], "1":[["a", 3], ["b",36], ["c",20], ["d",13]]},
+
+  "ymin":0,
+
+  "ignore_point_if_none":"yes",
+
+  "plot_type":"d3_2d_bars",
+
+  "display_y_error_bar":"no",
+
+  "title":"Powered by Collective Knowledge",
+
+  "axis_x_desc":"No",
+  "axis_y_desc":"Value",
+
+  "plot_grid":"yes",
+
+  "d3_div":"ck_interactive",
+
+  "image_width":"900",
+  "image_height":"400",
+
+  "wfe_url":"http://localhost/ck/repo/web.php?",
+
+  "save_to_html":"graph_bars_test_save_to_html.html"
+}

@@ -120,32 +120,61 @@ for (graph=0; graph < 100; graph++) {
    if (!(sgraph in xdata)) break;
 
    data=xdata[sgraph];
-   ps=xps[sgraph];
-   info=xinfo[sgraph];
+   ps={}; 
+   if (sgraph in xps) ps=xps[sgraph];
+   info={}
+   if (sgraph in xinfo) info=xinfo[sgraph];
 
    for (q=0; q<data.length; q++)
    {
-     var cid=info[q]['module_uoa']+':'+info[q]['data_uoa'];
+     var inf={};
+     if (q in info) inf=info[q];
 
-     var features=info[q].features;
+     cid=''
+     if (('module_uoa' in inf) && ('data_uoa' in inf))
+        cid=info[q]['module_uoa']+':'+info[q]['data_uoa'];
+
+     var features={}
      var sfeatures="";
+
+     var dat={}
+
+     if ('features' in inf) {
+        features=inf.features;
      
-     var keys=[];
-     for (var key in features) {
-       if (features.hasOwnProperty(key)) {
-          keys.push(key);
-       }
-     }
-     keys.sort();
+        var keys=[];
+        for (var key in features) {
+          if (features.hasOwnProperty(key)) {
+            keys.push(key);
+          }
+        }
+        keys.sort();
 
-     for (k=0; k<keys.length; k++)
-     {
-       key=keys[k];
-       sfeatures+=key+'='+features[key]+'<br>';
+        for (k=0; k<keys.length; k++)
+        {
+          key=keys[k];
+          sfeatures+=key+'='+features[key]+'<br>';
+        }
      }
 
-     adata.push({"x":data[q][0], "y":data[q][1], "size":ps.size, "type":ps.type, "color":ps.color, "cid":cid, "subpoint":info[q].point_uid, 
-                 "info":info[q], "features":sfeatures})
+     var size=5;
+     if ("size" in ps) size=ps.size;
+
+     var color="#0000bf";
+     if ("color" in ps) color=ps.color;
+
+     if ('point_uid' in inf) dat['subpoint']=inf.point_uid
+     if (cid!='') dat['cid']=cid   
+     if ('type'in ps) dat['type']=ps.type; 
+
+     dat['x']=data[q][0];
+     dat['y']=data[q][1];
+     dat['size']=size;
+     dat['color']=color;
+     dat['features']=sfeatures;
+     dat['info']=inf
+
+     adata.push(dat);
    }
 }
 
@@ -161,9 +190,26 @@ svg.selectAll(".dot")
    .style("fill", function(d) {return d.color})
 
    .on("click", function(d) {
-     window.open("$#ck_root_url#$wcid="+d.cid+'&subpoint='+d.subpoint);
-   })
+      var cid='';
+      if ('cid' in d) {
+         cid=d['cid'];
 
+         var subpoint='';
+         if ('subpoint' in d) subpoint=d['subpoint'];
+
+         window.open("$#ck_root_url#$wcid="+cid+'&subpoint='+subpoint);
+      } else {
+         var url='';
+         if ('url' in d) {
+            url=d['url'];
+            var url_ext='';
+            if ('url_ext' in d) {
+               url_ext=d['url_ext'];
+               window.open(url+url_ext);
+            }
+         }
+      }
+   })
 
    .on("mouseover", function(d) {
        tooltip.transition()
