@@ -1778,6 +1778,9 @@ def replay(i):
                (skip_clean_after)            - if 'yes', do not clean program pipeline after execution 
                                                (keeping low level scripts in tmp directory for low-level debugging)
                (all)                         - print all comparisons of keys (not only when there is a difference)
+
+               (skip_scenario_keys)          - skip scenario detection (otherwise get keys from the detected module) 
+
             }
 
     Output: {
@@ -1823,10 +1826,13 @@ def replay(i):
         'repo_uoa':ruoa,
         'module_uoa':muoa,
         'data_uoa':duoa,
-        'action':'search'}
+        'action':'search',
+        'add_meta':'yes'}
     if rruoa!='': ii['remote_repo_uoa']=rruoa
     r=ck.access(ii)
     if r['return']>0: return r
+
+    dmeta={}
 
     lst=r['lst']
     if len(lst)==0:
@@ -1836,14 +1842,24 @@ def replay(i):
 
        muoa=lst[0]['module_uoa']
        duoa=lst[0]['data_uoa']
+
+       dmeta=lst[0]['meta']
     else:
        if o=='con':
           r=ck.select_uoa({'choices':lst})
           if r['return']>0: return r
           duoa=r['choice']
+
+          for q in lst:
+              if q['data_uid']==duoa:
+                 dmeta=q['meta']
+                 break
+
           ck.out('')
        else:
           return {'return':1, 'error':'multiple entries found - please prune search', 'lst':lst}
+
+    sm_uoa=dmeta.get('meta',{}).get('scenario_module_uoa','')
 
     if o=='con':
        ck.out('Found entry '+duoa+'!')
@@ -1920,6 +1936,8 @@ def replay(i):
 
     dd=rx['dict']
 
+    al=i.get('all','')
+
     ch=dd.get('flat',{})
 
     ft=dd.get('features',{})
@@ -1958,6 +1976,51 @@ def replay(i):
 
        ch=cdd.get('flat',{})
 
+    # Get list of dimensions to check
+    kdc={} # key desc
+
+    dc=i.get('dims_to_check',[])
+
+    if len(dc)==0: dc=i.get('dims',[])
+
+    if type(dc)!=list: dc=[dc]
+
+    if len(dc)>0:
+       # On Linux from CMD substitute ^ with #
+       for q in range(0, len(dc)):
+           dc[q]=dc[q].replace('^','#')
+
+    else:
+       # Try to detect from scenario
+       if i.get('skip_scenario_keys','')!='yes' and sm_uoa!='':
+          ry=ck.access({'action':'load',
+                        'module_uoa':cfg['module_deps']['module'],
+                        'data_uoa':sm_uoa})
+          if ry['return']>0: return ry
+          ddx=ry['dict']
+
+          dc=[]
+
+          xrk=ddx.get('replay_keys',[])
+          for q in xrk:
+              dc.append(q)
+
+          # Check if has key description
+          rd=ddx.get('replay_desc',{})
+          xxmuoa=rd.get('module_uoa','')
+          xxkey=rd.get('desc_key','')
+
+          if xxmuoa!='':
+             ry=ck.access({'action':'load',
+                           'module_uoa':cfg['module_deps']['module'],
+                           'data_uoa':xxmuoa})
+          if ry['return']>0: return ry
+          kdc=ry['desc']
+          if xxkey!='':
+             kdc=kdc.get(xxkey,{})                 
+
+          al='yes'
+
     #******************************************************************
     if len(ch)==0:
        return {'return':1, 'error':'no flat characteristics in the point to compare'}
@@ -1965,7 +2028,7 @@ def replay(i):
     # Trying to get number of statistical repetitions from the entry
     if repetitions=='':
        rpt=ch.get('##pipeline_state#repetitions#min','')
-       if rpt=='': rpt=choices.get('repeat','')
+       if rpt=='': rpt=ft.get('features',{}).get('statistical_repetitions','')
        if rpt!='': 
           rpt=int(rpt)
           repetitions=rpt
@@ -2032,8 +2095,6 @@ def replay(i):
 
     # Check if skip comparison
     if fail!='yes' and i.get('skip','')!='yes':
-       al=i.get('all','')
-
        # Comparing dicts
        if o=='con':
           ck.out('')
@@ -2046,16 +2107,6 @@ def replay(i):
        ttc=float(ttc)/100
 
        import fnmatch
-
-       dc=i.get('dims_to_check',[])
-
-       if len(dc)==0: dc=i.get('dims',[])
-
-       if type(dc)!=list: dc=[dc]
-
-       # On Linux from CMD substitute ^ with #
-       for q in range(0, len(dc)):
-           dc[q]=dc[q].replace('^','#')
 
        dd=[]
 
@@ -2096,12 +2147,16 @@ def replay(i):
               if check:
                  ichecked+=1
 
-                 ss=q+':  '+str(v)+'  vs  '+str(v1)
+                 z=q
+                 if kdc.get(q,{}).get('desc','')!='':
+                    z=kdc[q]['desc']
+
+                 ss=z+':  '+str(v)
                  if v!=v1:
                     if (type(v)==int or type(v)==float) and (type(v1)==int or type(v1)==float) and v!=0:
                        vx=abs(v1-v)/v
                        if vx>ttc:
-                          ss+='    diff='+( '%3.1f'% (vx*100))+'%'
+                          ss+='  vs  '+str(v1)+'    diff='+( '%3.1f'% (vx*100))+'%'
                           dd.append(q)
                     else:
                        dd.append(q)

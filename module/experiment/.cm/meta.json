@@ -69,6 +69,7 @@
   "desc": "universal experiment entries", 
   "license": "See CK LICENSE.txt for licensing details", 
   "module_deps": {
+    "module": "032630d041b4fd8a", 
     "experiment.view": "e7c9e42ba8edace0", 
     "math.variation": "d3b13388e6152da7", 
     "module": "032630d041b4fd8a", 
