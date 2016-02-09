@@ -3006,6 +3006,7 @@ def crowdsource(i):
                 zss=sorted(lst, key=lambda v: (int(v.get('meta',{}).get('priority',0)), v['data_uoa']))
 
                 if quiet=='yes':
+                   # If quiet, for now select the very first scenario (usually GCC tuning - should exist on most platforms)
                    scenario=zss[0]['data_uid']
                 else:
                    ck.out('')
