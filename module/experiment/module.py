@@ -2889,7 +2889,7 @@ def html_viewer(i):
                            ssv=''
 
                      sv=ssv+xv
-                     
+
                      if tp=='uoa':
                         xmuoa=dd.get('module_uoa','')
                         if xmuoa!='':
@@ -2913,7 +2913,7 @@ def html_viewer(i):
 
                  if ss=='': ss='background-color: #efefff'
                  else: ss=''
-           
+
               h+='  </tr>\n'
           h+=' </table>\n'
 #       h+='</div>\n'
@@ -2931,7 +2931,7 @@ def crowdsource(i):
 
               (quiet)            - do not ask questions, but select random ...
               (skip_welcome)     - if 'yes', do not print welcome header
-              
+
               (skip_exchange)    - if 'yes', do not exchange platform info
                                    (development mode)
 
@@ -2951,6 +2951,8 @@ def crowdsource(i):
             }
 
     """
+
+    import copy
 
     # Setting output
     o=i.get('out','')
@@ -2974,8 +2976,12 @@ def crowdsource(i):
     pi={}
     sw=i.get('skip_welcome','')
 
+    ic=copy.deepcopy(i)
+
     while not finish:
        sit+=1
+
+       i=copy.deepcopy(ic) # keep default!
 
        # Selecting scenario
        if o=='con':
@@ -3037,7 +3043,7 @@ def crowdsource(i):
                       return {'return':1, 'error':'scenario number is not recognized'}
 
                    scenario=zz[x]
-             
+
           # Print selected scenario
           ii={'action':'load',
               'module_uoa':cfg['module_deps']['module'],
