@@ -2978,6 +2978,8 @@ def crowdsource(i):
 
     ic=copy.deepcopy(i)
 
+    rrr={'return':0}
+
     while not finish:
        sit+=1
 
@@ -3067,11 +3069,11 @@ def crowdsource(i):
           i['platform_info']=pi
           i['skip_welcome']=sw
 
-          r=ck.access(i)
-          if r['return']>0: 
+          rrr=ck.access(i)
+          if rrr['return']>0: 
              if o=='con':
                 ck.out(line)
-                ck.out('Scenario FAILED: '+r['error'])
+                ck.out('Scenario FAILED: '+rrr['error'])
                 ck.out('')
 
                 if quiet!='yes':
@@ -3081,7 +3083,7 @@ def crowdsource(i):
                 import time
                 time.sleep(4)
           else:
-             pi=r.get('platform_info',{})
+             pi=rrr.get('platform_info',{})
              sw='yes'
 
        if once=='yes':
@@ -3090,7 +3092,7 @@ def crowdsource(i):
     ck.out(line)
     ck.out('Experiments completed!')
 
-    return {'return':0}
+    return rrr
 
 ##############################################################################
 # pack experiments
