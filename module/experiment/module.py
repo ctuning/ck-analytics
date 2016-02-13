@@ -3007,7 +3007,7 @@ def crowdsource(i):
 
              if len(lst)==0:
                 if o=='con':ck.out('')
-                return {'return':1, 'error':'no local scenarios to crowdsource experiments found!\n\nYou can install "ck-crowdtuning" shared repository via\n  $ ck pull repo:ck-crowdtuning\n\nThis will let you participate in collaborative program optimization and benchmarking'}  
+                return {'return':1, 'error':'no local scenarios to crowdsource experiments found!\n\nYou can install "ck-crowdtuning" shared repository via\n  $ ck pull repo:ck-crowdtuning\n\nThis will let you participate in collaborative program benchmarking, optimization, bug detection and machine learning'}  
              elif len(lst)==1:
                 scenario=lst[0].get('data_uid','')
              else:
