@@ -749,6 +749,15 @@ def plot(i):
           zticks = sp.get_zticks()/float(i['z_ticks_scale'])
           sp.set_zticklabels(zticks)
 
+       # Set axes labels
+       xlab=i.get('axis_x_labels',[])
+       if len(xlab)>0:
+          sp.set_xticklabels(xlab)
+
+       ylab=i.get('axis_y_labels',[])
+       if len(ylab)>0:
+          sp.set_yticklabels(ylab)
+
        # Set axes names
        axd=i.get('axis_x_desc','')
        if axd!='': plt.xlabel(axd)
@@ -761,6 +770,11 @@ def plot(i):
 
 #       handles, labels = plt.get_legend_handles_labels()
        plt.legend() #handles, labels)
+
+       try:
+          plt.tight_layout()
+       except Exception:
+          pass
 
        if otf=='':
           plt.show()

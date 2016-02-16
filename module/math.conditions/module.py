@@ -44,19 +44,21 @@ def check(i):
             }
 
     Output: {
-              return       - return code =  0, if successful
-                                         >  0, if error
-              (error)      - error text if return > 0
+              return           - return code =  0, if successful
+                                             >  0, if error
+              (error)          - error text if return > 0
 
               good_points      - list of good points
               points_to_delete - list of new points to delete
+
+              keys             - list of checked keys
             }
 
     """
 
     o=i.get('out','')
 
-    points1=i['original_points']
+    points1=i.get('original_points',[])
     points2=i['new_points']
     cc=i['conditions']
     results=i['results']
@@ -66,6 +68,18 @@ def check(i):
     points=[]  # good points (with correct conditions)
     dpoints=[] # points to delete if do not match conditions
 
+    # Check keys
+    keys=[]
+    for c in cc:
+        if len(c)!=4:
+           import json
+           return {'return':1, 'error':'condition length !=4 ('+json.dumps(c)+')'}
+
+        kt=(c[0]+c[1]).replace('$#objective#$',mk)
+        if kt not in keys:
+           keys.append(kt)
+
+    # Check conditions
     for q in points2:
         if q not in points1:
            # Find point in results
@@ -79,11 +93,10 @@ def check(i):
               fine=True
               # Go over conditions
               for c in cc:
-                  if len(c)!=4:
-                     import json
-                     return {'return':1, 'error':'condition length !=4 ('+json.dumps(c)+')'}
-
                   kt=(c[0]+c[1]).replace('$#objective#$',mk)
+                  if kt not in keys:
+                     keys.append(kt)
+
                   x=c[2]
                   y=c[3]
 
@@ -122,6 +135,10 @@ def check(i):
               if fine:
                  points.append(q)
               else:
+                 if o=='con':
+                    ck.out('')
+                    ck.out('              Condition on key "'+kt+'" failed ('+str(dv)+')')
+
                  dpoints.append(q)
 
-    return {'return':0, 'good_points':points, 'points_to_delete':dpoints}
+    return {'return':0, 'good_points':points, 'points_to_delete':dpoints, 'keys':keys}
