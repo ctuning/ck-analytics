@@ -1,7 +1,7 @@
 <script src="$#ck_root_url#$action=pull&common_func=yes&cid=module:graph&filename=third-party/d3/d3.v3.min.js"></script>
 
 <script>
-var margin = {top: 20, right: 20, bottom: 30, left: 50},
+var margin = {top: 20, right: 20, bottom: 40, left: 50},
     width = $#ck_image_width#$ - margin.left - margin.right,
     height = $#ck_image_height#$ - margin.top - margin.bottom;
 
@@ -209,6 +209,30 @@ svg.append("g")
    .attr("y", +30)
    .style("text-anchor", "end")
    .text("$#axis_x_desc#$");
+
+// check hlines
+h_lines=$#h_lines#$;
+for (q=0; q<h_lines.length; q++) {
+    v=h_lines[q];
+    svg.append("svg:line")
+        .attr("x1", 5)
+        .attr("x2", width-20)
+        .attr("y1", y(v))
+        .attr("y2", y(v))
+        .style("stroke", "rgb(189, 189, 189)");
+}
+
+// check vlines
+v_lines=$#v_lines#$;
+for (q=0; q<v_lines.length; q++) {
+    v=v_lines[q];
+    svg.append("svg:line")
+        .attr("x1", x(v))
+        .attr("x2", x(v))
+        .attr("y1", 5)
+        .attr("y2", height-20)
+        .style("stroke", "rgb(189, 189, 189)");
+}
 
 // add the tooltip area to the webpage
 var tooltip = d3.select("$#ck_where#$").append("div")

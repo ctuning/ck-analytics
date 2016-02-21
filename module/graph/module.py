@@ -137,6 +137,7 @@ def plot(i):
     """
 
     import os
+    import json
 
     o=i.get('out','')
 
@@ -334,6 +335,9 @@ def plot(i):
     html=''
     style=''
 
+    hlines=i.get('h_lines',[])
+    vlines=i.get('v_lines',[])
+
     ####################################################################### MPL ###
     if pt.startswith('mpl_'):
 
@@ -380,9 +384,6 @@ def plot(i):
           plt.grid(True)
 
        bl=i.get('bound_lines','')
-
-       hlines=i.get('h_lines',[])
-       vlines=i.get('v_lines',[])
 
        if pt=='mpl_3d_scatter' or pt=='mpl_3d_trisurf':
           from mpl_toolkits.mplot3d import Axes3D
@@ -822,6 +823,9 @@ def plot(i):
        html=html.replace('$#cm_data_json#$',stable)
        html=html.replace('$#cm_info_json#$',smtable)
        html=html.replace('$#cm_point_style_json#$',spst)
+
+       html=html.replace('$#h_lines#$',json.dumps(hlines))
+       html=html.replace('$#v_lines#$',json.dumps(vlines))
 
        # Set axes names
        axd=i.get('axis_x_desc','')
