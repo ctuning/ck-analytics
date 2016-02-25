@@ -3089,8 +3089,9 @@ def crowdsource(i):
        if once=='yes':
           finish=True
 
-    ck.out(line)
-    ck.out('Experiments completed!')
+    if o=='con':
+       ck.out(line)
+       ck.out('Experiments completed!')
 
     return rrr
 
