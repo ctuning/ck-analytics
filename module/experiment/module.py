@@ -2948,6 +2948,8 @@ def crowdsource(i):
               return       - return code =  0, if successful
                                          >  0, if error
               (error)      - error text if return > 0
+
+              Output of the last scenario (important for mobile device experiment crowdsourcing)
             }
 
     """
@@ -2990,33 +2992,36 @@ def crowdsource(i):
           ck.out(line)
           ck.out('Scenario iteration: '+str(sit))
 
-          if scenario=='':
+       if scenario=='':
+          if o=='con':
              ck.out('')
              ck.out('Detecting available crowdsourcing scenarios ...')
 
-             ii={'action':'search',
-                 'module_uoa':cfg['module_deps']['module'],
-                 'add_meta':'yes',
-                 'add_info':'yes',
-                 'scenario':scenario,
-                 'tags':et}
-             r=ck.access(ii)
-             if r['return']>0: return r
+          ii={'action':'search',
+              'module_uoa':cfg['module_deps']['module'],
+              'add_meta':'yes',
+              'add_info':'yes',
+              'scenario':scenario,
+              'tags':et}
+          r=ck.access(ii)
+          if r['return']>0: return r
 
-             lst=r['lst']
+          lst=r['lst']
 
-             if len(lst)==0:
-                if o=='con':ck.out('')
-                return {'return':1, 'error':'no local scenarios to crowdsource experiments found!\n\nYou can install "ck-crowdtuning" shared repository via\n  $ ck pull repo:ck-crowdtuning\n\nThis will let you participate in collaborative program benchmarking, optimization, bug detection and machine learning'}  
-             elif len(lst)==1:
-                scenario=lst[0].get('data_uid','')
+          if len(lst)==0:
+             if o=='con':ck.out('')
+             return {'return':1, 'error':'no local scenarios to crowdsource experiments found!\n\nYou can install "ck-crowdtuning" shared repository via\n  $ ck pull repo:ck-crowdtuning\n\nThis will let you participate in collaborative program benchmarking, optimization, bug detection and machine learning'}  
+          elif len(lst)==1:
+             scenario=lst[0].get('data_uid','')
+          else:
+             zss=sorted(lst, key=lambda v: (int(v.get('meta',{}).get('priority',0)), v['data_uoa']))
+
+             if quiet=='yes':
+                # If quiet, for now select the very first scenario (usually GCC tuning - should exist on most platforms)
+                scenario=zss[0]['data_uid']
              else:
-                zss=sorted(lst, key=lambda v: (int(v.get('meta',{}).get('priority',0)), v['data_uoa']))
-
-                if quiet=='yes':
-                   # If quiet, for now select the very first scenario (usually GCC tuning - should exist on most platforms)
-                   scenario=zss[0]['data_uid']
-                else:
+                x=''
+                if o=='con':
                    ck.out('')
                    ck.out('More than one experimental scenario found:')
                    ck.out('')
@@ -3039,12 +3044,12 @@ def crowdsource(i):
                    ck.out('')
                    rx=ck.inp({'text':'Select scenario number you want to participate in (or Enter to select 0): '})
                    x=rx['string'].strip()
-                   if x=='': x='0'
+                if x=='': x='0'
 
-                   if x not in zz:
-                      return {'return':1, 'error':'scenario number is not recognized'}
+                if x not in zz:
+                   return {'return':1, 'error':'scenario number is not recognized'}
 
-                   scenario=zz[x]
+                scenario=zz[x]
 
           # Print selected scenario
           ii={'action':'load',
