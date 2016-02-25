@@ -3051,45 +3051,45 @@ def crowdsource(i):
 
                 scenario=zz[x]
 
-          # Print selected scenario
-          ii={'action':'load',
-              'module_uoa':cfg['module_deps']['module'],
-              'data_uoa':scenario}
-          rs=ck.access(ii)
-          if rs['return']>0: return rs
+       # Print selected scenario
+       ii={'action':'load',
+           'module_uoa':cfg['module_deps']['module'],
+           'data_uoa':scenario}
+       rs=ck.access(ii)
+       if rs['return']>0: return rs
 
-          d=rs['dict']
+       d=rs['dict']
 
-          sn=d.get('desc','')
-          if sn=='': sn=scenario
-          else:      sn+=' ('+scenario+')'
+       sn=d.get('desc','')
+       if sn=='': sn=scenario
+       else:      sn+=' ('+scenario+')'
 
+       if o=='con':
+          ck.out('')
+          ck.out('Executing scenario "'+sn+'" ...')
+          ck.out('')
+
+       # Executing scenario
+       i['module_uoa']=scenario
+       i['platform_info']=pi
+       i['skip_welcome']=sw
+
+       rrr=ck.access(i)
+       if rrr['return']>0: 
           if o=='con':
+             ck.out(line)
+             ck.out('Scenario FAILED: '+rrr['error'])
              ck.out('')
-             ck.out('Executing scenario "'+sn+'" ...')
-             ck.out('')
 
-          # Executing scenario
-          i['module_uoa']=scenario
-          i['platform_info']=pi
-          i['skip_welcome']=sw
+             if quiet!='yes':
+                ck.inp({'text':'Press Enter to continue: '})
 
-          rrr=ck.access(i)
-          if rrr['return']>0: 
-             if o=='con':
-                ck.out(line)
-                ck.out('Scenario FAILED: '+rrr['error'])
-                ck.out('')
-
-                if quiet!='yes':
-                   ck.inp({'text':'Press Enter to continue: '})
-
-             if o!='con' or quiet=='yes':
-                import time
-                time.sleep(4)
-          else:
-             pi=rrr.get('platform_info',{})
-             sw='yes'
+          if o!='con' or quiet=='yes':
+             import time
+             time.sleep(4)
+       else:
+          pi=rrr.get('platform_info',{})
+          sw='yes'
 
        if once=='yes':
           finish=True
