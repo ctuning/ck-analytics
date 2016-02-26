@@ -24,6 +24,9 @@
     "get_all_meta": {
       "desc": "get all meta information from all entries"
     }, 
+    "get_log_path": {
+      "desc": "get log path"
+    }, 
     "html_viewer": {
       "desc": "view experiment as html", 
       "for_web": "yes"
@@ -33,6 +36,9 @@
     }, 
     "load_point": {
       "desc": "load all info about a given point (and subpoint)"
+    }, 
+    "log": {
+      "desc": "log experiments"
     }, 
     "multi_stat_analysis": {
       "desc": "perform statistical analysis (with multiple points at the same time)"
@@ -67,9 +73,10 @@
   "author_webpage": "http://fursin.net", 
   "copyright": "See CK COPYRIGHT.txt for copyright details", 
   "desc": "universal experiment entries", 
+  "env_key_crowdsource_path": "CK_CROWDSOURCE_PATH", 
   "license": "See CK LICENSE.txt for licensing details", 
+  "log_file_generate": "log.generate.txt", 
   "module_deps": {
-    "module": "032630d041b4fd8a", 
     "experiment.view": "e7c9e42ba8edace0", 
     "math.variation": "d3b13388e6152da7", 
     "module": "032630d041b4fd8a", 

@@ -3147,3 +3147,95 @@ def pack(i):
     if r['return']>0: return r
 
     return r
+
+##############################################################################
+# get log path
+
+def get_log_path(i):
+    """
+    Input:  {
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+
+              path         - local path to logging
+            }
+
+    """
+
+
+    import os
+
+    rps=os.environ.get(cfg['env_key_crowdsource_path'],'').strip()
+    if rps=='': 
+       # Get home user directory
+       from os.path import expanduser
+       home = expanduser("~")
+
+       # In the original version, if path to repos was not defined, I was using CK path,
+       # however, when installed as root, it will fail
+       # rps=os.path.join(work['env_root'],cfg['subdir_default_repos'])
+       # hence I changed to <user home dir>/CK
+       rps=os.path.join(home, cfg['crowdsource_path'])
+
+    if not os.path.isdir(rps):
+       os.makedirs(rps)
+
+    return {'return':0, 'path':rps}
+
+##############################################################################
+# log experiments
+
+def log(i):
+    """
+    Input:  {
+              (file_name)   - file name
+              text          - text
+              (skip_header) - if 'yes', do not add header
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+
+              (path)       - path to log file
+            }
+
+    """
+
+    import os
+
+    fn=i.get('file_name','')
+    if fn=='':
+       fn=cfg['log_file_generate']
+
+    txt=i.get('text','')
+    sh=i.get('skip_header','')
+
+    r=ck.get_current_date_time({})
+    if r['return']>0: return r
+
+    s=''
+    if sh!='yes': s+='********************************\n'+r['iso_datetime']+' ; '
+    s+=txt
+
+    # Prepare logging
+    r=get_log_path({})
+    if r['return']>0: return r
+
+    px=r['path']
+
+    path=os.path.join(px, fn)
+
+    try:
+       with open(path, "a") as f:
+          f.write(s+'\n')
+       f.close()
+    except Exception as e: 
+       return {'return':1, 'error':'problem logging ('+format(e)+')'}
+
+    return {'return':0, 'path':path}
