@@ -2910,7 +2910,7 @@ def html_viewer(i):
                  h+='    <td valign="top" align="right" class="light_right_in_table">'+e1+str(vp)+e2+'</td>\n'
                  if no_replay!='yes':
                     x='ck replay experiment:'+duoa+' --point='+str(vp)
-                    y=cfg.get('add_extra_to_replay','')
+                    y=ck.cfg.get('add_extra_to_replay','')
                     if y!='':x+=' '+y
                     h+='    <td valign="top" align="center"><input type="button" class="ck_small_button" onClick="copyToClipboard(\''+x+'\');" value="Copy to clipboard"></td>\n'
 
