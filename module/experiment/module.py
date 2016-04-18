@@ -2814,7 +2814,7 @@ def html_viewer(i):
                  h+='    <td valign="top" align="center" class="light_right_in_table light_bottom_in_table"><b>Flat features</b></td>\n'
                  h+='    <td valign="top" align="right" class="light_right_in_table light_bottom_in_table"><b>Point UID</b></td>\n'
                  if no_replay!='yes':
-                    h+='    <td valign="top" align="center" class="light_bottom_in_table"><b>Replay (reproduce)</b></td>\n'
+                    h+='    <td valign="top" align="center" class="light_bottom_in_table"><b>Replay/reproduce experiment (if remote, add --experiment_repo_uoa=remote-ck)</b></td>\n'
 
               else:
                  e1=''
