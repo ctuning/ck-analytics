@@ -2814,7 +2814,7 @@ def html_viewer(i):
                  h+='    <td valign="top" align="center" class="light_right_in_table light_bottom_in_table"><b>Flat features</b></td>\n'
                  h+='    <td valign="top" align="right" class="light_right_in_table light_bottom_in_table"><b>Point UID</b></td>\n'
                  if no_replay!='yes':
-                    h+='    <td valign="top" align="center" class="light_bottom_in_table"><b>Replay/reproduce experiment (if remote, add --experiment_repo_uoa=remote-ck)</b></td>\n'
+                    h+='    <td valign="top" align="center" class="light_bottom_in_table"><b>Replay (reproduce) experiment</b></td>\n'
 
               else:
                  e1=''
@@ -2909,7 +2909,10 @@ def html_viewer(i):
                  h+='    <td valign="top" align="center" class="light_right_in_table '+ss2+'"><a href="'+xurl+'.features_flat.json'+'">View</a></td>\n'
                  h+='    <td valign="top" align="right" class="light_right_in_table">'+e1+str(vp)+e2+'</td>\n'
                  if no_replay!='yes':
-                    h+='    <td valign="top" align="center"><input type="button" class="ck_small_button" onClick="copyToClipboard(\''+'ck replay experiment:'+duoa+' --point='+str(vp)+'\');" value="Copy to clipboard"></td>\n'
+                    x='ck replay experiment:'+duoa+' --point='+str(vp)
+                    y=cfg.get('add_extra_to_replay','')
+                    if y!='':x+=' '+y
+                    h+='    <td valign="top" align="center"><input type="button" class="ck_small_button" onClick="copyToClipboard(\''+x+'\');" value="Copy to clipboard"></td>\n'
 
                  if ss=='': ss='background-color: #efefff'
                  else: ss=''
