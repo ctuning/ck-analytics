@@ -178,6 +178,30 @@ for (graph=0; graph < 100; graph++) {
    }
 }
 
+// check hlines
+h_lines=$#h_lines#$;
+for (q=0; q<h_lines.length; q++) {
+    v=h_lines[q];
+    svg.append("svg:line")
+        .attr("x1", 5)
+        .attr("x2", width+10)
+        .attr("y1", yScale(v))
+        .attr("y2", yScale(v))
+        .style("stroke", "rgb(189, 189, 189)");
+}
+
+// check vlines
+v_lines=$#v_lines#$;
+for (q=0; q<v_lines.length; q++) {
+    v=v_lines[q];
+    svg.append("svg:line")
+        .attr("x1", xScale(v))
+        .attr("x2", xScale(v))
+        .attr("y1", 5)
+        .attr("y2", height+10)
+        .style("stroke", "rgb(189, 189, 189)");
+}
+
 // draw dots
 svg.selectAll(".dot")
    .data(adata)
