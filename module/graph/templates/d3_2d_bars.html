@@ -135,9 +135,12 @@ for (graph=0; graph < 100; graph++) {
      var color="#0000bf";
      if ("color" in ps) color=ps.color;
 
-     if ('point_uid' in inf) dat['subpoint']=inf.point_uid
-     if (cid!='') dat['cid']=cid   
+     if ('point_uid' in inf) dat['subpoint']=inf.point_uid;
+     if (cid!='') dat['cid']=cid;
      if ('type'in ps) dat['type']=ps.type; 
+
+     if ('url' in inf) dat['url']=inf.url;
+     if ('url_ext' in inf) dat['url_ext']=inf.url_ext;
 
      if (graph==0) xstr.push(datax[q][0]);
 

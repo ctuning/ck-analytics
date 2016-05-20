@@ -62,6 +62,7 @@ def plot(i):
                        OR 
 
                  table                                 - experiment table (if drawing from other functions)
+                 (table_info)                          - point description
 
 
               (flat_keys_list)                      - list of flat keys to extract from points into table
@@ -159,7 +160,7 @@ def plot(i):
     stcf=i.get('save_table_to_csv_file','')
 
     table=i.get('table',[])
-    mtable=[]
+    mtable=i.get('table_info', [])
 
     rk=i.get('real_keys',[])
 

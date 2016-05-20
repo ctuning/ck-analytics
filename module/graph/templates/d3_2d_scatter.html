@@ -163,9 +163,12 @@ for (graph=0; graph < 100; graph++) {
      var color="#0000bf";
      if ("color" in ps) color=ps.color;
 
-     if ('point_uid' in inf) dat['subpoint']=inf.point_uid
-     if (cid!='') dat['cid']=cid   
-     if ('type'in ps) dat['type']=ps.type; 
+     if ('point_uid' in inf) dat['subpoint']=inf.point_uid;
+     if (cid!='') dat['cid']=cid;
+     if ('type' in ps) dat['type']=ps.type; 
+
+     if ('url' in inf) dat['url']=inf.url;
+     if ('url_ext' in inf) dat['url_ext']=inf.url_ext;
 
      dat['x']=data[q][0];
      dat['y']=data[q][1];
@@ -227,10 +230,9 @@ svg.selectAll(".dot")
          if ('url' in d) {
             url=d['url'];
             var url_ext='';
-            if ('url_ext' in d) {
+            if ('url_ext' in d)
                url_ext=d['url_ext'];
-               window.open(url+url_ext);
-            }
+            window.open(url+url_ext);
          }
       }
    })
