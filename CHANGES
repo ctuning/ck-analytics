@@ -1,3 +1,5 @@
+* 2016.05.21 * possibility to connect lines in scatter graph
+
 * 2016.05.20 * improving D3 visualization (lines + customized URLs)
 
 * 2016.02.26 * adding logging functions during experiment crowdsourcing
