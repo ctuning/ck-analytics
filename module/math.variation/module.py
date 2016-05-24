@@ -179,6 +179,9 @@ def speedup(i):
     Input:  {
               samples1 - list of original empirical results
               samples2 - list of new empirical results (lower than original is better)
+ 
+              (key1)   - prefix for min/max/mean in return dict
+              (key2)   - prefix for min/max/mean in return dict
             }
 
     Output: {
@@ -205,15 +208,22 @@ def speedup(i):
     ns1=s1mean/s2mean
     ns2=s1min/s2min
 
+    # check keys
+    k1=i.get('key1','')
+    if k1=='': k1='s1'
+
+    k2=i.get('key2','')
+    if k2=='': k2='s2'
+
     # perform statistical analysis, if available
 #    import pandas as pd
 
 
 
 
-    rr={'return':0, 's1min':s1min, 's1max':s1max,
-                    's2min':s2min, 's2max':s2max,
-                    's1mean':s1mean, 's2mean': s2mean,
+    rr={'return':0, k1+'_min':s1min, k1+'_max':s1max,
+                    k2+'_min':s2min, k2+'_max':s2max,
+                    k1+'_mean':s1mean, k2+'_mean': s2mean,
                     'naive_speedup':ns1, 
                     'naive_speedup_min':ns2}
 
