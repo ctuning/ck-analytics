@@ -43,7 +43,7 @@ def analyze(i):
               (min)                 - min float value (if multiple ctables are processed)
               (max)                 - max float value (if multiple ctables are processed)
 
-              (cov_factor)          - float covariance factor
+              (cov_factor)          - float covariance factor (0.5 by default)
 
               (skip_fail)           - if 'yes', do not fail, if SciPy and NumPy
                                       are not available
@@ -170,3 +170,51 @@ def analyze(i):
     return {'return':0, 'xlist':xlist, 'ylist':ylist, 
                         'xlist2':xlist2, 'ylist2':ylist2,
                         'xlist2s':xlist2s, 'ylist2s':ylist2s}
+
+##############################################################################
+# analyze speedup (prepared by Anton Lokhmotov)
+
+def speedup(i):
+    """
+    Input:  {
+              samples1 - list of original empirical results
+              samples2 - list of new empirical results (lower than original is better)
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    s1=i['samples1']
+    s2=i['samples2']
+
+    s1min=min(s1)
+    s1max=max(s1)
+
+    s2min=min(s2)
+    s2max=max(s2)
+
+    s1mean=float(sum(s1))/len(s1)
+    s2mean=float(sum(s2))/len(s2)
+
+    # naive speedups
+    ns1=s1mean/s2mean
+    ns2=s1min/s2min
+
+    # perform statistical analysis, if available
+#    import pandas as pd
+
+
+
+
+    rr={'return':0, 's1min':s1min, 's1max':s1max,
+                    's2min':s2min, 's2max':s2max,
+                    's1mean':s1mean, 's2mean': s2mean,
+                    'naive_speedup':ns1, 
+                    'naive_speedup_min':ns2}
+
+    return rr

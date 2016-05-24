@@ -2,6 +2,9 @@
   "actions": {
     "analyze": {
       "desc": "analyze variation of experimental results including multiple expected values"
+    }, 
+    "speedup": {
+      "desc": "analyze speedup"
     }
   }, 
   "copyright": "See CK COPYRIGHT.txt for copyright details", 
