@@ -204,6 +204,18 @@ def speedup(i):
     s1mean=float(sum(s1))/len(s1)
     s2mean=float(sum(s2))/len(s2)
 
+    s1delta=s1max-s1min
+    s2delta=s2max-s2min
+
+    s1var=None
+    if s1mean!=0: s1var=s1delta/s1mean
+
+    s2var=None
+    if s2mean!=0: s2var=s2delta/s2mean
+
+    s1center=s1min+float(s1delta/2)
+    s2center=s2min+float(s2delta/2)
+
     # naive speedups
     ns1=s1mean/s2mean
     ns2=s1min/s2min
@@ -224,6 +236,9 @@ def speedup(i):
     rr={'return':0, k1+'_min':s1min, k1+'_max':s1max,
                     k2+'_min':s2min, k2+'_max':s2max,
                     k1+'_mean':s1mean, k2+'_mean': s2mean,
+                    k1+'_var':s1var, k2+'_var': s2var,
+                    k1+'_delta':s1delta, k2+'_delta': s2delta,
+                    k1+'_center':s1center, k2+'_center': s2delta,
                     'naive_speedup':ns1, 
                     'naive_speedup_min':ns2}
 
