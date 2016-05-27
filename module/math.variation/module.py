@@ -188,6 +188,28 @@ def speedup(i):
               return       - return code =  0, if successful
                                          >  0, if error
               (error)      - error text if return > 0
+
+              {key1}_min
+              {key2}_min
+
+              {key1}_max
+              {key2}_max
+
+              {key1}_mean
+              {key2}_mean
+
+              {key1}_var
+              {key2}_var
+
+              {key1}_delta
+              {key2}_delta
+
+              {key1}_center
+              {key2}_center
+
+              naive_speedup
+              naive_speedup_min
+              naive_speedup_var
             }
 
     """
@@ -217,8 +239,8 @@ def speedup(i):
     s2center=s2min+float(s2delta/2)
 
     # naive speedups
-    ns1=s1mean/s2mean
-    ns2=s1min/s2min
+    ns_mean=s1mean/s2mean
+    ns_min=s1min/s2min
 
     # check keys
     k1=i.get('key1','')
@@ -227,7 +249,19 @@ def speedup(i):
     k2=i.get('key2','')
     if k2=='': k2='s2'
 
-    # perform statistical analysis, if available
+    # Normally we should simply not use speedup if variation of both
+    # variables is too high and there is an overlap ...
+    # We should also perform stat analysis, but as some metric
+    # we temporally calculate best and worst possible speedup
+    # (again it should be used more as hints)
+    
+    if ns_mean>ns_min: 
+       nsv=ns_mean/ns_min
+    else:
+       nsv=ns_min/ns_mean
+
+    # perform statistical analysis, if available 
+    # and detect expected value(s) and confidence interval
 #    import pandas as pd
 
 
@@ -239,7 +273,8 @@ def speedup(i):
                     k1+'_var':s1var, k2+'_var': s2var,
                     k1+'_delta':s1delta, k2+'_delta': s2delta,
                     k1+'_center':s1center, k2+'_center': s2delta,
-                    'naive_speedup':ns1, 
-                    'naive_speedup_min':ns2}
+                    'naive_speedup':ns_mean, 
+                    'naive_speedup_min':ns_min,
+                    'naive_speedup_var':nsv}
 
     return rr

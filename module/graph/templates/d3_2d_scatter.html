@@ -43,6 +43,14 @@ var tooltip = d3.select("$#ck_where#$").append("div")
                 .style("opacity", 0);
 
 
+xerr="$#display_x_error_bar#$";
+yerr="$#display_y_error_bar#$";
+zerr="$#display_z_error_bar#$";
+
+xerr2="$#display_x_error_bar2#$";
+yerr2="$#display_y_error_bar2#$";
+zerr2="$#display_z_error_bar2#$";
+
 /* Check min/max on all axis */
 pxmin="$#ck_xmin#$";
 pxmax="$#ck_xmax#$";
@@ -178,6 +186,40 @@ for (graph=0; graph < 100; graph++) {
 
      var xx=data[q][0];
      var yy=data[q][1];
+
+     /* Y variation */
+     if (yerr2=='yes') {
+        var yy1=data[q][2];
+
+        size=size/1.3;
+
+        svg.append("svg:line")
+            .attr("x1", xScale(xx))
+            .attr("x2", xScale(xx))
+            .attr("y1", yScale(yy))
+            .attr("y2", yScale(yy1))
+            .style("stroke", color)
+            .style("stroke-width", "1.5");
+
+/*
+        svg.append("svg:line")
+            .attr("x1", xScale(xx)-4)
+            .attr("x2", xScale(xx)+4)
+            .attr("y1", yScale(yy))
+            .attr("y2", yScale(yy))
+            .style("stroke", color)
+            .style("stroke-width", "1.5");
+*/
+
+        svg.append("svg:line")
+            .attr("x1", xScale(xx)-4)
+            .attr("x2", xScale(xx)+4)
+            .attr("y1", yScale(yy1))
+            .attr("y2", yScale(yy1))
+            .style("stroke", color)
+            .style("stroke-width", "1.5");
+
+     }
 
      dat['x']=xx;
      dat['y']=yy;

@@ -1,3 +1,6 @@
+* 2016.05.27 * added drawing of variation in D3 scatter 
+               (used to show empirical results during crowd-tuning)
+
 * 2016.05.24 * starting speedup function to compare 2 lists of samples,
                perform t-test, check significance, etc.
 

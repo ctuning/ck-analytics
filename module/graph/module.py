@@ -96,6 +96,10 @@ def plot(i):
               (save_to_html)                        - if interactive or html-based graph, save to html
               (save_to_style)                       - if interactive or html-based graph, save to style (if needed)
 
+              (display_x_error_bar)                 - if 'yes', display error bar on X axis (using next dim)
+              (display_y_error_bar)                 - if 'yes', display error bar on Y axis (using next dim)
+              (display_z_error_bar)                 - if 'yes', display error bar on Z axis (using next dim)
+
               Graphical parameters:
                 plot_type                  - mpl_2d_scatter
                 point_style                - dict, setting point style for each separate graph {"0", "1", etc}
@@ -339,6 +343,15 @@ def plot(i):
     hlines=i.get('h_lines',[])
     vlines=i.get('v_lines',[])
 
+    # Check if display error bars
+    xerr=i.get('display_x_error_bar','')
+    yerr=i.get('display_y_error_bar','')
+    zerr=i.get('display_z_error_bar','')
+
+    xerr2=i.get('display_x_error_bar2','') # type 2
+    yerr2=i.get('display_y_error_bar2','')
+    zerr2=i.get('display_z_error_bar2','')
+
     ####################################################################### MPL ###
     if pt.startswith('mpl_'):
 
@@ -481,11 +494,6 @@ def plot(i):
        if i.get('invert_x_axis','')=='yes': plt.gca().invert_xaxis()
        if i.get('invert_y_axis','')=='yes': plt.gca().invert_yaxis()
        if i.get('invert_z_axis','')=='yes': plt.gca().invert_zaxis()
-
-       # Check if display error bars
-       xerr=i.get('display_x_error_bar','')
-       yerr=i.get('display_y_error_bar','')
-       zerr=i.get('display_z_error_bar','')
 
        if pt=='mpl_2d_bars' or pt=='mpl_2d_lines':
           ind=[]
@@ -820,6 +828,17 @@ def plot(i):
        rx=ck.dumps_json({'dict':pst})
        if rx['return']>0: return rx
        spst=rx['string']
+
+       html=html.replace('$#display_x_error_bar#$',xerr)
+       html=html.replace('$#display_y_error_bar#$',yerr)
+       html=html.replace('$#display_z_error_bar#$',zerr)
+
+       html=html.replace('$#display_x_error_bar2#$',xerr2)
+       html=html.replace('$#display_y_error_bar2#$',yerr2)
+       html=html.replace('$#display_z_error_bar2#$',zerr2)
+
+       html=html.replace('$#cm_info_json#$',smtable)
+       html=html.replace('$#cm_point_style_json#$',spst)
 
        html=html.replace('$#cm_data_json#$',stable)
        html=html.replace('$#cm_info_json#$',smtable)
