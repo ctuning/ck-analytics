@@ -1,3 +1,5 @@
+* 2016.05.30 * support for new CK web server
+
 * 2016.05.27 * added drawing of variation in D3 scatter 
                (used to show empirical results during crowd-tuning)
 

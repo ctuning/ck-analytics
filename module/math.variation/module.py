@@ -209,7 +209,7 @@ def speedup(i):
 
               naive_speedup
               naive_speedup_min
-              naive_speedup_var
+              naive_speedup_var - always >= 1.0
             }
 
     """
