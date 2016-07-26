@@ -278,3 +278,29 @@ def speedup(i):
                     'naive_speedup_var':nsv}
 
     return rr
+
+##############################################################################
+# calculating geometric mean
+
+def geometric_mean(i):
+    """
+    Input:  {
+              input - list of values
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+
+              gmean        - geometric mean
+            }
+
+    """
+
+    import math
+
+    x=i['input']
+    y=math.exp(sum(math.log(j) for j in x) / len(x))
+
+    return {'return':0, 'gmean':y}

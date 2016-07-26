@@ -3,6 +3,9 @@
     "analyze": {
       "desc": "analyze variation of experimental results including multiple expected values"
     }, 
+    "geometric_mean": {
+      "desc": "calculating geometric mean"
+    }, 
     "speedup": {
       "desc": "analyze speedup"
     }

@@ -1,3 +1,5 @@
+* 2016.07.26 * added geometric mean
+
 * 2016.07.20 * added jnotebook module to preserve, clean outputs, and run (ipython) jupyter notebooks 
 
 * 2016.05.30 * support for new CK web server
