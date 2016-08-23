@@ -84,6 +84,8 @@ def convert_to_decision_tree(i):
     link_yes={}
     link_no={}
 
+    mo=False
+
     # Detecting all labels (leafs) and decisions
     for j in range(0, len(lst)):
         q=lst[j]
@@ -96,7 +98,7 @@ def convert_to_decision_tree(i):
         classes={}
 
         j0=q.find('\\nvalue = [')
-        if j0>0:
+        if j0>0 and q.find('"X[')<0:
            j2=q.find('[label="')
            if j2>0:
               sjl=str(jl)
@@ -116,6 +118,8 @@ def convert_to_decision_tree(i):
                   if vv!='':
                      if vv.endswith('.'):
                         vv=vv[:-1]
+                     if vv.endswith(','):
+                        vv=vv[:-1]
                      vv=int(vv)
                      svals.append(vv)
 
@@ -128,6 +132,8 @@ def convert_to_decision_tree(i):
                  else: value=True
               else:
                  # Multiple objects
+                 mo=True
+
                  im=max(svals)
 
                  xx=[]
@@ -135,11 +141,12 @@ def convert_to_decision_tree(i):
                  value=-1
                  for ivv in range(0, len(svals)):
                      vv=svals[ivv]
-                     if vv==im:
+                     if float(vv)==float(im):
                         value=ivv
                         break
 
-                 classes[vals]={'class':value, 'count':vv, 'sum':sum(svals)}
+                 if value!=-1:
+                    classes[vals]={'class':value, 'count':vv, 'sum':sum(svals)}
 
               labels[sjl]['value']=value
 
@@ -159,12 +166,15 @@ def convert_to_decision_tree(i):
 
               j1=q.find(' ')
               l1=q[:j1].strip()
-             
+
               decisions[ll]=dx
 
            j1=q.find(' -> ')
            if j1>0:
               j2=q.find(';', j1+1)
+              j2x=q.find('[',j1+1)
+              if j2x<j2: j2=j2x
+
               ll2=q[j1+4:j2].strip()
 
               if ll in link: 
@@ -195,6 +205,8 @@ def convert_to_decision_tree(i):
                   if vv!='':
                      if vv.endswith('.'):
                         vv=vv[:-1]
+                     if vv.endswith(','):
+                        vv=vv[:-1]
                      vv=int(vv)
                      qb.append(vv)
 
@@ -216,7 +228,11 @@ def convert_to_decision_tree(i):
                  xxn=xx.get('count',1)
                  xxs=xx.get('sum',1)
 
-                 q=q[:j1]+'S'+str(xxc)+' ('+str(xxn)+')\\n\\n'+q[j2+1:]
+                 ss=''
+                 if xxc!=-1:
+                    ss='S'+str(xxc)+' ('+str(xxn)+')\\n'
+
+                 q=q[:j1]+ss+q[j2+1:]
 
         j1=q.find('gini = ')
         if j1>0:
@@ -235,6 +251,7 @@ def convert_to_decision_tree(i):
            s+='labelloc=top;\n'
            s+='labeljust=center;\n'
            s+='\n'
+
     # Finding path to a given leaf
     for ll in labels:
         l=labels[ll]
