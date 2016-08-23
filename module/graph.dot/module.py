@@ -93,27 +93,53 @@ def convert_to_decision_tree(i):
         if j1>0:
            ll=q[:j1].strip()
 
+        classes={}
+
         j0=q.find('\\nvalue = [')
         if j0>0:
            j2=q.find('[label="')
            if j2>0:
               sjl=str(jl)
-              lst[j]=q[:j2+8]+'*L'+sjl+'*\\n'+q[j2+8:]
+              x=q[:j2+8]+'*L'+sjl+'*\\n'+q[j2+8:]
+
+              lst[j]=x
 
               labels[sjl]={'dot_label':ll}
 
               j3=q.find(']',j0+1)
               vals=q[j0+11:j3].strip()
-              j4=vals.find(' ')
 
-              v0=vals[:j4].strip()
-              v1=vals[j4+1:].strip()
+              svalsx=vals.split(' ')
+              svals=[]
 
-              if v0.endswith('.'): v0=int(v0[:-1])
-              if v1.endswith('.'): v1=int(v1[:-1])
+              for vv in svalsx:
+                  if vv!='':
+                     if vv.endswith('.'):
+                        vv=vv[:-1]
+                     vv=int(vv)
+                     svals.append(vv)
 
-              if v0>v1: value=False
-              else: value=True
+              if len(svals)==2:
+                 # True of False classifier
+                 v0=svals[0]
+                 v1=svals[1]
+
+                 if v0>v1: value=False
+                 else: value=True
+              else:
+                 # Multiple objects
+                 im=max(svals)
+
+                 xx=[]
+
+                 value=-1
+                 for ivv in range(0, len(svals)):
+                     vv=svals[ivv]
+                     if vv==im:
+                        value=ivv
+                        break
+
+                 classes[vals]={'class':value, 'count':vv, 'sum':sum(svals)}
 
               labels[sjl]['value']=value
 
@@ -161,13 +187,19 @@ def convert_to_decision_tree(i):
            j2=q.find(']',j1)
            if j2>0:
               qx=q[j1+9:j2].strip()
+
               qa=qx.split(' ')
               qb=[]
-              for a in qa:
-                  if a.endswith('.'): a=a[:-1]
-                  if a!='': qb.append(int(a))
+
+              for vv in qa:
+                  if vv!='':
+                     if vv.endswith('.'):
+                        vv=vv[:-1]
+                     vv=int(vv)
+                     qb.append(vv)
 
               if len(qb)==2:
+                 # YES/NO
                  final_answer=dlabels[0]
                  if qb[0]<qb[1]: final_answer=dlabels[1]
 
@@ -177,6 +209,14 @@ def convert_to_decision_tree(i):
                  if problem: final_answer='*'+final_answer+'*'
 
                  q=q[:j1]+dlabels[0]+' ('+str(qb[0])+') / '+dlabels[1]+' ('+str(qb[1])+')\\n\\n'+final_answer+q[j2+1:]
+              else:
+                 # Multiple
+                 xx=classes.get(qx,{})
+                 xxc=xx.get('class',-1)
+                 xxn=xx.get('count',1)
+                 xxs=xx.get('sum',1)
+
+                 q=q[:j1]+'S'+str(xxc)+' ('+str(xxn)+')\\n\\n'+q[j2+1:]
 
         j1=q.find('gini = ')
         if j1>0:

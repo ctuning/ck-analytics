@@ -1,0 +1,48 @@
+{
+  "ftable":
+     [
+       [1], 
+       [2], 
+       [4],
+       [8],
+       [16],
+       [32],
+       [64],
+       [128]
+     ],
+
+   "fkeys":
+     [
+        "input"
+     ],
+
+   "features_flat_keys_desc": {
+      "input":{"name":"Dataset size"}
+   },
+
+
+  "ctable":
+     [
+       [0], 
+       [0], 
+       [1], 
+       [2], 
+       [2], 
+       [2], 
+       [3], 
+       [1] 
+     ],
+
+   "ckeys":
+     [
+        "Solution"
+     ],
+
+  "keep_temp_files":"yes",
+
+  "model_module_uoa":"model.sklearn",
+  "model_name":"dtc",
+  "model_file":"model-sklearn-dtc",
+  "model_params":{"max_depth":3}
+
+}
