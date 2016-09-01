@@ -1,3 +1,5 @@
+* 2016.09.01 * added experiment.raw module
+
 * 2016.08.23 * added multi-object classification using decision trees from skiearn
 
 * 2016.07.26 * added geometric mean
