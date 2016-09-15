@@ -133,6 +133,8 @@ def html_viewer(i):
           affs=dd.get('affiliations',{})
           cauthor=dd.get('cor_author_email','')
 
+          mwc=dd.get('media_wiki_commands','')
+
           h+='<div id="ck_entries">\n'
        
           h+='<center><span id="ck_article_title">'+title+'</span><br>'
@@ -197,10 +199,42 @@ def html_viewer(i):
              h+='<span id="ck_article_text">\n'
 
              px=os.path.join(pp,t)
+             th=''
              if os.path.isfile(px):
                 rx=ck.load_text_file({'text_file':px})
                 if rx['return']>0: return rx
                 th=rx['string']
+
+             # If MediaWiki, process extra
+             if mwc=='yes':
+                thx=th.split('\n')
+                th=''
+
+                for l in thx:
+                    if l.startswith('= '):
+                       l='<h1>'+l[2:-2]+'</h1>'
+
+                    j=l.find('[')
+                    while j>=0:
+                       j1=l.find(']',j)
+                       if j1>0:
+                          url=l[j+1:j1]
+                          txt=url
+                          j2=url.find(' ')
+                          if j2>0:
+                             txt=url[j2+1:].strip()
+                             url=url[:j2].strip()
+
+                          l=l[:j]+'<a href="'+url+'">'+txt+'</a>'+l[j1+1:]
+                          
+                       j=l.find('[',j+1)
+
+                    if l=='': l='<p>'
+
+                    th+=l
+#                    if not l.endswith('>'):
+#                       th+='<br>'
+                    th+='\n'
 
              h+=th
 
