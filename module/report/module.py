@@ -211,8 +211,12 @@ def html_viewer(i):
                 th=''
 
                 for l in thx:
-                    if l.startswith('= '):
-                       l='<h2>'+l[2:-2]+'</h2>'
+                    if l.startswith('=== '):
+                       l='<h3>'+l[4:-4]+'</h3>'
+                    elif l.startswith('== '):
+                       l='<h2>'+l[3:-3]+'</h2>'
+                    elif l.startswith('= '):
+                       l='<h1>'+l[2:-2]+'</h1>'
 
                     j=l.find('[')
                     while j>=0:
