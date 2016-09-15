@@ -180,7 +180,7 @@ def html_viewer(i):
              h+='<i>Corresponding author: <a href="mailto:'+cauthor+'">'+cauthor+'</a></i>\n'
              h+='</span>\n'
 
-          if hshare!='':
+          if hshare!='' and dd.get('skip_sharing','')!='yes':
              h+='<div id="ck_entries_space4"></div>\n'
              h+=hshare
              h+=' <div id="ck_entries_space4"></div>\n'
