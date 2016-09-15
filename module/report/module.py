@@ -186,7 +186,7 @@ def html_viewer(i):
              h+=' <div id="ck_entries_space4"></div>\n'
 
           h+='<div style="text-align: right;">'
-          if wurl!='':
+          if wurl!='' and dd.get('skip_discussion_link','')!='yes':
              h+='[&nbsp;<a href="'+wurl+'">Discussion wiki (comments, reproducibility, etc.)</a>&nbsp;]'
           h+='</div>\n'
 
