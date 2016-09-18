@@ -121,10 +121,9 @@ def run(i):
            if f.endswith('.ipynb'):
               nbs.append(f)
        if len(nbs)==0:
-          return {'return':1, 'error':'can\'t find ipython/jupyter notebooks in the CK entry'}
+          return {'return':1, 'error':'can\'t find \ipython/jupyter notebooks in the CK entry'}
        name=nbs[0]
 
-    
     # Check if need tmp file or not
     ff=os.path.join(p,name)
     if i.get('original','')!='yes':
@@ -135,7 +134,7 @@ def run(i):
        shutil.copy(ff, ftmp)
        ff=ftmp
 
-    cmd='ipython notebook '+ff
+    cmd='jupyter notebook '+ff
     os.system(cmd)
 
     return {'return':0}
