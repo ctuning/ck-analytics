@@ -422,8 +422,8 @@ def plot(i):
                       tmin.append(v)
                       tmax.append(v)
                    else:
-                      if v<tmin[d]: tmin[d]=v
-                      if v>tmax[d]: tmax[d]=v 
+                      if v!=None and v<tmin[d]: tmin[d]=v
+                      if v!=None and v>tmax[d]: tmax[d]=v 
 
        # If density or heatmap, find min and max for both graphs:
        if pt=='mpl_1d_density' or pt=='mpl_1d_histogram' or pt=='mpl_2d_heatmap' or pt=='mpl_3d_scatter' or pt=='mpl_3d_trisurf':
