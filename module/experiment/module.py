@@ -2287,7 +2287,7 @@ def load_point(i):
           rx=ck.load_json_file({'json_file':p1})
           if rx['return']>0: return rx
           pipeline=rx['dict']
-                 
+
     # Start listing points
     dirList=os.listdir(p)
     added=False
@@ -2370,7 +2370,7 @@ def multi_stat_analysis(i):
     # Remove characteristics from original
     ch=ck.get_from_dicts(cddx, 'characteristics', {}, None)
 
-    # Check if characteristics lits (to add a number of experimental results at the same time,
+    # Check if characteristics lists (to add a number of experimental results at the same time,
     #   otherwise point by point processing can become very slow
     chl=ck.get_from_dicts(cddx, 'characteristics_list', [], None)
     if len(ch)>0: chl.append(ch)
