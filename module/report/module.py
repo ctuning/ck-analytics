@@ -110,11 +110,20 @@ def html_viewer(i):
           ar=ap.get(var_post_autorefresh,'')
           art=ap.get(var_post_autorefresh_time,'')
           iart=4
+
+          if art=='':
+              art=dd.get('auto_refresh_time','')
           if art!='':
-             try:
-                iart=int(art)
-             except ValueError:
-                iart=4
+              try:
+                 iart=int(art)
+              except ValueError:
+                 iart=4
+
+          ap[var_post_autorefresh_time]=iart
+
+          if ar=='':
+              ar='on'
+              ap[var_post_autorefresh]=ar
 
           if ar=='on':
              h+='\n'
