@@ -252,7 +252,34 @@ def html_viewer(i):
 #                       th+='<br>'
                     th+='\n'
 
+             # Check CK access functions
              h+=th
+
+             j=0
+             while j!=-1:
+                j=h.find('$#ck_access_start#$',j)
+                if j>=0:
+                   j1=h.find('$#ck_access_stop#$',j)
+                   if j1>=0:
+                       json=h[j+19:j1].strip()
+
+                       ha=''
+
+                       # Convert json to python dict
+                       rx=ck.convert_json_str_to_dict({'str':json, 'skip_quote_replacement':'yes'})
+                       if rx['return']==0:
+                          nii=rx['dict']
+
+                          nii['base_url']=burl
+
+                          rx=ck.access(nii)
+                          if rx['return']==0:
+                              ha=rx['html']
+                              st+=rx.get('style','')
+
+                       h=h[:j]+ha+h[j1+18:]
+                       
+                   j+=1
 
              h+='</span\n'
           h+='</div>\n'
