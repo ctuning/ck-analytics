@@ -156,8 +156,8 @@ def html_viewer(i):
              for a in authors:
                  name=a.get('name','')
                  aff=a.get('affiliation','')
-                 url=a.get('url','')
 
+                 url=a.get('url','')
                  if url!='': name='<a href="'+url+'">'+name+'</a>'
 
                  if x!='': x+=', '
@@ -174,6 +174,9 @@ def html_viewer(i):
              for a in sorted(affs, key=int):
                  af=affs[str(a)]
                  name=af.get('name','')
+
+                 url=af.get('url','')
+                 if url!='': name='<a href="'+url+'">'+name+'</a>'
 
                  if x!='': x+=',&nbsp;&nbsp;&nbsp;'
                  x+='<sup>'+str(a)+'</sup>&nbsp;'+name
