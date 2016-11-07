@@ -3031,6 +3031,9 @@ def crowdsource(i):
                    zz={}
                    iz=0
                    for z1 in zss:
+                       if z1.get('meta',{}).get('skip_from_cmd','')=='yes': 
+                           continue
+
                        z=z1['data_uid']
                        zu=z1['data_uoa']
 
