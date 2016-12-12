@@ -2623,6 +2623,18 @@ def html_viewer(i):
        if sv=='' and dd.get('subview_uoa','')!='':
           sv=dd['subview_uoa']
 
+       # If no explicit subview_uoa, try from scenario
+       if sv=='':
+          smu=dd.get('meta',{}).get('scenario_module_uoa','')
+          if smu!='':
+             r=ck.access({'action':'load',
+                          'module_uoa':cfg['module_deps']['module'],
+                          'data_uoa':smu})
+             if r['return']>0:
+                if r['return']!=16: return r
+             else:
+                sv=r['dict'].get('subview_uoa','')
+
        if sv!='':
           burl+=var_post_subview+'='+sv+'&'
 

@@ -1,3 +1,5 @@
+* 2016.12.12 * added automatic detection of views when browsing experiments
+
 * 2016.11.07 * prune experiment crowdsourcing scenarios if "skip_from_cmd"
 
 * 2016.09.15 * adding partial support for MediaWiki format in CK-powered interactive reports
