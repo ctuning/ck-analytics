@@ -3257,3 +3257,29 @@ def log(i):
        return {'return':1, 'error':'problem logging ('+format(e)+')'}
 
     return {'return':0, 'path':path}
+
+##############################################################################
+# open browser and view experiment details
+
+def browse(i):
+    """
+    Input:  {
+              (data_uoa) - experiment UOA
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    duoa=i.get('data_uoa','')
+
+    ii={'action':'start',
+        'module_uoa':cfg['module_deps']['web'],
+        'browser':'yes',
+        'cid':work['self_module_uid']+':'+duoa}
+
+    return ck.access(ii)

@@ -1,4 +1,5 @@
 * 2016.12.12 * added automatic detection of views when browsing experiments
+             * added 'ck browse experiment:{UOA}' to view local experiments in a browser
 
 * 2016.11.07 * prune experiment crowdsourcing scenarios if "skip_from_cmd"
 
