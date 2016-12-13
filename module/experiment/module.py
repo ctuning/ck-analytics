@@ -77,7 +77,6 @@ def add(i):
                                                                            'fail'
                                                                            'fail_bool'
                                                                           }
-                                        
 
                                                 (choices_desc)         - choices descrpition
                                                 (features_desc)        - features description
@@ -203,7 +202,7 @@ def add(i):
     ft_desc=ddx.get('features_desc', {})
     choices_desc=ddx.get('choices_desc', {})
     ch_desc=ddx.get('characteristics_desc',{})
-    
+
     pipeline=ck.get_from_dicts(ddx, 'pipeline', {}, None) # get pipeline and remove from individual points,
                                                          #  otherwise can be very large duplicates ...
     pipeline_uoa=ck.get_from_dicts(ddx, 'pipeline_uoa', '', None)
@@ -840,7 +839,7 @@ def get(i):
                      continue
 
                   ppx={'repo_uoa':ruoa, 'repo_uid':ruid, 'module_uoa':muoa, 'module_uid':muid, 'data_uoa':duoa, 'data_uid':duid, 'point_uid':pp2}
-                  
+
                   # If load json files ...
                   if len(ljf)>0:
                      for jf in ljf:
@@ -848,7 +847,7 @@ def get(i):
 
                          rx=ck.load_json_file({'json_file':pj})
                          if rx['return']>0: return rx
-                         
+
                          dpj=rx['dict']
 
                          if len(gkjf)>0:
@@ -954,7 +953,7 @@ def get(i):
                                 vih=vect[ih]
                                 if vih!=None:
                                    max_length=max(max_length, len(vih))
-                            
+
                             for q in range(0, max_length):
                                 vect1=[]
                                 for ih in range(0, len(vect)):
@@ -1771,6 +1770,14 @@ def replay(i):
                (compare_subpoint)
 
                ==============================
+                 Prunning
+
+               (prune)        - if 'yes', replay and prune choices!
+               (prune_invert) - if 'yes', prune all (switch off even unused - useful for collaborative machine learning)
+
+               (solutions) - prune first solution
+
+               ==============================
                  Some productivity keys specifically for autotuning pipeline (ck-autotuning repo):
 
                (local_platform) or (local)   - if 'yes', use parameters of a local platform (to retarget experiment)
@@ -1815,6 +1822,10 @@ def replay(i):
 
     pipeline_update=i.get('pipeline_update',{})
     repetitions=i.get('repetitions','')
+
+    solutions=i.get('solutions',[])
+    prune=i.get('prune','')
+    prune_invert=i.get('prune_invert','')
 
     if i.get('local_platform','')!='': pipeline_update['local_platform']=i['local_platform']
     if i.get('local','')!='':          pipeline_update['local_platform']=i['local']
@@ -1942,6 +1953,28 @@ def replay(i):
 
     ft=dd.get('features',{})
     choices=ft.get('choices',{})
+    choices_order=ft.get('choices_order',[])
+
+    if (prune=='yes' or prune_invert=='yes') and len(solutions)==0:
+       # Rebuild choices
+       pco=[]
+       po={}
+       for k in choices_order:
+           rz=ck.get_by_flat_key({'dict':choices, 'key':k})
+           if rz['return']>0: return rz
+           vv=rz['value']
+           if vv!=None:
+#              k1='##choices'+k[1:]
+              k1=k
+              pco.append(k1)
+              po[k1]=vv
+
+       solutions=[{
+                   'points':[
+                      {'pruned_choices_order':pco,
+                       'pruned_choices':po}
+                   ]
+                 }]
 
     cf=dd.get('features',{}) # choices and features
     if 'sub_points' in cf: del(cf['sub_points'])
@@ -1985,6 +2018,7 @@ def replay(i):
 
     if type(dc)!=list: dc=[dc]
 
+    pap={}
     if len(dc)>0:
        # On Linux from CMD substitute ^ with #
        for q in range(0, len(dc)):
@@ -1998,6 +2032,8 @@ def replay(i):
                         'data_uoa':sm_uoa})
           if ry['return']>0: return ry
           ddx=ry['dict']
+
+          pap=ddx.get('prune_autotune_pipeline',{})
 
           dc=[]
 
@@ -2017,7 +2053,7 @@ def replay(i):
           if ry['return']>0: return ry
           kdc=ry['desc']
           if xxkey!='':
-             kdc=kdc.get(xxkey,{})                 
+             kdc=kdc.get(xxkey,{})
 
           al='yes'
 
@@ -2032,7 +2068,7 @@ def replay(i):
        if rpt!='': 
           rpt=int(rpt)
           repetitions=rpt
-    
+
     #******************************************************************
     pipeline_uoa=rx['pipeline_uoa']
     pipeline_uid=rx['pipeline_uid']
@@ -2057,15 +2093,23 @@ def replay(i):
        ck.out('')
 
     # Attempt to run pipeline
-    ii={'action':'run',
+    ii={'action':'autotune',
         'out':o,
+        'iterations':1,
         'module_uoa':cfg['module_deps']['pipeline'],
         'data_uoa':pipeline_uid,
         'pipeline':pipeline,
         'repetitions':repetitions,
         'pipeline_update':pipeline_update,
+        'solutions':solutions,
+        'prune':prune,
+        'prune_invert':prune_invert,
         'force_pipeline_update':'yes',
         'skip_done':'yes'}
+    if prune=='yes': 
+       ii['iterations']=-1
+       ii.update(pap)
+
     r=ck.access(ii)
     if r['return']>0: return r
 
@@ -2163,7 +2207,7 @@ def replay(i):
 
                  if o=='con' and (v!=v1 or al=='yes'):
                     ck.out(ss)
-                                                                             
+
        if o=='con':
           ck.out('')
           if ichecked==0:
@@ -2836,7 +2880,7 @@ def html_viewer(i):
                     if sp=='': continue
 
                     px+=1
-                    
+
                     found=False
                     for isp in range(0, len(arr)):
                         if arr[isp]['uid']==sp: 
