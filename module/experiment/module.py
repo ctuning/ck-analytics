@@ -109,7 +109,7 @@ def add(i):
 
               (sort_keys)                   - if 'yes', sort keys in output json
 
-              (skip_flatten)                - if 'yes', skip flattinging and analyzing data (including stat analysis) ...
+              (skip_flatten)                - if 'yes', skip flattening and analyzing data (including stat analysis) ...
 
               (skip_stat_analysis)          - if 'yes', just flatten array and add #min
 
