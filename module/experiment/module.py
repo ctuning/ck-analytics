@@ -2075,6 +2075,7 @@ def replay(i):
     pipeline=rx['pipeline']
 
     pipeline.update(cf)
+    pdafr=''
     if i.get('deps','')=='yes':
        pdeps=pipeline.get('dependencies',{})
        rz=ck.merge_dicts({'dict1':pdeps, 'dict2':deps})
@@ -2082,6 +2083,8 @@ def replay(i):
        pdeps=rz['dict1']
     else:
        pdeps={}
+       pdafr='yes'
+
     pipeline['dependencies']=pdeps
 
     if len(pipeline)==0:
@@ -2100,6 +2103,7 @@ def replay(i):
         'data_uoa':pipeline_uid,
         'pipeline':pipeline,
         'repetitions':repetitions,
+        'preserve_deps_after_first_run':pdafr,
         'pipeline_update':pipeline_update,
         'solutions':solutions,
         'prune':prune,
