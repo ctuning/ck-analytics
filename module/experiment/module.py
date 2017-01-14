@@ -2822,10 +2822,10 @@ def html_viewer(i):
 
        # Sort, if needed
        if its!=-1:
-          arr1=sorted(arr, key=lambda k: k['main'][its])
+          arr1=sorted(arr, key=lambda k: ck.safe_float(k['main'][its],0))
           arr=arr1
        elif irts!=-1:
-          arr1=sorted(arr, key=lambda k: k['main'][irts], reverse=True)
+          arr1=sorted(arr, key=lambda k: ck.safe_float(k['main'][irts],0), reverse=True)
           arr=arr1
 
        # Prepare view
