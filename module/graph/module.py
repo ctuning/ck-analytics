@@ -829,7 +829,7 @@ def plot(i):
        if rx['return']>0: return rx
        spst=rx['string']
 
-       html=html.replace('$#x_ticks_period#$',xtp)
+       html=html.replace('$#x_ticks_period#$',str(xtp))
 
        html=html.replace('$#display_x_error_bar#$',xerr)
        html=html.replace('$#display_y_error_bar#$',yerr)
