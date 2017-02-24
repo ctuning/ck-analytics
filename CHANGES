@@ -1,4 +1,6 @@
-* 2017.01.14 - improved replay support (for OpenCL kernels from Lift/CLBlast during crowd-tuning)
+* 2017.02.24 * added support for x_ticks_period in D3 interactive graphs
+
+* 2017.01.14 * improved replay support (for OpenCL kernels from Lift/CLBlast during crowd-tuning)
 
 * 2016.12.13 * added '--prune' to 'ck replay experiment'
 

@@ -82,6 +82,12 @@ for (graph=0; graph < 100; graph++) {
 
 var xstr=[]
 
+/* Check ticks */
+var xmticks=1;
+if (!isNaN("$#x_ticks_period#$")) xmticks=Number("$#x_ticks_period#$");
+
+var xticks=xmticks-1;
+
 // Convert to internal format
 for (graph=0; graph < 100; graph++) {
 
@@ -113,7 +119,7 @@ for (graph=0; graph < 100; graph++) {
 
      if ('features' in inf) {
         features=inf.features;
-     
+
         var keys=[];
         for (var key in features) {
           if (features.hasOwnProperty(key)) {
@@ -142,7 +148,16 @@ for (graph=0; graph < 100; graph++) {
      if ('url' in inf) dat['url']=inf.url;
      if ('url_ext' in inf) dat['url_ext']=inf.url_ext;
 
-     if (graph==0) xstr.push(datax[q][0]);
+     if (graph==0) {
+        if (xticks==0) {
+          xstr.push(datax[q][0]);
+          xticks=xmticks-1;
+        }
+        else {
+          xstr.push(Array(q+1).join(" "));
+          xticks--;
+        }
+     }
 
      dat['x']=datax[q][0];
      dat['y']=datax[q][1];
@@ -165,11 +180,11 @@ var y = d3.scale.linear()
 
 var x0 = d3.scale.ordinal()
       .domain(d3.range(n))
-      .rangeBands([0, width], .2);
+      .rangeBands([0, width], 0.2);
 
 var x0x = d3.scale.ordinal()
       .domain(xstr)
-      .rangeBands([0, width], .2);
+      .rangeBands([0, width], 0.2);
 
 var x1 = d3.scale.ordinal()
     .domain(d3.range(m))
