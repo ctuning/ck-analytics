@@ -117,6 +117,8 @@ table - preparing experimental tables (txt,html)
 Publications
 ============
 
+The concepts have been described in the following publications:
+
 ```
 @inproceedings{ck-date16,
     title = {{Collective Knowledge}: towards {R\&D} sustainability},
