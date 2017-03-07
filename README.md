@@ -31,7 +31,7 @@ Useful:
 Authors
 =======
 
-* Grigori Fursin, cTuning foundation (France) / dividiti (UK)
+* [Grigori Fursin](http://fursin.net/research.html), cTuning foundation/dividiti
 
 License
 =======
