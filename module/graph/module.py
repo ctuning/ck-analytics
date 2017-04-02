@@ -604,13 +604,17 @@ def plot(i):
 
 
               else:
+                 draw_scatter=False
                  if xerr=='yes' and yerr=='yes':
                     sp.errorbar(mx, my, xerr=mxerr, yerr=myerr, ls='none', c=cl, elinewidth=elw, label=lbl, fmt=xfmt)
                  elif xerr=='yes' and yerr!='yes':
                     sp.errorbar(mx, my, xerr=mxerr, ls='none',  c=cl, elinewidth=elw, label=lbl, fmt=xfmt)
                  elif yerr=='yes' and xerr!='yes':
-                     sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw, label=lbl, fmt=xfmt)
+                    sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw, label=lbl, fmt=xfmt)
                  else:
+                    draw_scatter=True
+
+                 if draw_scatter or i.get('force_center_dot','')=='yes': 
                     sp.scatter(mx, my, s=int(sz), edgecolor=cl, c=cl, marker=mrk, label=lbl)
 
                  if connect_lines=='yes':
