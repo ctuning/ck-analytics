@@ -613,8 +613,8 @@ def plot(i):
                  else:
                     sp.scatter(mx, my, s=int(sz), edgecolor=cl, c=cl, marker=mrk, label=lbl)
 
-                    if connect_lines=='yes':
-                       sp.plot(mx, my, c=cl, label=lbl)
+                 if connect_lines=='yes':
+                    sp.plot(mx, my, c=cl, label=lbl)
 
                  if xpst.get('frontier','')=='yes':
                     # not optimal solution, but should work (need to sort to draw proper frontier)
