@@ -1,4 +1,4 @@
-
+#
 # Collective Knowledge (various graphs for experiment)
 #
 # See CK LICENSE.txt for licensing details
@@ -535,6 +535,8 @@ def plot(i):
            sz=xpst.get('size','')
            if sz=='': sz=gs[s]['size']
 
+           connect_lines=xpst.get('connect_lines','')
+
            mrk=xpst.get('marker','')
            if mrk=='': mrk=gs[s]['marker']
 
@@ -610,6 +612,9 @@ def plot(i):
                      sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw, label=lbl, fmt=xfmt)
                  else:
                     sp.scatter(mx, my, s=int(sz), edgecolor=cl, c=cl, marker=mrk, label=lbl)
+
+                    if connect_lines=='yes':
+                       sp.plot(mx, my, c=cl, label=lbl)
 
                  if xpst.get('frontier','')=='yes':
                     # not optimal solution, but should work (need to sort to draw proper frontier)
@@ -762,7 +767,19 @@ def plot(i):
        # Set axes labels
        xlab=i.get('axis_x_labels',[])
        if len(xlab)>0:
-          sp.set_xticklabels(xlab)
+          ind=[]
+          qq=0
+          for q in xlab:
+              ind.append(qq)
+              qq+=1
+
+          sp.set_xticks(ind)
+
+
+          xrot=i.get('axis_x_rotation','')
+          if xrot=='': sp.set_xticklabels(xlab)
+          else:        sp.set_xticklabels(xlab, rotation=xrot)
+
 
        ylab=i.get('axis_y_labels',[])
        if len(ylab)>0:
