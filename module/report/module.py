@@ -184,6 +184,14 @@ def html_viewer(i):
              h+=x+'<br>\n'
              h+='</span>\n'
 
+          if dd.get('add_date_to_the_top','')!='':
+             h+='<span id="ck_article_affiliations">\n'
+             h+='<div id="ck_entries_space4"></div>\n'
+             h+='<i>\n'
+             h+=dd['add_date_to_the_top']
+             h+='</i>\n'
+             h+='</span><br>\n'
+
           h+='</center>\n'
 
           if len(cauthor)>0:
@@ -314,4 +322,67 @@ def html_viewer(i):
              h+='&nbsp;seconds: <input type="text" name="'+var_post_autorefresh_time+'" value="'+str(iart)+'">\n'
              h+='</center>\n'
 
+          if dd.get('add_ck_info','')!='':
+             h+='<br>\n'
+             h+=' <center><i>\n'
+             h+='  This interactive and reproducible article was automatically generated using <b><a href="http://github.com/ctuning/ck">Collective Knowledge framework</a></b>'
+             h+=' </i></center><br>\n'
+
     return {'return':0, 'raw':raw, 'show_top':top, 'html':h, 'style':st}
+
+##############################################################################
+# copy file from an entry to current directory
+
+def copy_file(i):
+    """
+    Input:  {
+              (module_uoa) - module with file
+              data_uoa     - entry with file
+              file         - file to copy
+              dir          - extra dir in current directory
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    import os
+    import filecmp
+    import shutil
+
+    muoa=i['module_uoa']
+    duoa=i['data_uoa']
+    f=i['file']
+
+    r=ck.access({'action':'find',
+                 'module_uoa':muoa,
+                 'data_uoa':duoa})
+    if r['return']>0: return r
+
+    p=r['path']
+
+    pp=os.path.join(p,f)
+
+    if not os.path.isfile(pp):
+       return {'return':1, 'error':'file not found ('+pp+')'}
+
+    ppn=os.getcwd()
+    if i.get('dir','')!='':
+       ppn=os.path.join(ppn,i['dir'])
+
+    ppd=ppn
+
+    ppn=os.path.join(ppn,f)
+
+    if not os.path.isfile(ppn) or not filecmp.cmp(pp,ppn):
+       if not os.path.isdir(ppd):
+          os.makedirs(ppd)
+    
+       ck.out('Copying file '+f+' to '+ppn+' ...')
+       shutil.copyfile(pp,ppn)
+
+    return {'return':0}

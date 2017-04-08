@@ -1,3 +1,5 @@
+* 2017.04.08 * improved interactive and reproducible report module
+
 * 2017.04.02 * improved MPL scatter graphs (connected_lines and labels)
 
 * 2017.02.24 * added support for x_ticks_period in D3 interactive graphs
