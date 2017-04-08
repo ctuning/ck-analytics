@@ -198,6 +198,18 @@ def html_viewer(i):
              h+=' <div id="ck_entries_space4"></div>\n'
 
           h+='<div style="text-align: right;">'
+
+          x=''
+          for q in dd.get('top_links',[]):
+              qt=q['text']
+              qu=q['url']
+
+              if x!='': x+='&nbsp; '
+              x+='[&nbsp;<a href="'+qu+'">'+qt+'</a>&nbsp;]\n'
+
+          if x!='':
+             h+='\n<br>\n'+x+'\n'
+
           if wurl!='' and dd.get('skip_discussion_link','')!='yes':
              h+='[&nbsp;<a href="'+wurl+'">Discussion wiki (comments, reproducibility, etc.)</a>&nbsp;]'
           h+='</div>\n'
