@@ -91,3 +91,26 @@ def show(i):
     h+=url
 
     return {'return':0, 'html':h, 'style':st}
+
+##############################################################################
+# CK-AI dashboard
+
+def browse(i):
+    """
+    Input:  {
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    i['action']='browser'
+    i['cid']=''
+    i['module_uoa']=''
+    i['template']='ck-ai-basic'
+
+    return ck.access(i)

@@ -1,5 +1,8 @@
 {
   "actions": {
+    "browse": {
+      "desc": "CK-AI dashboard"
+    },
     "show": {
       "desc": "access available CK-AI self-optimizing functions",
       "for_web": "yes"
