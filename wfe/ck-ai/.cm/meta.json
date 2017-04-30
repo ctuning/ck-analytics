@@ -1,0 +1,26 @@
+{
+  "top_menu": [
+    {
+      "module_uoa": "", 
+      "module_uoas": [
+        ""
+      ], 
+      "url_extra": "action=index&module_uoa=wfe&native_action=show&native_module_uoa=advice", 
+      "native_module_uoa":"advice",
+      "native_action":"show",
+      "default":"yes",
+      "name": "Access AI via CK JSON API"
+    }, 
+    {
+      "name": "Get CK workflow framework", 
+      "url": "https://github.com/ctuning/ck",
+      "new_window":"yes"
+    },
+    {
+      "name": "About", 
+      "url": "https://cKnowledge.org/ai",
+      "new_window":"yes"
+    }
+  ],
+  "extra_html_after_menu":""
+}
