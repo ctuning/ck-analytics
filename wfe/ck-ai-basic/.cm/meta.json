@@ -7,7 +7,7 @@
       "module_uoas": [
         ""
       ],
-      "name": "Access AI via CK JSON API",
+      "name": "CK JSON API for unified AI",
       "native_action": "show",
       "native_module_uoa": "advice",
       "url_extra": "action=index&module_uoa=wfe&native_action=show&native_module_uoa=advice"
