@@ -1665,9 +1665,6 @@ def list_points(i):
        ruoa=i.get('repo_uoa','')
        rruoa=i.get('remote_repo_uoa','')
 
-       print (ruoa,muoa,duoa)
-       input('xyz')
-
        ii={'action':'load',
            'module_uoa':muoa,
            'data_uoa':duoa,
