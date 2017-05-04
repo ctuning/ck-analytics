@@ -26,6 +26,9 @@ hextra+='<a href="https://www.youtube.com/watch?v=Q94yWxXUMP0">YouTube CK intro<
 hextra+='</center></i>\n'
 hextra+='<br>\n'
 
+form_name='ck_ai_web_form'
+onchange='document.'+form_name+'.submit();'
+
 ##############################################################################
 # Initialize module
 
@@ -59,7 +62,11 @@ def show(i):
 
     """
 
+    import copy
+
     h=''
+    st=''
+
     h+='<center>\n'
     h+='\n\n<script language="JavaScript">function copyToClipboard (text) {window.prompt ("Copy to clipboard: Ctrl+C, Enter", text);}</script>\n\n' 
 
@@ -81,13 +88,78 @@ def show(i):
     action=i.get('action','')
     muoa=i.get('module_uoa','')
 
-    st=''
-
     url+='action=index&module_uoa=wfe&native_action='+action+'&'+'native_module_uoa='+muoa
     url1=url
 
+    # Start form
+    r=ck.access({'action':'start_form',
+                 'module_uoa':cfg['module_deps']['wfe'],
+                 'url':url1,
+                 'name':form_name})
+    if r['return']>0: return r
+    h+=r['html']
 
-    h+=url
+    # Check available API is modules
+    r=ck.access({'action':'search',
+                 'module_uoa':cfg['module_deps']['module'],
+                 'tags':'ck-ai-json-web-api'})
+    if r['return']>0: return r
+    l=r['lst']
+
+    if len(l)==0:
+       h='<b>WARNING:</b> No CK modules found with CK AI JSON web API\n'
+    else:
+       dt=[{'name':'', 'value':''}]
+
+       for x in l:
+           v=x['data_uid']
+
+           # Load module info
+           r=ck.access({'action':'load',
+                        'module_uoa':cfg['module_deps']['module'],
+                        'data_uoa':v})
+           if r['return']>0: return r
+
+           d=r['dict']
+
+           name=d.get('actions',{}).get('ask_ai_web',{}).get('desc','')
+
+           if name!='':
+              dt.append({'name':name, 'value':v})
+
+       # Create selector
+       ai=i.get('ai_scenario','')
+
+       ii={'action':'create_selector',
+           'module_uoa':cfg['module_deps']['wfe'],
+           'data':dt,
+           'name':'ai_scenario',
+           'onchange':onchange, 
+           'skip_sort':'yes',
+           'selected_value':ai}
+       r=ck.access(ii)
+       if r['return']>0: return r
+       x=r['html']
+
+       h+='Select AI scenario (which has unified <a href="http://github.com/ctuning/ck">CK JSON API</a>): '+x
+
+       # Render scenario
+       if ai!='':
+          ii=copy.deepcopy(i)
+
+          ii['action']='ask_ai_web'
+          ii['module_uoa']=ai
+
+          ii['widget']='yes'
+          ii['prepared_url0']=url0
+          ii['prepared_url1']=url1
+          ii['prepared_form_name']=form_name
+
+          r=ck.access(ii)
+          if r['return']>0: return r
+
+          h+='\n<hr>\n'+r.get('html','')
+          st+='\n'+r.get('style','')+'\n'
 
     return {'return':0, 'html':h, 'style':st}
 
