@@ -121,6 +121,14 @@ table - preparing experimental tables (txt,html)
 
   * draw - draw experiment table (in txt or html)
 
+CK AI JSON API
+==============
+
+We provide unfied JSON API for self-optimizing DNN:
+* Demo: http://cknowledge.org/repo/web.php?template=ck-ai-basic
+* Wiki: https://github.com/ctuning/ck/wiki/Unifying-AI-API
+* CMD: ck browse advice
+
 Publications
 ============
 

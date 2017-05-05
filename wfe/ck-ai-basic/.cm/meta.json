@@ -13,6 +13,15 @@
       "url_extra": "action=index&module_uoa=wfe&native_action=show&native_module_uoa=advice"
     },
     {
+      "name": "Collective training set",
+      "module_uoa": "model.image.classification", 
+      "url_extra": "data_uoa=collective_training_set", 
+      "module_uoas": [
+        "model.image.classification", 
+        "42b9a1221eb50259"
+      ] 
+    },
+    {
       "name": "Get CK workflow framework",
       "new_window": "yes",
       "url": "https://github.com/ctuning/ck"

@@ -157,7 +157,7 @@ def show(i):
     if len(el)==0:
        h+='<i>DNN engine is not installed - contact <a href="mailto:admin@dividiti.com">dividiti</a> to install this engine and related models in the CK AI cloud</i><br><br>'
     else:
-       h+=str(len(el))+' engine(s) installed (different optimizations and platforms)<br>'
+       h+='<i>'+str(len(el))+' engine(s) installed (different optimizations and platforms)</i><br>'
 
        # Search models to check if has installed
        r=ck.access({'action':'search',
@@ -169,7 +169,13 @@ def show(i):
        if len(models)==0:
           h+='<i>DNN models for this engine are not installed - contact <a href="mailto:admin@dividiti.com">dividiti</a> to install more models in the CK AI cloud</i><br><br>'
        else:
-          h+=str(len(models))+' model(s) installed (different topology and parameters)<br><br>'
+          h+='<i>'+str(len(models))+' model(s) installed (different topology and parameters)</i><br><br>'
+
+          h+='<i>Optimization statistics shared by the community:\n'
+          h+='[ <a href="http://cknowledge.org/repo/web.php?native_action=show&native_module_uoa=program.optimization&scenario=1eb2f50d4620903e">desktops and servers</a> ], \n'
+          h+='[ <a href="http://cknowledge.org/repo/web.php?native_action=show&native_module_uoa=program.optimization&scenario=4dcf435bb0d92fa6">mobile devices and IoT</a> ] \n'
+          h+='</i><br><br>'
+
 
           fc=i.get('file_content_base64','')
           fcu=i.get('file_content_uploaded','')
@@ -294,8 +300,9 @@ def show(i):
                       h+=    s+'<br><br>\n'
 
                       h+='   <center>\n'
-                      h+='   If wrong classification, please provide correct label:<br><input type="text" name="dnn_correct_label"><br><br>\n'
+                      h+='   <b>If classification is wrong, please provide correct label:</b><br><input type="text" name="dnn_correct_label"><br><br>\n'
                       h+='   <button type="submit" name="dnn_add_correct_label">Submit label</button>\n'
+                      h+='   ( <a href="'+url0+'&wcid='+work['self_module_uid']+':'+dlabels+'">view shared labels</a> )\n'
                       h+='   </center>\n'
 
                       h+='  </td>\n'

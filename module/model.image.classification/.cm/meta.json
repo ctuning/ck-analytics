@@ -1,7 +1,7 @@
 {
   "actions": {
     "ask_ai_web": {
-      "desc": "use adaptive DNN to classify images",
+      "desc": "classify user images to crowd-tune CK-DNN and create collective training set",
       "for_web": "yes"
     },
     "dashboard": {

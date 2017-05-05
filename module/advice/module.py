@@ -15,7 +15,7 @@ ck=None # Will be updated by CK (initialized CK kernel)
 
 # Local settings
 
-hextra='<i><center>\n'
+hextra='<center>\n'
 hextra+=' [ <a href="http://cKnowledge.org/ai">Community-driven AI R&D powered by CK</a> ], '
 hextra+=' [ <a href="https://github.com/dividiti/ck-caffe">CK-Caffe</a> ], '
 hextra+=' [ <a href="https://github.com/ctuning/ck-tensorflow">CK-TensorFlow</a> ], '
@@ -23,7 +23,7 @@ hextra+=' [ <a href="https://en.wikipedia.org/wiki/Collective_Knowledge_(softwar
 hextra+='<a href="https://www.researchgate.net/publication/304010295_Collective_Knowledge_Towards_RD_Sustainability">paper 1</a>, \n'
 hextra+='<a href="https://arxiv.org/abs/1506.06256">Paper 2</a>, \n'
 hextra+='<a href="https://www.youtube.com/watch?v=Q94yWxXUMP0">YouTube CK intro</a> ] \n'
-hextra+='</center></i>\n'
+hextra+='</center>\n'
 hextra+='<br>\n'
 
 form_name='ck_ai_web_form'
@@ -141,7 +141,7 @@ def show(i):
        if r['return']>0: return r
        x=r['html']
 
-       h+='<br>Select AI scenario with unified <a href="http://github.com/ctuning/ck">CK AI JSON API</a><br><br>'+x+'<br><br><br>'
+       h+='<br><b>Select AI scenario with unified <a href="https://github.com/ctuning/ck/wiki/Unifying-AI-API">CK AI JSON API</a> :</b><br><br>'+x+'<br><br><br>'
 
        # Render scenario
        if ai!='':
@@ -158,7 +158,10 @@ def show(i):
           r=ck.access(ii)
           if r['return']>0: return r
 
+          h+='<div id="ck_box_with_shadow">\n'
           h+='\n\n'+r.get('html','')
+          h+='</div>\n'
+
           st+='\n'+r.get('style','')+'\n'
 
     return {'return':0, 'html':h, 'style':st}
