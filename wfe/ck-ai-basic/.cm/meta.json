@@ -2,6 +2,11 @@
   "extra_html_after_menu": "",
   "top_menu": [
     {
+      "name": "Home",
+      "new_window": "yes",
+      "url": "https://cKnowledge.org/repo"
+    },
+    {
       "default": "yes",
       "module_uoa": "",
       "module_uoas": [
