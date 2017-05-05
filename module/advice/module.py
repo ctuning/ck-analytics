@@ -141,7 +141,7 @@ def show(i):
        if r['return']>0: return r
        x=r['html']
 
-       h+='Select AI scenario (which has unified <a href="http://github.com/ctuning/ck">CK JSON API</a>): '+x
+       h+='<br>Select AI scenario with unified <a href="http://github.com/ctuning/ck">CK JSON API</a><br><br>'+x+'<br><br><br>'
 
        # Render scenario
        if ai!='':
