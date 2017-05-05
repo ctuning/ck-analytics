@@ -132,6 +132,7 @@ def show(i):
        ]
 
     engine=i.get('dnn_engine','')
+    if engine=='': engine='caffe'
 
     ii={'action':'create_selector',
         'module_uoa':cfg['module_deps']['wfe'],
@@ -171,7 +172,11 @@ def show(i):
           h+=str(len(models))+' model(s) installed (different topology and parameters)<br><br>'
 
           fc=i.get('file_content_base64','')
-          if dar: fc=''
+          fcu=i.get('file_content_uploaded','')
+
+          if dar: 
+             fc=''
+             fcu=''
 
           if 'dnn_add_correct_label' in i:
              # Record correct label
@@ -204,7 +209,7 @@ def show(i):
                 # Record label
                 h+='<b>Thank you for submitting correct label and participating in a creation of a realistic and collective training sets!</b><br><br>\n'
           else:
-             if fc=='':
+             if fc=='' and fcu=='':
                 # Select image
                 h+='Your JPEG image: <input type="file" name="file_content"><br><br>'
                 h+='<input type="submit" value="Classify using CK DNN cloud"><br><br>'
@@ -214,13 +219,16 @@ def show(i):
                 if rx['return']>0: return rx
                 ftmp=rx['file_name']
 
+                if fcu=='':
+                   # Save user image
+                   rx=ck.convert_upload_string_to_file({'file_content_base64':fc,
+                                                        'filename':ftmp})
+                   if rx['return']>0: return rx
+                else:
+                   shutil.copy(fcu,ftmp)
+
                 h+='<input type="hidden" name="dnn_saved_image_file" value="'+ftmp+'">\n'
 
-                # Save user image
-                rx=ck.convert_upload_string_to_file({'file_content_base64':fc,
-                                                     'filename':ftmp})
-                if rx['return']>0: return rx
-                
                 # Classify
                 ii={'action':'run',
                     'module_uoa':cfg['module_deps']['program'],
