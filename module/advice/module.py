@@ -158,7 +158,7 @@ def show(i):
           r=ck.access(ii)
           if r['return']>0: return r
 
-          h+='\n<hr>\n'+r.get('html','')
+          h+='\n\n'+r.get('html','')
           st+='\n'+r.get('style','')+'\n'
 
     return {'return':0, 'html':h, 'style':st}
