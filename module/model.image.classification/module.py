@@ -310,9 +310,9 @@ def show(i):
                       h+=' </tr>\n'
                       h+='</table>\n'
 
-             h+='<br><br>'
-             h+='<button type="submit" name="dnn_action_reset">Start again</button>\n'
-             h+='<br><br>'
+          h+='<br><br>'
+          h+='<button type="submit" name="dnn_action_reset">Start again</button>\n'
+          h+='<br><br>'
 
     return {'return':0, 'html':h, 'style':st}
 
