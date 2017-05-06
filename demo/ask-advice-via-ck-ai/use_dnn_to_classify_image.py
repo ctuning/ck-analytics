@@ -7,7 +7,3 @@ r=ck.access({'action':'ask',
              'to':'classify_image',
              'image':image})
 if r['return']>0: ck.err(r)
-
-ck.out('Classification:')
-ck.out('')
-ck.out(r['predicted_opt'])
