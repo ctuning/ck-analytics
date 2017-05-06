@@ -226,12 +226,13 @@ def ask(i):
     # Check where to look for optimizations
     er=i.get('exchange_repo','')
     if er=='': er=ck.cfg['default_exchange_repo_uoa']
-    esr=i.get('exchange_subrepo','')
-    if esr=='': esr=ck.cfg['default_exchange_subrepo_uoa']
+    esr=''
 
+    aa='show_json'
     if i.get('local','')=='yes': 
        er='local'
        esr=''
+       aa='show'
 
     if to=='predict_compiler_flags':
        # This is just a demo of MILEPOST project combined with CK-powered collective optimization
@@ -281,7 +282,7 @@ def ask(i):
           return {'return':1, 'error':'feature vector is not defined'}
 
        # Search optimization results
-       ii={'action':'show',
+       ii={'action':aa,
            'module_uoa':cfg['module_deps']['program.optimization'],
            'repo_uoa':er,
            'remote_repo_uoa':esr,
@@ -304,7 +305,7 @@ def ask(i):
        muoa=results[0]['module_uoa']
        duoa=results[0]['data_uoa']
 
-       ii={'action':'show',
+       ii={'action':aa,
            'module_uoa':cfg['module_deps']['milepost'],
            'repo_uoa':er,
            'remote_repo_uoa':esr,
