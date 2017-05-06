@@ -188,3 +188,153 @@ def browse(i):
     i['template']='ck-ai-basic'
 
     return ck.access(i)
+
+##############################################################################
+# ask AI advice via CK JSON API and CK DNN engines
+
+def ask(i):
+    """
+    Input:  {
+              to - which advice ("predict_compiler_flags", "classify_image")
+
+              (local) - if 'yes', use local optimization rather than public from cKnowledge.org/repo
+
+              If predict_compiler_flags:
+
+                compiler - compiler name
+                  See GCC: http://cknowledge.org/repo/web.php?native_action=show&native_module_uoa=program.optimization&scenario=8289e0cf24346aa7
+                  See LLVM: http://cknowledge.org/repo/web.php?native_action=show&native_module_uoa=program.optimization&scenario=2aaed4c520956635
+
+                scenario
+                cpu_name
+                features (MILEPOST feature vector: http://ctuning.org/wiki/index.php/CTools:MilepostGCC:StaticFeatures:MILEPOST_V2.1)
+        
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    to=i.get('to','')
+    if to=='':
+       return {'return':1, 'error':'--to is not defined'}
+
+    # Check where to look for optimizations
+    er=i.get('exchange_repo','')
+    if er=='': er=ck.cfg['default_exchange_repo_uoa']
+    esr=i.get('exchange_subrepo','')
+    if esr=='': esr=ck.cfg['default_exchange_subrepo_uoa']
+
+    if i.get('local','')=='yes': 
+       er='local'
+       esr=''
+
+    if to=='predict_compiler_flags':
+       # This is just a demo of MILEPOST project combined with CK-powered collective optimization
+       # We plan to considerably improve modeling based on our Collective Mind part II vision paper
+       # (bringing community to share optimizations, features, models and enable dynamic adaptation).
+
+       # Check if module exists
+       r=ck.access({'action':'find',
+                    'module_uoa':cfg['module_deps']['module'],
+                    'data_uoa':cfg['module_deps']['milepost']})
+       if r['return']>0 and r['return']!=16: return r
+
+       if r['return']==16:
+          return {'return':1, 'error':'Please, install CK MILEPOST repository using "ck pull repo:reproduce-milepost-project"'}
+
+       compiler=i.get('compiler','')
+       if compiler=='':
+          return {'return':1, 'error':'--compiler is not defined'}
+
+       scenario=i.get('scenario','')
+       if scenario=='': 
+          if compiler.lower().startswith('gcc'):
+             scenario=cfg['module_deps']['experiment.tune.compiler.flags.gcc.e']
+          elif compiler.lower().startswith('llvm'):
+             scenario=cfg['module_deps']['experiment.tune.compiler.flags.llvm.e']
+          else:
+             return {'return':1, 'error':'scenario is not defined (see "ck search module --tags="program optimization,program-features"'}
+
+       cpu_name=i.get('cpu_name','')
+       if cpu_name=='':
+          return {'return':1, 'error':'--cpu_name is not defined'}
+
+       features=i.get('features',[])
+
+       xfeatures={}
+       for k in i:
+           if k.startswith('ft'):
+              k1=int(k[2:])
+              v1=i[k]
+              xfeatures[k1]=v1
+
+       for k in range(0,66):
+           if k in xfeatures:
+              features.append(xfeatures[k])
+
+       if len(features)==0:
+          return {'return':1, 'error':'feature vector is not defined'}
+
+       # Search optimization results
+       ii={'action':'show',
+           'module_uoa':cfg['module_deps']['program.optimization'],
+           'repo_uoa':er,
+           'remote_repo_uoa':esr,
+           'scenario':scenario,
+           '__web_prune__compiler':compiler,
+           '__web_prune__cpu_name':cpu_name,
+           'skip_html':'yes'}
+
+       r=ck.access(ii)
+       if r['return']>0: return r
+
+       results=r['results']
+       if len(results)==0:
+          return {'return':1, 'error':'optimization results are not found for such configuration'}
+
+       if len(results)>1:
+          return {'return':1, 'error':'ambiguity - more then 1 configuration found'}
+
+       # Predict
+       muoa=results[0]['module_uoa']
+       duoa=results[0]['data_uoa']
+
+       ii={'action':'show',
+           'module_uoa':cfg['module_deps']['milepost'],
+           'repo_uoa':er,
+           'remote_repo_uoa':esr,
+           'view_solution_'+muoa+'_'+duoa:'',
+           'skip_html':'yes'}
+
+       j=1
+       for v in features:
+           ii['mft'+str(j)]=v
+           j+=1
+
+       r=ck.access(ii)
+       if r['return']>0: return r
+
+       popt=r.get('predicted_opt','')
+
+       if popt=='':
+          ck.out('WARNING: could not predict optimization')
+       else:
+          ck.out('Predicted optimization:')
+          ck.out('')
+          ck.out(popt)
+
+       return {'return':0, 'predicted_opt':popt}
+
+    elif to=='classify_image':
+
+       x=2
+
+    else:
+       return {'return':1, 'error':'we do not have such scenario yet ('+to+')'}
+
+    return {'return':0}
