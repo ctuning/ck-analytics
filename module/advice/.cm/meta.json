@@ -20,6 +20,7 @@
   "module_deps": {
     "milepost":"ca1c41694a000200",
     "module": "032630d041b4fd8a",
+    "model.image.classification":"42b9a1221eb50259",
     "program.optimization": "27bc42ee449e880e",
     "experiment.tune.compiler.flags.gcc.e":"8289e0cf24346aa7",
     "experiment.tune.compiler.flags.llvm.e":"2aaed4c520956635",

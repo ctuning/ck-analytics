@@ -208,6 +208,11 @@ def ask(i):
                 scenario
                 cpu_name
                 features (MILEPOST feature vector: http://ctuning.org/wiki/index.php/CTools:MilepostGCC:StaticFeatures:MILEPOST_V2.1)
+
+              If classify_image
+
+                dnn_engine (caffe, caffe2, tensorflow)
+                image  - file with image
         
             }
 
@@ -218,6 +223,8 @@ def ask(i):
             }
 
     """
+
+    import os
 
     to=i.get('to','')
     if to=='':
@@ -233,6 +240,8 @@ def ask(i):
        er='local'
        esr=''
        aa='show'
+
+    rr={'return':0}
 
     if to=='predict_compiler_flags':
        # This is just a demo of MILEPOST project combined with CK-powered collective optimization
@@ -317,10 +326,10 @@ def ask(i):
            ii['mft'+str(j)]=v
            j+=1
 
-       r=ck.access(ii)
-       if r['return']>0: return r
+       rr=ck.access(ii)
+       if rr['return']>0: return rr
 
-       popt=r.get('predicted_opt','')
+       popt=rr.get('predicted_opt','')
 
        if popt=='':
           ck.out('WARNING: could not predict optimization')
@@ -329,13 +338,46 @@ def ask(i):
           ck.out('')
           ck.out(popt)
 
-       return {'return':0, 'predicted_opt':popt}
-
+    ############################################################################################################
     elif to=='classify_image':
 
-       x=2
+       engine=i.get('dnn_engine','')
+       if engine=='': engine='caffe'
+
+       image=i.get('image','')
+       if image=='' or not os.path.isfile(image):
+          return {'return':1, 'error':'image not found'}
+
+       r=ck.convert_file_to_upload_string({'filename':image})
+       if r['return']>0: return r
+
+       fcb64=r['file_content_base64']
+
+       # Search optimization results
+       ii={'action':aa,
+           'module_uoa':cfg['module_deps']['model.image.classification'],
+           'repo_uoa':er,
+           'remote_repo_uoa':esr,
+           'dnn_engine':engine,
+           'file_content_base64':fcb64,
+           'skip_html':'yes'}
+
+       rr=ck.access(ii)
+       if rr['return']>0: return rr
+
+       warning=rr.get('warning','')
+       prediction=rr.get('prediction','')
+
+       if warning!='':
+          ck.out('WARNING: '+warning)
+
+       if prediction!='':
+          ck.out('')
+          ck.out('Preciction:')
+          ck.out('')
+          ck.out(prediction)
 
     else:
        return {'return':1, 'error':'we do not have such scenario yet ('+to+')'}
 
-    return {'return':0}
+    return rr

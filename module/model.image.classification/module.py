@@ -69,6 +69,8 @@ def show(i):
 
     form_name='milepost_web_form'
 
+    sh=i.get('skip_html','')
+
     ww=False
     if i.get('widget','')=='yes': ww=True
 
@@ -154,8 +156,12 @@ def show(i):
     if r['return']>0: return r
     el=r['lst']
 
+    warning=''
+    prediction=''
+
     if len(el)==0:
        h+='<i>DNN engine is not installed - contact <a href="mailto:admin@dividiti.com">dividiti</a> to install this engine and related models in the CK AI cloud</i><br><br>'
+       warning='DNN engine is not installed'
     else:
        h+='<i>'+str(len(el))+' engine(s) installed (different optimizations and platforms)</i><br>'
 
@@ -168,6 +174,7 @@ def show(i):
 
        if len(models)==0:
           h+='<i>DNN models for this engine are not installed - contact <a href="mailto:admin@dividiti.com">dividiti</a> to install more models in the CK AI cloud</i><br><br>'
+          warning='DNN models for this engine are not installed'
        else:
           h+='<i>'+str(len(models))+' model(s) installed (different topology and parameters)</i><br><br>'
 
@@ -246,12 +253,14 @@ def show(i):
                     'env':{'CK_AI_API_IMAGE_FILE':ftmp}}
                 r=ck.access(ii)
                 if r['return']>0:
-                   h+='<b>WARNING:</b> Problem running DNN engine: '+r['error']+'<br><br>'
+                   warning='Problem running DNN engine: '+r['error']
+                   h+='<b>WARNING:</b> '+warning+'<br><br>'
                 else:
                    ch=r.get('characteristics',{})
 
                    if ch.get('run_success','')!='yes':
-                      h+='<b>WARNING:</b> Problem running DNN engine: '+ch.get('fail_reason','')+'<br><br>'
+                      warning='Problem running DNN engine: '+ch.get('fail_reason','')
+                      h+='<b>WARNING:</b> '+warning+'<br><br>'
                    else:
                       te=ch.get('execution_time','')
 
@@ -289,6 +298,8 @@ def show(i):
                              if not q.startswith('-----'):
                                 sy+=q+'\n'
 
+                      prediction=sy
+
                       s=sy.strip().replace('\n','<br>')
                       
                       # Create table (left - classification, right - stats)
@@ -321,7 +332,11 @@ def show(i):
           h+='<button type="submit" name="dnn_action_reset">Start again</button>\n'
           h+='<br><br>'
 
-    return {'return':0, 'html':h, 'style':st}
+    if sh=='yes':
+       h=''
+       st=''
+
+    return {'return':0, 'html':h, 'style':st, 'warning':warning, 'prediction':prediction}
 
 ##############################################################################
 # open dashboard
@@ -350,6 +365,24 @@ def dashboard(i):
 # CK AI JSON API for web (needed to automatically find such function from higher-level CK AI API)
 
 def ask_ai_web(i):
+    """
+    Input:  {
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    return show(i)
+
+##############################################################################
+# return json instead of html
+
+def show_json(i):
     """
     Input:  {
             }

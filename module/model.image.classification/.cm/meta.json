@@ -10,14 +10,18 @@
     "show": {
       "desc": "show dashboard",
       "for_web": "yes"
+    },
+    "show_json": {
+      "desc": "return json instead of html",
+      "for_web": "yes"
     }
   },
-  "copyright": "See CK COPYRIGHT.txt for copyright details",
-  "classify_program":{
-    "caffe":"569404c41618603a",
-    "caffe2":"",
-    "tensorflow":"1b749fbac94afc81"
+  "classify_program": {
+    "caffe": "569404c41618603a",
+    "caffe2": "",
+    "tensorflow": "1b749fbac94afc81"
   },
+  "copyright": "See CK COPYRIGHT.txt for copyright details",
   "desc": "classify image using various models such as DNN",
   "developer": "Grigori Fursin",
   "developer_email": "Grigori.Fursin@cTuning.org",
@@ -26,7 +30,7 @@
   "module_deps": {
     "env": "9b9b3208ac44b891",
     "module": "032630d041b4fd8a",
-    "package":"1dc07ee0f4742028",
+    "package": "1dc07ee0f4742028",
     "platform": "707ccdfe444cafac",
     "program": "b0ac08fe1d3c2615",
     "wfe": "1e4e644996b7f2a0"
