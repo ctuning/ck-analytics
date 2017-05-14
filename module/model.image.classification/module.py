@@ -308,13 +308,15 @@ def show(i):
 
                       sy=''
                       started=False
+                      top=''
                       for q in sx:
                           q=q.strip()
-                          if q!='':
-                             if started:
-                                sy+=q+'\n'
-                             if q.startswith('-----'):
-                                started=True
+                          if started:
+                             if top=='': top=q
+                             if q=='': break
+                             sy+=q+'\n'
+                          if q.startswith('-----'):
+                             started=True
 
                       prediction=sy
 
@@ -328,7 +330,7 @@ def show(i):
                       h+='   <b>Classification output:</b><br><br>\n'
                       h+=    s+'<br><br>\n'
 
-                      h+='<input type="hidden" name="dnn_original_classification" value="'+s+'">\n'
+                      h+='   <input type="hidden" name="dnn_original_classification" value="'+prediction.replace('"','\'')+'">\n'
 
                       h+='   <center>\n'
                       h+='   <b>If classification is wrong, please provide correct label:</b><br><input type="text" name="dnn_correct_label"><br><br>\n'
@@ -488,7 +490,7 @@ def html_viewer(i):
            if os.path.isfile(f2):
               r=ck.load_text_file({'text_file':f2})
               if r['return']>0: return r
-              x2=r['string'].strip()
+              x2=r['string'].strip().replace('\n','<br>')
 
            h+=' <tr>\n'
            h+='  <td align="center" valign="top"><img src="'+purl+f+'" width="257"></td>\n'
@@ -501,7 +503,7 @@ def html_viewer(i):
        h+='</center>\n'
 
 
-    h+='<BR><i>Please, report any illegal/copyrighted content to <a href="mailto:admin@dividiti.com">dividiti</a> and we will remove it within 48 hours!</i><br><br>'
+    h+='<BR><center><i>Please, report any illegal/copyrighted content to <a href="mailto:admin@dividiti.com">dividiti</a> and we will remove it within 48 hours!</i></center><br><br>'
 
     h+='<hr>\n'
 
