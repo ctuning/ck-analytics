@@ -493,7 +493,7 @@ def html_viewer(i):
               x2=r['string'].strip().replace('\n','<br>')
 
            h+=' <tr>\n'
-           h+='  <td align="center" valign="top"><img src="'+purl+f+'" width="257"></td>\n'
+           h+='  <td align="center" valign="top"><img src="'+purl+f+'" width="480"></td>\n'
            h+='  <td align="center" valign="top">'+x1+'</td>\n'
            h+='  <td align="center" valign="top">'+x2+'</td>\n'
            h+=' </tr>\n'
