@@ -14,6 +14,10 @@
     "show_json": {
       "desc": "return json instead of html",
       "for_web": "yes"
+    },
+    "html_viewer": {
+      "desc": "user-friendly html view",
+      "for_web": "yes"
     }
   },
   "classify_program": {

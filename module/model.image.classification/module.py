@@ -15,6 +15,7 @@ ck=None # Will be updated by CK (initialized CK kernel)
 hextra='<i><center>\n'
 hextra+=' [ <a href="http://cKnowledge.org/ai">Community-driven AI R&D powered by CK</a> ], '
 hextra+=' [ <a href="https://github.com/dividiti/ck-caffe">CK-Caffe</a> ], '
+hextra+=' [ <a href="https://github.com/ctuning/ck-caffe2">CK-Caffe2</a> ], '
 hextra+=' [ <a href="https://github.com/ctuning/ck-tensorflow">CK-TensorFlow</a> ], '
 hextra+=' [ <a href="https://en.wikipedia.org/wiki/Collective_Knowledge_(software)">Wikipedia</a>, \n'
 hextra+='<a href="https://www.researchgate.net/publication/304010295_Collective_Knowledge_Towards_RD_Sustainability">paper 1</a>, \n'
@@ -185,6 +186,10 @@ def show(i):
           h+='<i>Optimization statistics shared by the community:\n'
           h+='[ <a href="http://cknowledge.org/repo/web.php?native_action=show&native_module_uoa=program.optimization&scenario=1eb2f50d4620903e">desktops and servers</a> ], \n'
           h+='[ <a href="http://cknowledge.org/repo/web.php?native_action=show&native_module_uoa=program.optimization&scenario=4dcf435bb0d92fa6">mobile devices and IoT</a> ] \n'
+          h+='</i><br>'
+
+          h+='<i>Mispredictions shared by the community:\n'
+          h+='[ <a href="http://cknowledge.org/repo/web.php?wcid='+work['self_module_uid']+':'+dlabels+'">images and classifications</a> ] \n'
           h+='</i><br><br>'
 
 
@@ -199,6 +204,8 @@ def show(i):
              # Record correct label
              ftmp=i.get('dnn_saved_image_file','')
              label=i.get('dnn_correct_label','').strip()
+
+             wlabel=i.get('dnn_original_classification','').strip()
  
              if label!='' and os.path.isfile(ftmp):
                 # Check if already has holder for correct images
@@ -222,6 +229,10 @@ def show(i):
                 # Record label
                 r=ck.save_text_file({'text_file':pl1+'.label', 'string':label})
                 if r['return']>0: return r
+
+                if wlabel!='':
+                   r=ck.save_text_file({'text_file':pl1+'.wrong_label', 'string':wlabel})
+                   if r['return']>0: return r
 
                 # Record label
                 h+='<b>Thank you for submitting correct label and participating in a creation of a realistic and collective training sets!</b><br><br>\n'
@@ -317,6 +328,8 @@ def show(i):
                       h+='   <b>Classification output:</b><br><br>\n'
                       h+=    s+'<br><br>\n'
 
+                      h+='<input type="hidden" name="dnn_original_classification" value="'+s+'">\n'
+
                       h+='   <center>\n'
                       h+='   <b>If classification is wrong, please provide correct label:</b><br><input type="text" name="dnn_correct_label"><br><br>\n'
                       h+='   <button type="submit" name="dnn_add_correct_label">Submit label</button>\n'
@@ -408,3 +421,88 @@ def show_json(i):
     if 'style' in r: del(r['style'])
 
     return r
+
+##############################################################################
+# user-friendly html view
+
+def html_viewer(i):
+    """
+    Input:  {
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    import os
+
+    h='<hr>'
+
+    purl=i['url_pull']
+
+    muoa=i['module_uoa']
+    duoa=i['data_uoa']
+
+    r=ck.access({'action':'load',
+                 'module_uoa':muoa,
+                 'data_uoa':duoa})
+    if r['return']>0: return r
+
+    p=r['path']
+
+    # First find images
+    l=[]
+    d=os.listdir(p)
+
+    for x in d:
+        if x.endswith('.jpg'):
+           l.append(x)
+
+    if len(l)==0:
+       h+='<br><center><b>No shared mispredictions - community dataset is empty!</b></center><br>\n'
+    else:
+       h+='<center>\n'
+       h+='<table border="1" cellpadding="8" cellspacing="0">\n'
+       h+=' <tr>\n'
+       h+='  <td align="center" valign="top"><b>Image</b></td>\n'
+       h+='  <td align="center" valign="top"><b>Correct classification</b></td>\n'
+       h+='  <td align="center" valign="top"><b>Misclassification</b></td>\n'
+       h+=' </tr>\n'
+
+       for f in l:
+           x1=''
+           x2=''
+
+           f1=os.path.join(p,f+'.label')
+           f2=os.path.join(p,f+'.wrong_label')
+
+           if os.path.isfile(f1):
+              r=ck.load_text_file({'text_file':f1})
+              if r['return']>0: return r
+              x1=r['string'].strip()
+
+           if os.path.isfile(f2):
+              r=ck.load_text_file({'text_file':f2})
+              if r['return']>0: return r
+              x2=r['string'].strip()
+
+           h+=' <tr>\n'
+           h+='  <td align="center" valign="top"><img src="'+purl+f+'" width="257"></td>\n'
+           h+='  <td align="center" valign="top">'+x1+'</td>\n'
+           h+='  <td align="center" valign="top">'+x2+'</td>\n'
+           h+=' </tr>\n'
+ 
+
+       h+='</table>\n'
+       h+='</center>\n'
+
+
+    h+='<BR><i>Please, report any illegal/copyrighted content to <a href="mailto:admin@dividiti.com">dividiti</a> and we will remove it within 48 hours!</i><br><br>'
+
+    h+='<hr>\n'
+
+    return {'return':0, 'html':h, 'show_top':'yes'}
