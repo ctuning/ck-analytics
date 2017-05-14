@@ -1,3 +1,5 @@
+* 2017.05.14 * added support for Caffe2 unified classification
+
 * 2017.05.05 * added unified CK AI JSON API for image classification
 
 * 2017.04.30 * started improving collaborative AI API

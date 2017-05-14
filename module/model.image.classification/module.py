@@ -166,9 +166,13 @@ def show(i):
        h+='<i>'+str(len(el))+' engine(s) installed (different optimizations and platforms)</i><br>'
 
        # Search models to check if has installed
+       tx=engine+'model'
+       if engine=='caffe2':
+          tx='caffemodel2'
+
        r=ck.access({'action':'search',
                     'module_uoa':cfg['module_deps']['env'],
-                    'tags':engine+'model'})
+                    'tags':tx})
        if r['return']>0: return r
        models=r['lst']
 
@@ -292,16 +296,19 @@ def show(i):
                       sx=s.split('\n')
 
                       sy=''
+                      started=False
                       for q in sx:
                           q=q.strip()
                           if q!='':
-                             if not q.startswith('-----'):
+                             if started:
                                 sy+=q+'\n'
+                             if q.startswith('-----'):
+                                started=True
 
                       prediction=sy
 
                       s=sy.strip().replace('\n','<br>')
-                      
+
                       # Create table (left - classification, right - stats)
                       h+='<table border="1" cellpadding="10" cellspacing="0">\n'
                       h+=' <tr>\n'
