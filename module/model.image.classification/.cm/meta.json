@@ -23,7 +23,7 @@
   "classify_program": {
     "caffe": "569404c41618603a",
     "caffe2": "883cc4dde19eb5b8",
-    "tensorflow": "1b749fbac94afc81"
+    "tensorflow": "62de6ce26934e3eb"
   },
   "copyright": "See CK COPYRIGHT.txt for copyright details",
   "desc": "classify image using various models such as DNN",
