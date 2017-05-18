@@ -165,7 +165,7 @@ def show(i):
 
           st+='\n'+r.get('style','')+'\n'
 
-    h+='<hr>We are cleaning up AI and computer engineering mess with the community using <a href="https://github.com/ctuning/ck">Collective Knowledge</a><br>:<br><img src="http://cKnowledge.org/images/ai-cloud-resize.png"><br>\n'
+    h+='<i>We are cleaning up AI and computer engineering mess with the community using <a href="https://github.com/ctuning/ck">Collective Knowledge approach</a></i>:<br><br><img src="http://cKnowledge.org/images/ai-cloud-resize.png"><br><br>\n'
 
     return {'return':0, 'html':h, 'style':st}
 
