@@ -24,7 +24,6 @@ hextra+=' [ <a href="https://en.wikipedia.org/wiki/Collective_Knowledge_(softwar
 hextra+='<a href="https://www.researchgate.net/publication/304010295_Collective_Knowledge_Towards_RD_Sustainability">paper 1</a>, \n'
 hextra+='<a href="https://arxiv.org/abs/1506.06256">Paper 2</a>, \n'
 hextra+='<a href="https://www.youtube.com/watch?v=Q94yWxXUMP0">YouTube CK intro</a> ] \n'
-hextra+='<br><br>We are cleaning up AI and computer engineering mess with the community using <a href="https://github.com/ctuning/ck">Collective Knowledge</a><br>:<br><img src="http://cKnowledge.org/images/ai-cloud-resize.png"> \n'
 hextra+='</center>\n'
 hextra+='\n'
 
@@ -165,6 +164,8 @@ def show(i):
           h+='</div>\n'
 
           st+='\n'+r.get('style','')+'\n'
+
+    h+='<br><hr>We are cleaning up AI and computer engineering mess with the community using <a href="https://github.com/ctuning/ck">Collective Knowledge</a><br>:<br><img src="http://cKnowledge.org/images/ai-cloud-resize.png"> \n'
 
     return {'return':0, 'html':h, 'style':st}
 
