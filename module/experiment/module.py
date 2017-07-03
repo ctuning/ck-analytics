@@ -1,4 +1,4 @@
-   
+#
 # Collective Knowledge (Universal Experiment)
 #
 # See CK LICENSE.txt for licensing details
@@ -782,6 +782,7 @@ def get(i):
 
            meta=dd.get('meta',{})
 
+           cplot={} # customize plot
            # Check if scenario
            if ssi!='yes':
               sm_uoa=meta.get('scenario_module_uoa','')
@@ -793,20 +794,27 @@ def get(i):
                  if rx['return']==0:
                     dx=rx['dict']
                     plot_info_from_scenario=dx.get('plot',{})
-                    if len(plot_info_from_scenario)>0:
-                       if len(fkl)==0: 
-                          fkl=plot_info_from_scenario.get('flat_keys_list',[])
-                          if i.get('flat_keys_list_separate_graphs','')=='' and len(fkl)>0: fkls=[fkl]
-                       if xfkl=='': xfkl=plot_info_from_scenario.get('flat_keys_list_ext','')
-
-                       if si=='': si=plot_info_from_scenario.get('sort_index','')
-                       if sxwl=='': sxwl=plot_info_from_scenario.get('substitute_x_with_loop','')
-                       if axl=='': axl=plot_info_from_scenario.get('add_x_loop','')
-                       if sptg=='': sptg=plot_info_from_scenario.get('separate_permanent_to_graphs','')
-                       if sptg=='yes':
-                          if 'features' not in ljf: ljf.append('features')
 
               mm.update(meta)
+
+           if len(plot_info_from_scenario)>0:
+              cplot=plot_info_from_scenario
+
+           cplot.update(i.get('customize_plot',{}))
+
+           if len(cplot)>0:
+              if len(fkl)==0: 
+                 fkl=cplot.get('flat_keys_list',[])
+                 if i.get('flat_keys_list_separate_graphs','')=='' and len(fkl)>0: fkls=[fkl]
+              if xfkl=='': xfkl=cplot.get('flat_keys_list_ext','')
+
+              if si=='': si=cplot.get('sort_index','')
+              if sxwl=='': sxwl=cplot.get('substitute_x_with_loop','')
+              if axl=='': axl=cplot.get('add_x_loop','')
+              if sptg=='': sptg=cplot.get('separate_permanent_to_graphs','')
+              if sptg=='yes':
+                 if 'features' not in ljf: ljf.append('features')
+
 
            dirList=os.listdir(p)
 
