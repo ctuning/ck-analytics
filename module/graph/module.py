@@ -520,14 +520,29 @@ def plot(i):
 
        for g in sorted(table, key=int):
            gt=table[g]
+           mgt=[]
+           if g in mtable:
+              mgt=mtable[g]
 
            lbl=''
            if s<len(lsg): lbl=lsg[s]
 
            xpst=pst.get(g,{})
 
+           remove_permanent=False
+           if xpst.get('remove_permanent','')=='yes':
+              remove_permanent=True
+
+           leave_only_permanent=False
+           if xpst.get('leave_only_permanent','')=='yes':
+              leave_only_permanent=True
+
            elw=int(xpst.get('elinewidth',0))
            xfmt=xpst.get('fmt','')
+
+           xcapsize=xpst.get('capsize','')
+           if xcapsize=='' or xcapsize==None: xcapsize=None
+           else: xcapsize=int(xcapsize)
 
            cl=xpst.get('color','')
            if cl=='': cl=gs[s]['color']
@@ -551,8 +566,19 @@ def plot(i):
               my=[]
               myerr=[]
 
-              for u in gt:
+#              for u in gt:
+              for uindex in range(0,len(gt)):
+                  u=gt[uindex]
                   iu=0
+
+                  if (remove_permanent or leave_only_permanent) and uindex<len(mgt):
+                     mu=mgt[uindex]
+
+                     if remove_permanent and mu.get('permanent','')=='yes':
+                        continue
+
+                     if leave_only_permanent and mu.get('permanent','')!='yes':
+                        continue
 
                   # Check if no None
                   partial=False
@@ -610,7 +636,7 @@ def plot(i):
                  elif xerr=='yes' and yerr!='yes':
                     sp.errorbar(mx, my, xerr=mxerr, ls='none',  c=cl, elinewidth=elw, label=lbl, fmt=xfmt)
                  elif yerr=='yes' and xerr!='yes':
-                    sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw, label=lbl, fmt=xfmt)
+                    sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw, label=lbl, fmt=xfmt, capsize=xcapsize)
                  else:
                     draw_scatter=True
 

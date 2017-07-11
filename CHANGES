@@ -1,3 +1,8 @@
+* 2017.07.11 * added further configuration of 2D scatter graphs "point_style" (for Pareto and errorbar, etc):
+                 "capsize" - size of error bars
+                 "leave_only_permanent"
+                 "remove_permanent"
+                 
 * 2017.07.03 * added plot customization 
 
 * 2017.05.14 * added support for Caffe2 unified classification

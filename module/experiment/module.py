@@ -821,6 +821,7 @@ def get(i):
            added=False
            for fn in sorted(dirList):
                permanent=False
+               xpermanent=False
                if fn.endswith('.flat.json'):
                   pp1=fn[:-10]
                   pp2=pp1[4:]
@@ -872,8 +873,10 @@ def get(i):
 
                   # If separate permanent points
                   u1=ppx.get('features',{}).get('permanent','')
-                  if sptg=='yes' and u1=='yes':
-                     permanent=True
+                  if u1=='yes':
+                     xpermanent=True
+                     if sptg=='yes':
+                        permanent=True
 
                   if spp=='yes' and u1=='yes':
                      ppoints.append(ppx)
@@ -999,6 +1002,9 @@ def get(i):
                          # Add misc info:
                          mi={'repo_uoa':ruid, 'module_uoa':muid, 'data_uoa':duid,
                              'point_uid':pp2, 'features':drz}
+
+                         if xpermanent:
+                            mi['permanent']='yes'
 
                          if permanent:
                             mtable[sigraph1].append(mi)
