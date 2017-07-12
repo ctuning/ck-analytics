@@ -409,21 +409,74 @@ def plot(i):
        if i.get('yscale_log','')=='yes': sp.set_yscale('log')
        if i.get('zscale_log','')=='yes': sp.set_zscale('log')
 
-       # Find min/max in all data and all dimensions
+       # Find min/max in all data and all dimensions / per sub-graph
        tmin=[]
        tmax=[]
 
+       stmin={}
+       stmax={}
+
        for g in table:
            gt=table[g]
-           for k in gt:
+
+           stmin[g]=[]
+           stmax[g]=[]
+
+           mgt=[]
+           if g in mtable:
+              mgt=mtable[g]
+
+           xpst=pst.get(g,{})
+
+           remove_permanent=False
+           if xpst.get('remove_permanent','')=='yes':
+              remove_permanent=True
+
+           leave_only_permanent=False
+           if xpst.get('leave_only_permanent','')=='yes':
+              leave_only_permanent=True
+
+           ngt=[]
+#           for k in gt:
+           for uindex in range(0,len(gt)):
+               k=gt[uindex]
+
+               if (remove_permanent or leave_only_permanent) and uindex<len(mgt):
+                  mu=mgt[uindex]
+
+                  if remove_permanent and mu.get('permanent','')=='yes':
+                     continue
+
+                  if leave_only_permanent and mu.get('permanent','')!='yes':
+                     continue
+
+               ngt.append(k)
+
+               if xpst.get('skip_from_dims','')=='yes':
+                  print ('xyz')
+                  continue
+
                for d in range(0, len(k)):
                    v=k[d]
+
                    if len(tmin)<=d:
                       tmin.append(v)
                       tmax.append(v)
                    else:
                       if v!=None and v<tmin[d]: tmin[d]=v
                       if v!=None and v>tmax[d]: tmax[d]=v 
+
+                   if len(stmin[g])<=d:
+                      stmin[g].append(v)
+                      stmax[g].append(v)
+                   else:
+                      if v!=None and v<stmin[g][d]: stmin[g][d]=v
+                      if v!=None and v>stmax[g][d]: stmax[g][d]=v 
+
+           table[g]=ngt
+
+       print (stmin)
+       print (stmax)
 
        # If density or heatmap, find min and max for both graphs:
        if pt=='mpl_1d_density' or pt=='mpl_1d_histogram' or pt=='mpl_2d_heatmap' or pt=='mpl_3d_scatter' or pt=='mpl_3d_trisurf':
@@ -529,14 +582,6 @@ def plot(i):
 
            xpst=pst.get(g,{})
 
-           remove_permanent=False
-           if xpst.get('remove_permanent','')=='yes':
-              remove_permanent=True
-
-           leave_only_permanent=False
-           if xpst.get('leave_only_permanent','')=='yes':
-              leave_only_permanent=True
-
            elw=int(xpst.get('elinewidth',0))
            xfmt=xpst.get('fmt','')
 
@@ -570,15 +615,6 @@ def plot(i):
               for uindex in range(0,len(gt)):
                   u=gt[uindex]
                   iu=0
-
-                  if (remove_permanent or leave_only_permanent) and uindex<len(mgt):
-                     mu=mgt[uindex]
-
-                     if remove_permanent and mu.get('permanent','')=='yes':
-                        continue
-
-                     if leave_only_permanent and mu.get('permanent','')!='yes':
-                        continue
 
                   # Check if no None
                   partial=False
@@ -654,15 +690,29 @@ def plot(i):
 
                     b=sorted(a, key=lambda k: k[0])
 
-                    mx=[tmin[0]]
-                    my=[tmax[1]]
+                    if xpst.get('reuse_dims','')=='yes':
+                       mx=[b[0][0]]
+                       my=[tmax[1]]
+                    elif xpst.get('dims_from_this_graph','')=='yes':
+                       mx=[stmin[g][0]]
+                       my=[stmax[g][1]]
+                    else:
+                       mx=[tmin[0]]
+                       my=[tmax[1]]
 
                     for j in b:
                         mx.append(j[0])
                         my.append(j[1])
 
-                    mx.append(tmax[0])
-                    my.append(tmin[1])
+                    if xpst.get('reuse_dims','')=='yes':
+                       mx.append(tmax[0])
+                       my.append(b[-1][1])
+                    elif xpst.get('dims_from_this_graph','')=='yes':
+                       mx.append(stmax[g][0])
+                       my.append(stmin[g][1])
+                    else:
+                       mx.append(tmax[0])
+                       my.append(tmin[1])
 
                     sp.plot(mx, my, c=cl, linestyle=lst, label=lbl)
 
