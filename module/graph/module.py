@@ -453,7 +453,6 @@ def plot(i):
                ngt.append(k)
 
                if xpst.get('skip_from_dims','')=='yes':
-                  print ('xyz')
                   continue
 
                for d in range(0, len(k)):
@@ -474,9 +473,6 @@ def plot(i):
                       if v!=None and v>stmax[g][d]: stmax[g][d]=v 
 
            table[g]=ngt
-
-       print (stmin)
-       print (stmax)
 
        # If density or heatmap, find min and max for both graphs:
        if pt=='mpl_1d_density' or pt=='mpl_1d_histogram' or pt=='mpl_2d_heatmap' or pt=='mpl_3d_scatter' or pt=='mpl_3d_trisurf':
