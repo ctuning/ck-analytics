@@ -2165,6 +2165,7 @@ def replay(i):
           ck.out('Performing comparison on output dimensions (original vs new results) ...')
           ck.out('')
 
+       ends=i.get('end_of_dims_to_check',[])
        ttc=i.get('threshold_to_compare','')
        if ttc=='': ttc=8.0
        ttc=float(ttc)/100
