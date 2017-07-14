@@ -1786,8 +1786,12 @@ def replay(i):
                ==============================
                  Prunning
 
-               (prune)        - if 'yes', replay and prune choices!
-               (prune_invert) - if 'yes', prune all (switch off even unused - useful for collaborative machine learning)
+               (prune)               - if 'yes', replay and prune choices!
+               (prune_invert)        - if 'yes', prune all (switch off even unused - useful for collaborative machine learning)
+               (prune_print_keys)    - list of keys from flat dict to print during pruning (to monitor characteristics, for example)
+
+               (prune_conditions)    - conditions on results (see "ck check math.conditions --help")
+               (condition_objective) - which objective to use for characteristics (#min, #max, #exp, ...)
 
                (solutions) - prune first solution
 
@@ -1840,6 +1844,7 @@ def replay(i):
     solutions=i.get('solutions',[])
     prune=i.get('prune','')
     prune_invert=i.get('prune_invert','')
+    prune_print_keys=i.get('prune_print_keys',[])
 
     if i.get('local_platform','')!='': pipeline_update['local_platform']=i['local_platform']
     if i.get('local','')!='':          pipeline_update['local_platform']=i['local']
@@ -2125,13 +2130,23 @@ def replay(i):
         'force_pipeline_update':'yes',
         'pause':i.get('pause',''),
         'ask_enter_after_each_iteration':i.get('ask_enter_after_each_iteration',''),
+        'condition_objective':i.get('condition_objective',''),
+        'print_keys_after_each_iteration':prune_print_keys,
         'skip_done':'yes'}
     if prune=='yes': 
        ii['iterations']=-1
        ii.update(pap)
 
+       pc=i.get('prune_conditions',[])
+       if len(pc)>0:
+          ii['result_conditions']=pc
+
+       ii['prune_result_conditions']=ii.get('result_conditions',[])
+
     r=ck.access(ii)
     if r['return']>0: return r
+
+#    ck.save_json_to_file({'json_file':'d:\\xyz8.json','dict':r})
 
     rlio=r.get('last_iteration_output',{})
     fail=rlio.get('fail','')
@@ -2143,9 +2158,11 @@ def replay(i):
           ck.out('Pipeline failed during replay ('+rlio.get('fail_reason','')+')')
 
     # Flattening characteristics
-    chn=r.get('last_stat_analysis',{}).get('dict_flat',{})
+    chn=r.get('last_stat_analysis',{})
+    if 'dict_flat' in chn:
+       chn=chn.get('dict_flat',{})
 
-    # Record orig and reproduced results, if needed
+    # Record original and reproduced results, if needed
     rofj=i.get('record_original_flat_json','').replace('$#ck_cur_path#$',pp)
     rrfj=i.get('record_reproduced_flat_json','').replace('$#ck_cur_path#$',pp)
 
@@ -2161,8 +2178,8 @@ def replay(i):
     if fail!='yes' and i.get('skip','')!='yes':
        # Comparing dicts
        if o=='con':
-          ck.out('')
-          ck.out('Performing comparison on output dimensions (original vs new results) ...')
+          ck.out('********************************************************************')
+          ck.out('Performing comparison on output dimensions (original vs new results)')
           ck.out('')
 
        ends=i.get('end_of_dims_to_check',[])
@@ -2183,6 +2200,7 @@ def replay(i):
        # Compare
        ichecked=0
        for q in sorted(lk):
+           print ('xyz=',q)
            v=ch.get(q,None)
            v1=chn.get(q, None)
 
@@ -2215,12 +2233,12 @@ def replay(i):
                  if kdc.get(q,{}).get('desc','')!='':
                     z=kdc[q]['desc']
 
-                 ss=z+':  '+str(v)
+                 ss=z+':  '+str(v)+' vs '+str(v1)
                  if v!=v1:
                     if (type(v)==int or type(v)==float) and (type(v1)==int or type(v1)==float) and v!=0:
                        vx=abs(v1-v)/v
                        if vx>ttc:
-                          ss+='  vs  '+str(v1)+'    diff='+( '%3.1f'% (vx*100))+'%'
+                          ss+='    diff='+( '%3.1f'% (vx*100))+'%'
                           dd.append(q)
                     else:
                        dd.append(q)

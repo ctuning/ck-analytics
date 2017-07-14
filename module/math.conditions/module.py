@@ -62,7 +62,9 @@ def check(i):
     points2=i['new_points']
     cc=i['conditions']
     results=i['results']
+
     mk=i.get('middle_key','')
+    if mk=='': mk='#min'
 
     new=False
     points=[]  # good points (with correct conditions)
@@ -79,6 +81,9 @@ def check(i):
         if kt not in keys:
            keys.append(kt)
 
+    if o=='con':
+       ck.out('')
+
     # Check conditions
     for q in points2:
         if q not in points1:
@@ -92,8 +97,10 @@ def check(i):
            if len(qq)>0:
               fine=True
               # Go over conditions
+
               for c in cc:
                   kt=(c[0]+c[1]).replace('$#objective#$',mk)
+
                   if kt not in keys:
                      keys.append(kt)
 
@@ -104,41 +111,44 @@ def check(i):
 
                   dv=behavior.get(kt,None)
 
+                  s='         - Condition on "'+kt+'" : '
+
                   if dv==None:
                      fine=False
-                     break
 
-                  if x=='<' and dv>=y:
+                  if fine and x=='<' and dv>=y:
                      fine=False
-                     break
 
-                  if (x=='<=' or x=='=<') and dv>y:
+                  if fine and (x=='<=' or x=='=<') and dv>y:
                      fine=False
-                     break
 
-                  if x=='==' and dv!=y:
+                  if fine and x=='==' and dv!=y:
                      fine=False
-                     break
 
-                  if x=='!=' and dv==y:
+                  if fine and x=='!=' and dv==y:
                      fine=False
-                     break
 
-                  if x=='>' and dv<=y:
+                  if fine and x=='>' and dv<=y:
                      fine=False
-                     break
 
-                  if (x=='>=' or x=='=>') and dv<y:
+                  if fine and (x=='>=' or x=='=>') and dv<y:
                      fine=False
+
+                  if o=='con':
+                     if fine:
+                        s+='ok'
+                     else:
+                        s+='FAILED'
+
+                     s+=' ('+str(dv)+')'
+                     ck.out(s)
+
+                  if not fine:
                      break
 
               if fine:
                  points.append(q)
               else:
-                 if o=='con':
-                    ck.out('')
-                    ck.out('              Condition on key "'+kt+'" failed ('+str(dv)+')')
-
                  dpoints.append(q)
 
     return {'return':0, 'good_points':points, 'points_to_delete':dpoints, 'keys':keys}
