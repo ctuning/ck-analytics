@@ -2123,6 +2123,8 @@ def replay(i):
         'prune':prune,
         'prune_invert':prune_invert,
         'force_pipeline_update':'yes',
+        'pause':i.get('pause',''),
+        'ask_enter_after_each_iteration':i.get('ask_enter_after_each_iteration',''),
         'skip_done':'yes'}
     if prune=='yes': 
        ii['iterations']=-1
@@ -2163,7 +2165,6 @@ def replay(i):
           ck.out('Performing comparison on output dimensions (original vs new results) ...')
           ck.out('')
 
-       ends=i.get('end_of_dims_to_check',[])
        ttc=i.get('threshold_to_compare','')
        if ttc=='': ttc=8.0
        ttc=float(ttc)/100
