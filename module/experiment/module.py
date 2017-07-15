@@ -2146,8 +2146,6 @@ def replay(i):
     r=ck.access(ii)
     if r['return']>0: return r
 
-#    ck.save_json_to_file({'json_file':'d:\\xyz8.json','dict':r})
-
     rlio=r.get('last_iteration_output',{})
     fail=rlio.get('fail','')
 
@@ -2200,7 +2198,6 @@ def replay(i):
        # Compare
        ichecked=0
        for q in sorted(lk):
-           print ('xyz=',q)
            v=ch.get(q,None)
            v1=chn.get(q, None)
 
