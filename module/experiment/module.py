@@ -2132,6 +2132,9 @@ def replay(i):
         'ask_enter_after_each_iteration':i.get('ask_enter_after_each_iteration',''),
         'condition_objective':i.get('condition_objective',''),
         'print_keys_after_each_iteration':prune_print_keys,
+        'record':i.get('record', ''),
+        'record_uoa':i.get('record_uoa', ''),
+        'record_repo':i.get('record_repo', ''),
         'skip_done':'yes'}
     if prune=='yes': 
        ii['iterations']=-1
