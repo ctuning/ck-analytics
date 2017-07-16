@@ -2174,7 +2174,7 @@ def replay(i):
     if fail=='yes':
        if o=='con':
           ck.out('')
-          ck.out('Pipeline failed during replay ('+rlio.get('fail_reason','')+')')
+          ck.out('Warning: pipeline failed during ref iteration ('+rlio.get('fail_reason','')+')')
 
     # Flattening characteristics
     chn=r.get('last_stat_analysis',{})
@@ -2194,7 +2194,7 @@ def replay(i):
        if rx['return']>0: return rx
 
     # Check if skip comparison
-    if fail!='yes' and i.get('skip','')!='yes':
+    if i.get('skip','')!='yes':
        # Comparing dicts
        if o=='con':
           ck.out('********************************************************************')
