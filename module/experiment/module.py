@@ -1786,14 +1786,19 @@ def replay(i):
                ==============================
                  Prunning
 
-               (prune)               - if 'yes', replay and prune choices!
-               (prune_invert)        - if 'yes', prune all (switch off even unused - useful for collaborative machine learning)
-               (prune_print_keys)    - list of keys from flat dict to print during pruning (to monitor characteristics, for example)
+               (prune)                          - if 'yes', replay and prune choices!
+               (prune_invert)                   - if 'yes', prune all (switch off even unused - useful for collaborative machine learning)
+               (prune_print_keys)               - list of keys from flat dict to print during pruning (to monitor characteristics, for example)
+               (prune_invert_do_not_remove_key) - if 'yes', keep both on and off keys (to know exact solution)
 
                (prune_conditions)    - conditions on results (see "ck check math.conditions --help")
                (condition_objective) - which objective to use for characteristics (#min, #max, #exp, ...)
 
                (solutions) - prune first solution
+
+               ==============================
+               (record_uoa)                       - (data UOA or CID where module_uoa ignored!) explicitly record to this entry
+               (record_repo)                      - (repo UOA) explicitly select this repo to record
 
                ==============================
                  Some productivity keys specifically for autotuning pipeline (ck-autotuning repo):
@@ -1805,6 +1810,8 @@ def replay(i):
                (all)                         - print all comparisons of keys (not only when there is a difference)
 
                (skip_scenario_keys)          - skip scenario detection (otherwise get keys from the detected module) 
+
+
 
             }
 
@@ -1827,6 +1834,11 @@ def replay(i):
     if i.get('experiment_repo_uoa','')!='': ruoa=i['experiment_repo_uoa']
     cruoa=ruoa
     rruoa=i.get('remote_repo_uoa','')
+
+    record=''
+    record_uoa=i.get('record_uoa','')
+    record_repo=i.get('record_repo','')
+    if record_uoa!='': record='yes'
 
     # Check if repo remote (to save in json rather than to out)
     remote='no'
@@ -1964,6 +1976,10 @@ def replay(i):
     rx=ck.access(ii)
     if rx['return']>0: return rx
 
+    pipeline_uoa=rx['pipeline_uoa']
+    pipeline_uid=rx['pipeline_uid']
+    pipeline=rx['pipeline']
+
     dd=rx['dict']
 
     al=i.get('all','')
@@ -1973,6 +1989,7 @@ def replay(i):
     ft=dd.get('features',{})
     choices=ft.get('choices',{})
     choices_order=ft.get('choices_order',[])
+    choices_desc=pipeline.get('choices_desc',[])
 
     if (prune=='yes' or prune_invert=='yes') and len(solutions)==0:
        # Rebuild choices
@@ -2089,9 +2106,6 @@ def replay(i):
           repetitions=rpt
 
     #******************************************************************
-    pipeline_uoa=rx['pipeline_uoa']
-    pipeline_uid=rx['pipeline_uid']
-    pipeline=rx['pipeline']
 
     pipeline.update(cf)
     pdafr=''
@@ -2131,10 +2145,11 @@ def replay(i):
         'pause':i.get('pause',''),
         'ask_enter_after_each_iteration':i.get('ask_enter_after_each_iteration',''),
         'condition_objective':i.get('condition_objective',''),
+        'prune_invert_do_not_remove_key':i.get('prune_invert_do_not_remove_key',''),
         'print_keys_after_each_iteration':prune_print_keys,
-        'record':i.get('record', ''),
-        'record_uoa':i.get('record_uoa', ''),
-        'record_repo':i.get('record_repo', ''),
+        'record':record,
+        'record_uoa':record_uoa,
+        'record_repo':record_repo,
         'skip_done':'yes'}
     if prune=='yes': 
        ii['iterations']=-1
@@ -2145,6 +2160,9 @@ def replay(i):
           ii['result_conditions']=pc
 
        ii['prune_result_conditions']=ii.get('result_conditions',[])
+
+    if len(choices_order)>0:
+       ii['choices_order']=[choices_order]
 
     r=ck.access(ii)
     if r['return']>0: return r
