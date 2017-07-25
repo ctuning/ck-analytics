@@ -1,3 +1,5 @@
+* 2017.07.24 * minor fix in interactive graphs (if multiple in one CK entry)
+
 * 2017.07.15 * updated replay function (iteratively reducing complexity)
 
 * 2017.07.11 * added further configuration of 2D scatter graphs "point_style" (for Pareto and errorbar, etc):

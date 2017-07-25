@@ -1195,7 +1195,9 @@ def html_viewer(i):
               vid=q.get('id','')
               if vid==sgraph: 
                  igraph=jgraph
-              dx.append({'name':q.get('name',''), 'value':vid})
+              x=q.get('name','')
+              if x=='': x=vid
+              dx.append({'name':vid, 'value':vid})
               jgraph+=1
 
           jj={'action':'create_selector',
