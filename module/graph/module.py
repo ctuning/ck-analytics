@@ -1187,14 +1187,19 @@ def html_viewer(i):
 #       sgraph=i.get(var_post_subgraph,'')
 #       if sgraph=='':
        sgraph=ap.get(var_post_subgraph,'')
+       if sgraph=='': sgraph=i.get('subgraph','')
 
        if len(graphs)>1:
           dx=[]
           jgraph=0
           for q in graphs:
               vid=q.get('id','')
+
+              if sgraph=='': sgraph=vid
+
               if vid==sgraph: 
                  igraph=jgraph
+
               x=q.get('name','')
               if x=='': x=vid
               dx.append({'name':vid, 'value':vid})
