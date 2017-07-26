@@ -1,5 +1,5 @@
-.axis path,
-.axis line {
+.axis_scatter path,
+.axis_scatter line {
   fill: none;
   stroke: #000;
   shape-rendering: crispEdges;
@@ -9,7 +9,7 @@
   stroke: #000;
 }
 
-.tooltip {
+.tooltip_scatter {
   position: absolute;
   pointer-events: none;
 }

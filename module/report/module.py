@@ -290,12 +290,24 @@ def html_viewer(i):
                        if rx['return']==0:
                           nii=rx['dict']
 
-                          nii['base_url']=burl
+                          if nii.get('action','')!='':
+                             # Here we process active CK plugin (if there is an "action") to generate content (even possibly from remote repo)
+                             nii['base_url']=burl
 
-                          rx=ck.access(nii)
-                          if rx['return']==0:
-                              ha=rx['html']
-                              st+=rx.get('style','')
+                             rx=ck.access(nii)
+                             if rx['return']==0:
+                                 ha=rx.get('html','')
+
+                                 if nii.get('remove_script_src','')=='yes':
+                                    k1=ha.find('<script src')
+                                    if k1>=0:
+                                       k2=ha.find('</script>', k1)
+                                       if k2>0:
+                                          ha=ha[:k1]+ha[k2+9:]
+
+                                 st+=rx.get('style','')
+                             else:
+                                 ha+='\n<br>\nInternal error: '+rx['error']+'\n<br>\n'
 
                        h=h[:j]+ha+h[j1+18:]
                        

@@ -39,7 +39,7 @@ var svg = d3.select("$#ck_where#$").append("svg")
 
 // add the tooltip area to the webpage
 var tooltip = d3.select("$#ck_where#$").append("div")
-                .attr("class", "tooltip")
+                .attr("class", "tooltip_scatter")
                 .style("opacity", 0);
 
 
@@ -98,7 +98,7 @@ yScale.domain([ymin, ymax]);
 
 // x-axis
 svg.append("g")
-   .attr("class", "x axis")
+   .attr("class", "x axis_scatter")
    .attr("transform", "translate(0," + height + ")")
    .call(xAxis)
    .append("text")
@@ -110,7 +110,7 @@ svg.append("g")
 
 // y-axis
 svg.append("g")
-   .attr("class", "y axis")
+   .attr("class", "y axis_scatter")
    .call(yAxis)
    .append("text")
    .attr("class", "label")

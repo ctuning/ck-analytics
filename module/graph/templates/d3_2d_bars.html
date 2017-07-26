@@ -207,7 +207,7 @@ var svg = d3.select("$#ck_where#$").append("svg")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 svg.append("g")
-   .attr("class", "y axis")
+   .attr("class", "y axis_bar")
    .call(yAxis)
    .append("text")
    .attr("class", "label")
@@ -218,7 +218,7 @@ svg.append("g")
    .text("$#axis_y_desc#$");
 
 svg.append("g")
-   .attr("class", "x axis")
+   .attr("class", "x axis_bar")
    .attr("transform", "translate(0," + height + ")")
    .call(xAxis)
    .append("text")
@@ -253,8 +253,8 @@ for (q=0; q<v_lines.length; q++) {
 }
 
 // add the tooltip area to the webpage
-var tooltip = d3.select("$#ck_where#$").append("div")
-                .attr("class", "tooltip")
+var tooltip_bar = d3.select("$#ck_where#$").append("div")
+                .attr("class", "tooltip_bar")
                 .style("opacity", 0);
 
 svg.append("g").selectAll("g")
@@ -276,16 +276,16 @@ svg.append("g").selectAll("g")
    })
 
    .on("mouseover", function(d) {
-       tooltip.transition()
+       tooltip_bar.transition()
             .duration(200)
             .style("opacity", .9);
-       tooltip.html("<div style=\"text-align:left;background-color:yellow;opacity:0.8;filter:alpha(opacity=80);\"><small><b>value=" + d.y + "</b><br>"+d.features+"\n</small></div>")
+       tooltip_bar.html("<div style=\"text-align:left;background-color:yellow;opacity:0.8;filter:alpha(opacity=80);\"><small><b>value=" + d.y + "</b><br>"+d.features+"\n</small></div>")
             .style("left", (d3.event.pageX + 5) + "px")
             .style("top", (d3.event.pageY - 28) + "px");
    })
 
    .on("mouseout", function(d) {
-       tooltip.transition()
+       tooltip_bar.transition()
             .duration(500)
             .style("opacity", 0);
    });
