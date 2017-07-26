@@ -38,7 +38,7 @@ var svg = d3.select("$#ck_where#$").append("svg")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 // add the tooltip area to the webpage
-var tooltip = d3.select("$#ck_where#$").append("div")
+var tooltip_scatter = d3.select("$#ck_where#$").append("div")
                 .attr("class", "tooltip_scatter")
                 .style("opacity", 0);
 
@@ -301,16 +301,16 @@ svg.selectAll(".dot")
    })
 
    .on("mouseover", function(d) {
-       tooltip.transition()
+       tooltip_scatter.transition()
             .duration(200)
             .style("opacity", .9);
-       tooltip.html("<div style=\"text-align:left;background-color:yellow;opacity:0.8;filter:alpha(opacity=80);\"><small><b>x=" + xValue(d) + ", y=" + yValue(d) + "</b><br>"+d.features+"\n</small></div>")
+       tooltip_scatter.html("<div style=\"text-align:left;background-color:yellow;opacity:0.8;filter:alpha(opacity=80);\"><small><b>x=" + xValue(d) + ", y=" + yValue(d) + "</b><br>"+d.features+"\n</small></div>")
             .style("left", (d3.event.pageX + 5) + "px")
             .style("top", (d3.event.pageY - 28) + "px");
    })
 
    .on("mouseout", function(d) {
-       tooltip.transition()
+       tooltip_scatter.transition()
             .duration(500)
             .style("opacity", 0);
    });
