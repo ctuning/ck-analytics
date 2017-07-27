@@ -1413,114 +1413,117 @@ def html_viewer(i):
 
 #             h+=' <hr class="ck_hr">\n'
 
-             h+='<center>\n'
-             h+='<button type="submit" name="'+var_post_refresh_graph+'">Replot graph</button>\n'
-             h+='<button type="submit" name="'+var_post_reset_graph+'">Reset graph</button>\n'
+             if g.get('skip_control','')!='yes':
+                h+='<center>\n'
+                h+='<button type="submit" name="'+var_post_refresh_graph+'">Replot graph</button>\n'
+                h+='<button type="submit" name="'+var_post_reset_graph+'">Reset graph</button>\n'
 
-             checked=''
-             if ar=='on': checked=' checked '
-             h+='&nbsp;&nbsp;&nbsp;Auto-replot graph:&nbsp;<input type="checkbox" name="'+var_post_autorefresh+'" id="'+var_post_autorefresh+'" onchange="submit()"'+checked+'>,'
-             h+='&nbsp;seconds: <input type="text" name="'+var_post_autorefresh_time+'" value="'+str(iart)+'">\n'
-             h+='</center>\n'
+                checked=''
+                if ar=='on': checked=' checked '
+                h+='&nbsp;&nbsp;&nbsp;Auto-replot graph:&nbsp;<input type="checkbox" name="'+var_post_autorefresh+'" id="'+var_post_autorefresh+'" onchange="submit()"'+checked+'>,'
+                h+='&nbsp;seconds: <input type="text" name="'+var_post_autorefresh_time+'" value="'+str(iart)+'">\n'
+                h+='</center>\n'
 
-#             h+='<hr class="ck_hr">\n'
+             if g.get('skip_reproduce','')!='yes':
 
-             h+='<center>\n'
-             h+='<div id="ck_entries" style="background-color: #dfffbf;">\n'
+   #             h+='<hr class="ck_hr">\n'
 
-             h+='<b>Reproducing graph:</b>\n'
+                h+='<center>\n'
+                h+='<div id="ck_entries" style="background-color: #dfffbf;">\n'
 
-             h+='<table width="99%">\n'
-             h+=' <tr>\n'
-             h+='  <td valign="top" align="left" width="44%">\n'
+                h+='<b>Reproducing graph:</b>\n'
 
-             h+='   <table border="0" cellpadding="5">\n'
+                h+='<table width="99%">\n'
+                h+=' <tr>\n'
+                h+='  <td valign="top" align="left" width="44%">\n'
 
-             h+='    <tr>\n'
-             h+='     <td valign="top" width="140"><b>Experiment entries:</b></td>\n'
-             h+='     <td valign="top"><i>\n'
-
-             duoal=params.get('data_uoa_list','')
-             if len(duoal)>0:
-                h+='\n'
-                for q in duoal:
-                    h+='<a href="'+burl+'wcid=experiment:'+q+'">'+q+'</a><br>\n'
-                h+='\n'
-
-             h+='     </i></td>\n'
-             h+='    </tr>\n'
-
-             if smuoa!='' and sduoa!='':
-                cid=smuoa+':'+sduoa
-                if sruoa!='': cid=sruoa+':'+cid
+                h+='   <table border="0" cellpadding="5">\n'
 
                 h+='    <tr>\n'
-                h+='     <td valign="top"><b>Scripts to rebuild:</b></td>\n'
+                h+='     <td valign="top" width="140"><b>Experiment entries:</b></td>\n'
                 h+='     <td valign="top"><i>\n'
-                h+='      ck find '+cid+'<br>\n'
-                h+='      <a href="'+burl+'wcid='+cid+'">View in CK viewer</a>\n'
+
+                duoal=params.get('data_uoa_list','')
+                if len(duoal)>0:
+                   h+='\n'
+                   for q in duoal:
+                       h+='<a href="'+burl+'wcid=experiment:'+q+'">'+q+'</a><br>\n'
+                   h+='\n'
+
                 h+='     </i></td>\n'
                 h+='    </tr>\n'
 
+                if smuoa!='' and sduoa!='':
+                   cid=smuoa+':'+sduoa
+                   if sruoa!='': cid=sruoa+':'+cid
 
-             if output!='html':
+                   h+='    <tr>\n'
+                   h+='     <td valign="top"><b>Scripts to rebuild:</b></td>\n'
+                   h+='     <td valign="top"><i>\n'
+                   h+='      ck find '+cid+'<br>\n'
+                   h+='      <a href="'+burl+'wcid='+cid+'">View in CK viewer</a>\n'
+                   h+='     </i></td>\n'
+                   h+='    </tr>\n'
+
+
+                if output!='html':
+                   h+='    <tr>\n'
+                   h+='     <td valign="top"><b>Replay graph from CMD:</b></td>\n'
+                   h+='     <td valign="top"><i>\n'
+                   h+='      ck replay graph:'+duoa+' id='+gid+'\n'
+                   h+='     </i></td>\n'
+                   h+='    </tr>\n'
+
+                h+='   </table>\n'
+
+                h+='  </td>\n'
+                h+='  <td valign="top" align="left" width="56%">\n'
+
+                h+='   <table border="0" cellpadding="5">\n'
+
+                if gsr!='':
+                   h+='    <tr>\n'
+                   h+='     <td valign="top" width="250"><b>Obtain shared CK repo with all artifacts:</b></td>\n'
+                   h+='     <td valign="top">\n'
+                   h+='      <i>'+gsr+'</i>\n'
+                   h+='     </td>\n'
+                   h+='    </tr>\n'
+
+                refresh=False
+                if var_post_refresh_graph in ap: refresh=True
+
+   #             if (pjson!='' or pcsv!='') and image_orig!='' and himage!='':
+   #             if (pjson!='' or pcsv!='') and not refresh: # if refresh, table may change
+                x1=purl+gid+'.json'
+                x2=purl+gid+'.csv'
+
                 h+='    <tr>\n'
-                h+='     <td valign="top"><b>Replay graph from CMD:</b></td>\n'
+                h+='     <td valign="top"><b>Original experiment table:</b></td>\n'
                 h+='     <td valign="top"><i>\n'
-                h+='      ck replay graph:'+duoa+' id='+gid+'\n'
+                if pjson!='':
+                   h+='      <a href="'+x1+'">Download in JSON</a>;&nbsp;&nbsp'
+                if pcsv!='':
+                   h+='      <a href="'+x2+'">Download in CSV</a>\n'
                 h+='     </i></td>\n'
                 h+='    </tr>\n'
 
-             h+='   </table>\n'
+                if image_orig!='' and himage!='':
+                   h+='    <tr>\n'
+                   h+='     <td valign="top"><b>Embedd original image into interactive report/paper:</b></td>\n'
+                   h+='     <td valign="top"><i>\n'
+                   h+='      '+himage.replace('<','&lt;').replace('>','&gt;')+'\n'
+                   h+='     </i></td>\n'
+                   h+='    </tr>\n'
 
-             h+='  </td>\n'
-             h+='  <td valign="top" align="left" width="56%">\n'
+                h+='   </table>\n'
 
-             h+='   <table border="0" cellpadding="5">\n'
+                h+='  </td>\n'
+                h+=' </tr>\n'
+                h+='</table>\n'
 
-             if gsr!='':
-                h+='    <tr>\n'
-                h+='     <td valign="top" width="250"><b>Obtain shared CK repo with all artifacts:</b></td>\n'
-                h+='     <td valign="top">\n'
-                h+='      <i>'+gsr+'</i>\n'
-                h+='     </td>\n'
-                h+='    </tr>\n'
+                h+='</div>\n'
 
-             refresh=False
-             if var_post_refresh_graph in ap: refresh=True
-
-#             if (pjson!='' or pcsv!='') and image_orig!='' and himage!='':
-#             if (pjson!='' or pcsv!='') and not refresh: # if refresh, table may change
-             x1=purl+gid+'.json'
-             x2=purl+gid+'.csv'
-
-             h+='    <tr>\n'
-             h+='     <td valign="top"><b>Original experiment table:</b></td>\n'
-             h+='     <td valign="top"><i>\n'
-             if pjson!='':
-                h+='      <a href="'+x1+'">Download in JSON</a>;&nbsp;&nbsp'
-             if pcsv!='':
-                h+='      <a href="'+x2+'">Download in CSV</a>\n'
-             h+='     </i></td>\n'
-             h+='    </tr>\n'
-
-             if image_orig!='' and himage!='':
-                h+='    <tr>\n'
-                h+='     <td valign="top"><b>Embedd original image into interactive report/paper:</b></td>\n'
-                h+='     <td valign="top"><i>\n'
-                h+='      '+himage.replace('<','&lt;').replace('>','&gt;')+'\n'
-                h+='     </i></td>\n'
-                h+='    </tr>\n'
-
-             h+='   </table>\n'
-
-             h+='  </td>\n'
-             h+=' </tr>\n'
-             h+='</table>\n'
-
-             h+='</div>\n'
-
-             h+='</center>\n'
+                h+='</center>\n'
 
     return {'return':0, 'raw':raw, 'show_top':top, 'html':h, 'style':st}
 
