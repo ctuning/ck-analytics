@@ -1270,6 +1270,7 @@ def html_viewer(i):
                 h+='<center>Select subgraph:&nbsp;'+hsb+'</center>\n'
 #                h+=' <hr class="ck_hr">\n'
 
+             # Check if interactive (html + style already prepared)
              if output=='html':
                 image=gid+'.html'
              else:
