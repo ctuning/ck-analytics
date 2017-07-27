@@ -281,6 +281,9 @@ def plot(i):
        else:
           dddg['id']='default'
 
+       if len(i.get('out_graph_meta',{}))>0:
+          dddg.update(i['out_graph_meta'])
+
        if xid!=-1:
           ddd['graphs'][xid]=dddg
        else:
@@ -352,6 +355,71 @@ def plot(i):
     yerr2=i.get('display_y_error_bar2','')
     zerr2=i.get('display_z_error_bar2','')
 
+    # Find min/max in all data and all dimensions / per sub-graph
+    tmin=[]
+    tmax=[]
+
+    stmin={}
+    stmax={}
+
+    for g in table:
+        gt=table[g]
+
+        stmin[g]=[]
+        stmax[g]=[]
+
+        mgt=[]
+        if g in mtable:
+           mgt=mtable[g]
+
+        xpst=pst.get(g,{})
+
+        remove_permanent=False
+        if xpst.get('remove_permanent','')=='yes':
+           remove_permanent=True
+
+        leave_only_permanent=False
+        if xpst.get('leave_only_permanent','')=='yes':
+           leave_only_permanent=True
+
+        ngt=[]
+#           for k in gt:
+        for uindex in range(0,len(gt)):
+            k=gt[uindex]
+
+            if (remove_permanent or leave_only_permanent) and uindex<len(mgt):
+               mu=mgt[uindex]
+
+               if remove_permanent and mu.get('permanent','')=='yes':
+                  continue
+
+               if leave_only_permanent and mu.get('permanent','')!='yes':
+                  continue
+
+            ngt.append(k)
+
+            if xpst.get('skip_from_dims','')=='yes':
+               continue
+
+            for d in range(0, len(k)):
+                v=k[d]
+
+                if len(tmin)<=d:
+                   tmin.append(v)
+                   tmax.append(v)
+                else:
+                   if v!=None and v<tmin[d]: tmin[d]=v
+                   if v!=None and v>tmax[d]: tmax[d]=v 
+
+                if len(stmin[g])<=d:
+                   stmin[g].append(v)
+                   stmax[g].append(v)
+                else:
+                   if v!=None and v<stmin[g][d]: stmin[g][d]=v
+                   if v!=None and v>stmax[g][d]: stmax[g][d]=v 
+
+        table[g]=ngt
+
     ####################################################################### MPL ###
     if pt.startswith('mpl_'):
 
@@ -408,71 +476,6 @@ def plot(i):
        if i.get('xscale_log','')=='yes': sp.set_xscale('log')
        if i.get('yscale_log','')=='yes': sp.set_yscale('log')
        if i.get('zscale_log','')=='yes': sp.set_zscale('log')
-
-       # Find min/max in all data and all dimensions / per sub-graph
-       tmin=[]
-       tmax=[]
-
-       stmin={}
-       stmax={}
-
-       for g in table:
-           gt=table[g]
-
-           stmin[g]=[]
-           stmax[g]=[]
-
-           mgt=[]
-           if g in mtable:
-              mgt=mtable[g]
-
-           xpst=pst.get(g,{})
-
-           remove_permanent=False
-           if xpst.get('remove_permanent','')=='yes':
-              remove_permanent=True
-
-           leave_only_permanent=False
-           if xpst.get('leave_only_permanent','')=='yes':
-              leave_only_permanent=True
-
-           ngt=[]
-#           for k in gt:
-           for uindex in range(0,len(gt)):
-               k=gt[uindex]
-
-               if (remove_permanent or leave_only_permanent) and uindex<len(mgt):
-                  mu=mgt[uindex]
-
-                  if remove_permanent and mu.get('permanent','')=='yes':
-                     continue
-
-                  if leave_only_permanent and mu.get('permanent','')!='yes':
-                     continue
-
-               ngt.append(k)
-
-               if xpst.get('skip_from_dims','')=='yes':
-                  continue
-
-               for d in range(0, len(k)):
-                   v=k[d]
-
-                   if len(tmin)<=d:
-                      tmin.append(v)
-                      tmax.append(v)
-                   else:
-                      if v!=None and v<tmin[d]: tmin[d]=v
-                      if v!=None and v>tmax[d]: tmax[d]=v 
-
-                   if len(stmin[g])<=d:
-                      stmin[g].append(v)
-                      stmax[g].append(v)
-                   else:
-                      if v!=None and v<stmin[g][d]: stmin[g][d]=v
-                      if v!=None and v>stmax[g][d]: stmax[g][d]=v 
-
-           table[g]=ngt
 
        # If density or heatmap, find min and max for both graphs:
        if pt=='mpl_1d_density' or pt=='mpl_1d_histogram' or pt=='mpl_2d_heatmap' or pt=='mpl_3d_scatter' or pt=='mpl_3d_trisurf':
@@ -1045,9 +1048,6 @@ def continuous_plot(i):
         x=ck.inp({'text':'Press any key'})
 
     return {'return':0}
-
-##############################################################################
-# view entry as html
 
 ##############################################################################
 # view entry as html
