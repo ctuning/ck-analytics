@@ -304,3 +304,73 @@ def geometric_mean(i):
     y=math.exp(sum(math.log(j) for j in x) / len(x))
 
     return {'return':0, 'gmean':y}
+
+##############################################################################
+# convert plus minus vars to user friendly strings and with proper rounding
+
+def process_plus_minus(i):
+    """
+    Input:  {
+              var_mean   - mean value
+              var_range  - variation
+
+              (force_round) - if 'yes', use it in %.(force_round)f
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+
+              var_mean  - rounded
+              var_range - rounded
+
+              string
+              html
+              tex
+            }
+
+    """
+
+    import math
+
+    vm=i['var_mean']
+    vr=i['var_range']
+
+    round=0
+    if vr<1:
+       vr1=1/vr
+       x=int(math.log10(vr1))+1
+       round=x
+
+       y=pow(10,int(x))
+
+       vr2=int(vr*y)
+       vr=vr2/y
+
+       vm1=int(vm*y)
+       vm=vm1/y
+    else:
+       x=int(math.log10(vr))
+       y=pow(10,int(x))
+
+       vr2=int(vr/y)
+       vr=vr2*y
+
+       vm1=int(vm/y)
+       vm=vm1*y
+
+    fr=i.get('force_round',None)
+    if fr!=None and fr!='':
+       round=fr
+
+    ff='%.'+str(round)+'f'
+
+    x1=ff % vm
+    x2=ff % vr
+
+    s=x1 +' ± '+ x2
+    h=x1 +' &plusmn; '+ x2
+    t=x1 +' $\pm$ '+ x2
+
+    return {'return':0, 'var_mean':vr, 'var_range':vr, 'string':s, 'html':h, 'tex':t}
