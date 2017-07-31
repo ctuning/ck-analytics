@@ -369,7 +369,7 @@ def process_plus_minus(i):
     x1=ff % vm
     x2=ff % vr
 
-    s=x1 +' ± '+ x2
+    s=x1 +' +- '+ x2
     h=x1 +' &plusmn; '+ x2
     t=x1 +' $\pm$ '+ x2
 
