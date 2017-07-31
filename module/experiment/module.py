@@ -564,6 +564,8 @@ def get(i):
                  (module_uoa_list)                     - list of module to search
                  (data_uoa_list)                       - list of data to search
 
+                 (prune_points)                        - list of points to get
+
                  (search_dict)                         - search dict
                  (ignore_case)                         - if 'yes', ignore case when searching
 
@@ -648,6 +650,8 @@ def get(i):
 
     table=i.get('table',{})
     mtable=i.get('mtable',{})
+
+    prune_points=i.get('prune_points',[])
 
     spp=i.get('separate_permanent_points','')
 
@@ -834,7 +838,10 @@ def get(i):
                   if rz['return']==0: 
                      drz=rz['dict']
 
-                  if gop=='yes' or (len(drz)>0 and len(ffeatures)>0):
+                  if len(prune_points)>0 and pp2 not in prune_points:
+                     skip=True
+
+                  if not skip and (gop=='yes' or (len(drz)>0 and len(ffeatures)>0)):
                      if gop!='yes':
                         rx=ck.compare_flat_dicts({'dict1':drz, 'dict2':ffeatures, 'ignore_case':'yes', 'space_as_none':'yes', 'keys_to_ignore':fkti})
                         if rx['return']>0: return rx
