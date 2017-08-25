@@ -1,3 +1,5 @@
+* 2017.08.25 * added another heatmap example (useful for ML-based autotuning)
+
 * 2017.07.30 * added "process_plus_minus math.variation" to round results
              * added universal HTML & TEX table generator ("prepare table") -
                useful for interactive reports
