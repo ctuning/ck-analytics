@@ -521,6 +521,25 @@ def plot(i):
           else:
              xcmap = plt.cm.get_cmap('coolwarm')
 
+             if i.get('shifted_colormap','')=='yes':
+                r=ck.load_module_from_path({'path':work['path'], 'module_code_name':'module_shifted_colormap', 'skip_init':'yes'})
+                if r['return']>0: return r
+                scm=r['code']
+
+                xx_start=dmin
+                if i.get('shifted_colormap_start','')!='':
+                   xx_start=i['shifted_colormap_start']
+
+                xx_stop=dmax
+                if i.get('shifted_colormap_stop','')!='':
+                   xx_stop=i['shifted_colormap_stop']
+
+                xx_mid=1.0
+                if i.get('shifted_colormap_mid','')!='':
+                   xx_mix=i['shifted_colormap_mid']
+
+                xcmap = scm.shiftedColorMap(xcmap, start=xx_start, stop=xx_stop, midpoint=xx_mid, name='shifted')
+
        # Check forced min/max for different axis
        xmin=i.get('xmin','')
        xmax=i.get('xmax','')
@@ -786,7 +805,7 @@ def plot(i):
                           iu+=1 
 
                 if pt=='mpl_2d_heatmap':
-                   heatmap=sp.scatter(mx, my, c=mz, s=int(sz), marker=mrk, lw=elw, vmin=dmin, vmax=dmax, cmap=xcmap)
+                   heatmap=sp.scatter(mx, my, c=mz, s=int(sz), marker=mrk, lw=elw, cmap=xcmap)
                 elif pt=='mpl_3d_scatter':
                    heatmap=sp.scatter(mx,my,mz, c=cl, s=int(sz), marker=mrk, lw=elw)
                 elif pt=='mpl_3d_trisurf':
@@ -854,14 +873,13 @@ def plot(i):
 
           sp.set_xticks(ind)
 
-
           xrot=i.get('axis_x_rotation','')
           if xrot=='': sp.set_xticklabels(xlab)
           else:        sp.set_xticklabels(xlab, rotation=xrot)
 
-
        ylab=i.get('axis_y_labels',[])
        if len(ylab)>0:
+          sp.set_yticks(ylab)
           sp.set_yticklabels(ylab)
 
        # Set axes names
