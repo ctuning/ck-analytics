@@ -1,3 +1,5 @@
+* 2017.08.28 * fixing ck replay experiment (proper rebuilding of choices)!
+
 * 2017.08.26 * added customization of y axis labels
 
 * 2017.08.25 * added another heatmap example (useful for ML-based autotuning)

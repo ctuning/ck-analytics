@@ -1811,6 +1811,7 @@ def replay(i):
                  Some productivity keys specifically for autotuning pipeline (ck-autotuning repo):
 
                (local_platform) or (local)   - if 'yes', use parameters of a local platform (to retarget experiment)
+               (skip_target)                 - do not select target machines (to customize via host_os/target_os/device_id)
                (deps)                        - if 'yes', use recorded deps (to run on the same platform)
                (skip_clean_after)            - if 'yes', do not clean program pipeline after execution 
                                                (keeping low level scripts in tmp directory for low-level debugging)
@@ -1868,6 +1869,7 @@ def replay(i):
     if i.get('local_platform','')!='': pipeline_update['local_platform']=i['local_platform']
     if i.get('local','')!='':          pipeline_update['local_platform']=i['local']
     if i.get('skip_clean_after','')!='': pipeline_update['skip_clean_after']=i['skip_clean_after']
+    if i.get('skip_target','')!='': pipeline_update['skip_target']=i['skip_target']
 
     pp=os.getcwd()+os.path.sep
 
@@ -1998,10 +2000,15 @@ def replay(i):
     choices_order=ft.get('choices_order',[])
     choices_desc=pipeline.get('choices_desc',[])
 
-    if (prune=='yes' or prune_invert=='yes') and len(solutions)==0:
+
+#    Before 20170828 - when replay was generating random choices in fact (when choices present)!
+#    That's why now force to create solution -> this skips random generation
+#    if ((prune=='yes' or prune_invert=='yes') and len(solutions)==0):
+
+    if len(solutions)==0:
        # Rebuild choices
-       pco=[]
-       po={}
+       rebuild_choices_order=[]
+       rebuild_choices={}
        for k in choices_order:
            rz=ck.get_by_flat_key({'dict':choices, 'key':k})
            if rz['return']>0: return rz
@@ -2009,13 +2016,13 @@ def replay(i):
            if vv!=None:
 #              k1='##choices'+k[1:]
               k1=k
-              pco.append(k1)
-              po[k1]=vv
+              rebuild_choices_order.append(k1)
+              rebuild_choices[k1]=vv
 
        solutions=[{
                    'points':[
-                      {'pruned_choices_order':pco,
-                       'pruned_choices':po}
+                      {'pruned_choices_order':rebuild_choices_order,
+                       'pruned_choices':rebuild_choices}
                    ]
                  }]
 
@@ -2129,6 +2136,11 @@ def replay(i):
 
     if len(pipeline)==0:
        return {'return':1, 'error':'pipeline not found in the entry'}
+
+    if i.get('target','')!='': pipeline['target']=i['target']
+    if i.get('host_os','')!='': pipeline['host_os']=i['host_os']
+    if i.get('target_os','')!='': pipeline['target_os']=i['target_os']
+    if i.get('device_id','')!='': pipeline['device_id']=i['device_id']
 
     #******************************************************************
     if o=='con':
