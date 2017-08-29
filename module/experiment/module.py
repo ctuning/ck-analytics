@@ -1791,9 +1791,13 @@ def replay(i):
                (compare_subpoint)
 
                ==============================
-                 Prunning
+                 Prunning (reducing complexity)
 
                (prune)                          - if 'yes', replay and prune choices!
+               (reduce)                         - the same as above
+               (reduce_bug)                     - reduce choices to localize bug (pipeline fail)
+
+               (prune_md5)                      - if 'yes' and compilation is used in a pipeline (workflow), check if binary MD5 doesn't change
                (prune_invert)                   - if 'yes', prune all (switch off even unused - useful for collaborative machine learning)
                (prune_print_keys)               - list of keys from flat dict to print during pruning (to monitor characteristics, for example)
                (prune_invert_do_not_remove_key) - if 'yes', keep both on and off keys (to know exact solution)
@@ -1862,7 +1866,15 @@ def replay(i):
     repetitions=i.get('repetitions','')
 
     solutions=i.get('solutions',[])
+
     prune=i.get('prune','')
+    if prune=='':
+       prune=i.get('reduce','')
+
+    reduce_bug=i.get('reduce_bug','')
+    if reduce_bug=='yes': prune='yes'
+
+    prune_md5=i.get('prune_md5','')
     prune_invert=i.get('prune_invert','')
     prune_print_keys=i.get('prune_print_keys',[])
 
@@ -2159,6 +2171,8 @@ def replay(i):
         'pipeline_update':pipeline_update,
         'solutions':solutions,
         'prune':prune,
+        'reduce_bug':reduce_bug,
+        'prune_md5':prune_md5,
         'prune_invert':prune_invert,
         'force_pipeline_update':'yes',
         'pause':i.get('pause',''),
@@ -2190,7 +2204,7 @@ def replay(i):
     fail=rlio.get('fail','')
 
     # Check that didn't fail (or failed, if reproducing a bug)
-    if fail=='yes':
+    if fail=='yes' and reduce_bug!='yes':
        if o=='con':
           ck.out('')
           ck.out('Warning: pipeline failed during ref iteration ('+rlio.get('fail_reason','')+')')
@@ -2213,7 +2227,7 @@ def replay(i):
        if rx['return']>0: return rx
 
     # Check if skip comparison
-    if i.get('skip','')!='yes':
+    if i.get('skip','')!='yes' and reduce_bug!='yes':
        # Comparing dicts
        if o=='con':
           ck.out('********************************************************************')
