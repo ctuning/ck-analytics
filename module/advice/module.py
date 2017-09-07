@@ -16,6 +16,8 @@ ck=None # Will be updated by CK (initialized CK kernel)
 # Local settings
 
 hextra='<center>\n'
+hextra+=' [ <a href="http://cKnowledge.org/ai.html">Project website</a> ], '
+hextra+=' [ <a href="http://cKnowledge.org/partners.html">Partners</a> ], '
 hextra+=' [ <a href="http://dividiti.blogspot.fr/2017/02/we-received-test-of-time-award-for-our.html">CGO\'17 test of time award for our interdisiplinary R&D</a> ], '
 hextra+=' [ <a href="http://cKnowledge.org/ai">Community-driven AI R&D powered by CK</a> ], '
 hextra+=' [ <a href="https://github.com/dividiti/ck-caffe">CK-Caffe</a> ], '
@@ -165,7 +167,15 @@ def show(i):
 
           st+='\n'+r.get('style','')+'\n'
 
-    h+='<i>We are cleaning up AI and computer engineering mess with the community using <a href="https://github.com/ctuning/ck">Collective Knowledge approach</a></i>:<br><br><img src="http://cKnowledge.org/images/ai-cloud-resize.png"><br><br>\n'
+    h+='<h2>Want to survive Cambrian AI/SW/HW explosion but lost in technological chaos?</h2>\n'
+    h+='<img src="http://cKnowledge.org/images/ai-cloud-resize.png"><br><br>\n'
+
+    h+='<b>Join the growing <a href="http://cKnowledge.org/partners.html">consortium</a>\n' 
+    h+='using and enhancing <a href="http://cKnowledge.org">Collective Knowledge technology</a> to\n'
+    h+=' a) clean up this mess, b) reinvent computer engineering and make it more collaborative, reproducible and reusable,\n'
+    h+=' c) develop efficient and reliable computer systems from IoT to supercomputers, \n'
+    h+=' d) enable open science via reusable and customizable artifacts,\n'
+    h+='  and e) eventually enable and accelerate open AI research!\n'
 
     return {'return':0, 'html':h, 'style':st}
 
