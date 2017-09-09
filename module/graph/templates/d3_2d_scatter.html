@@ -169,9 +169,11 @@ for (graph=0; graph < 100; graph++) {
 
      var size=5;
      if ("size" in ps) size=ps.size;
+     if ("size" in inf) size=inf.size;
 
      var color="#0000bf";
      if ("color" in ps) color=ps.color;
+     if ("color" in inf) color=inf.color;
 
      var connect_lines=false;
      if (("connect_lines" in ps) && (ps.connect_lines=="yes"))
