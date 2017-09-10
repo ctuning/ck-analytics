@@ -77,6 +77,8 @@ def plot(i):
               (flat_keys_index)                     - add all flat keys starting from this index 
               (flat_keys_index_end)                 - add all flat keys ending with this index (default #min)
 
+              (customize_dots)                      - if 'yes' and MPL engine, customize color and size from table_info
+
               (out_to_file)                         - save picture or html to file, if supported 
                                                         (will be preserved and not replotted - useful to have a copy of an original image
                                                          when replotting graphs in interactive papers)
@@ -167,6 +169,8 @@ def plot(i):
     mtable=i.get('table_info', [])
 
     rk=i.get('real_keys',[])
+
+    cdots=i.get('customize_dots','')
 
     ltfj=i.get('load_table_from_file','')
     if ltfj!='':
@@ -628,11 +632,28 @@ def plot(i):
               mxerr=[]
               my=[]
               myerr=[]
+              mcolor=[]
+              msize=[]
 
 #              for u in gt:
               for uindex in range(0,len(gt)):
                   u=gt[uindex]
                   iu=0
+
+                  # Check if extra info (color and size)
+                  minfo={}
+                  if uindex<len(mgt):
+                     minfo=mgt[uindex]
+
+                  xcl=cl
+                  if minfo.get('color','')!='':
+                     xcl=minfo['color']
+                  mcolor.append(xcl)
+
+                  xsz=sz
+                  if minfo.get('size','')!='':
+                     xsz=minfo['size']
+                  msize.append(int(xsz))
 
                   # Check if no None
                   partial=False
@@ -686,19 +707,34 @@ def plot(i):
               else:
                  draw_scatter=False
                  if xerr=='yes' and yerr=='yes':
-                    sp.errorbar(mx, my, xerr=mxerr, yerr=myerr, ls='none', c=cl, elinewidth=elw, label=lbl, fmt=xfmt)
+                    if cdots=='yes':
+                       sp.errorbar(mx, my, xerr=mxerr, yerr=myerr, ls='none', c=mcolor, elinewidth=elw, label=lbl, fmt=xfmt)
+                    else:
+                       sp.errorbar(mx, my, xerr=mxerr, yerr=myerr, ls='none', c=cl, elinewidth=elw, label=lbl, fmt=xfmt)
                  elif xerr=='yes' and yerr!='yes':
-                    sp.errorbar(mx, my, xerr=mxerr, ls='none',  c=cl, elinewidth=elw, label=lbl, fmt=xfmt)
+                    if cdots=='yes':
+                       sp.errorbar(mx, my, xerr=mxerr, ls='none',  c=mcolor, elinewidth=elw, label=lbl, fmt=xfmt)
+                    else:
+                       sp.errorbar(mx, my, xerr=mxerr, ls='none',  c=cl, elinewidth=elw, label=lbl, fmt=xfmt)
                  elif yerr=='yes' and xerr!='yes':
-                    sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw, label=lbl, fmt=xfmt, capsize=xcapsize)
+                    if cdots=='yes':
+                       sp.errorbar(mx, my, yerr=myerr, ls='none', c=mcolor, elinewidth=elw, label=lbl, fmt=xfmt, capsize=xcapsize)
+                    else:
+                       sp.errorbar(mx, my, yerr=myerr, ls='none', c=cl, elinewidth=elw, label=lbl, fmt=xfmt, capsize=xcapsize)
                  else:
                     draw_scatter=True
 
                  if draw_scatter or i.get('force_center_dot','')=='yes': 
-                    sp.scatter(mx, my, s=int(sz), edgecolor=cl, c=cl, marker=mrk, label=lbl)
+                    if cdots=='yes':
+                       sp.scatter(mx, my, s=msize, edgecolor=mcolor, c=mcolor, marker=mrk, label=lbl)
+                    else:
+                       sp.scatter(mx, my, s=int(sz), edgecolor=cl, c=cl, marker=mrk, label=lbl)
 
                  if connect_lines=='yes':
-                    sp.plot(mx, my, c=cl, label=lbl)
+                    if cdots=='yes':
+                       sp.plot(mx, my, c=mcolor, label=lbl)
+                    else:
+                       sp.plot(mx, my, c=cl, label=lbl)
 
                  if xpst.get('frontier','')=='yes':
                     # not optimal solution, but should work (need to sort to draw proper frontier)
