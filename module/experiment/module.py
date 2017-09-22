@@ -2112,8 +2112,9 @@ def replay(i):
              ry=ck.access({'action':'load',
                            'module_uoa':cfg['module_deps']['module'],
                            'data_uoa':xxmuoa})
-          if ry['return']>0: return ry
-          kdc=ry['desc']
+             if ry['return']>0: return ry
+   
+          kdc=ry['desc'] # If not loaded from above module, then take it from scenario module desc!
           if xxkey!='':
              kdc=kdc.get(xxkey,{})
 
