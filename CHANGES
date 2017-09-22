@@ -1,3 +1,5 @@
+* 2017.09.23 * improved html table with experiments
+
 * 2017.09.09 * added support in D3 graps to change size and color of individual points 
                (useful to visualize DNN co-design results)
 

@@ -2955,12 +2955,12 @@ def html_viewer(i):
                      xurl+='&'+rv+'table_sort='+str(iv)
                      h+='    <td valign="top" align="right" class="light_bottom_in_table '+xs+'"><b><a href="'+xurl+'">'+v+'</a></b></td>\n'
 
-                 h+='    <td valign="top" align="center" class="light_bottom_in_table"><b>Aggregated flat data</b></td>\n'
+                 h+='    <td valign="top" align="center" class="light_bottom_in_table"><b>All</b></td>\n'
                  h+='    <td valign="top" align="center" class="light_bottom_in_table"><b>Features</b></td>\n'
-                 h+='    <td valign="top" align="center" class="light_right_in_table light_bottom_in_table"><b>Flat features</b></td>\n'
-                 h+='    <td valign="top" align="right" class="light_right_in_table light_bottom_in_table"><b>Point UID</b></td>\n'
+                 h+='    <td valign="top" align="center" class="light_right_in_table light_bottom_in_table"><b>Flat<br>features</b></td>\n'
+                 h+='    <td valign="top" align="center" class="light_right_in_table light_bottom_in_table"><b>Point UID</b></td>\n'
                  if no_replay!='yes':
-                    h+='    <td valign="top" align="center" class="light_bottom_in_table"><b>Replay (reproduce) experiment</b></td>\n'
+                    h+='    <td valign="top" align="center" class="light_bottom_in_table"><b>Reproduce</b></td>\n'
 
               else:
                  e1=''
