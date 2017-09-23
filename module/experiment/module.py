@@ -2113,7 +2113,7 @@ def replay(i):
                            'module_uoa':cfg['module_deps']['module'],
                            'data_uoa':xxmuoa})
              if ry['return']>0: return ry
-   
+
           kdc=ry['desc'] # If not loaded from above module, then take it from scenario module desc!
           if xxkey!='':
              kdc=kdc.get(xxkey,{})
@@ -2244,11 +2244,22 @@ def replay(i):
 
        dd=[]
 
-       # Create a list of all keys in original and new output
-       lk=list(ch.keys())
-       for q in chn:
-           if q not in lk:
-              lk.append(q)
+       simple=False
+       # Check if checking only a few keys without *?
+       if len(dc)>0:
+          simple=True
+          for q in dc:
+              if '*' in q or '?' in q:
+                 simple=False
+                 break
+       if simple:
+          lk=dc
+       else:
+          # Create a list of all keys in original and new output
+          lk=list(ch.keys())
+          for q in chn:
+              if q not in lk:
+                 lk.append(q)
 
        # Compare
        ichecked=0
