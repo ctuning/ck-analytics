@@ -3013,11 +3013,24 @@ def html_viewer(i):
                  h+='    <td valign="top" class="light_right_in_table">'+e1+str(px)+e2+'</td>\n'
                  for iv in range(0, len(vv)):
                      v=vv[iv]
+
                      v2=vvv[iv]
 
                      dd={}
                      if iv<len(rkd): 
                         dd=rkd[iv]
+
+                     if dd.get('invert_bool','')=='yes' and v!=None and v!='':
+                        v=not v
+
+                     if dd.get('convert_none_to_false','')=='yes' and v==None:
+                        v=False
+
+                     xstyle=''
+                     if dd.get('bg_color_if_true','')!='' and v==True:
+                        xstyle='style="background-color: '+dd['bg_color_if_true']+'"'
+                     if dd.get('bg_color_if_false','')!='' and v==False:
+                        xstyle='style="background-color: '+dd['bg_color_if_false']+'"'
 
                      tp=dd.get('type','')
 
@@ -3055,7 +3068,7 @@ def html_viewer(i):
                         if len(sv)>100:
                            sv='<input type="button" class="ck_small_button" onClick="copyToClipboard(\''+sv+'\');" value="View">'
 
-                     h+='    <td valign="top" align="right" class="'+xs+'">'+e1+sv+e2+'</td>\n'
+                     h+='    <td valign="top" align="right" class="'+xs+'" '+xstyle+'>'+e1+sv+e2+'</td>\n'
 
                  xurl=purl+'ckp-'+str(vp)
 
