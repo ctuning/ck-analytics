@@ -2896,7 +2896,7 @@ def html_viewer(i):
                         import fnmatch
                         v=''
                         k1=k+'#min'
-                        for kk in kdrz:
+                        for kk in sorted(kdrz):
                             if fnmatch.fnmatch(kk,k1):
                                vx=drz[kk]
                                if vx!=None:
@@ -2910,6 +2910,7 @@ def html_viewer(i):
                                   if vx!='':
                                      if vak=='yes': v+='='
                                      v+=str(vx)
+                                     if dd.get('add_br','')=='yes': v+='<br>\n'
 
                      vv.append(v)
                      vvv.append(v2)
@@ -3065,10 +3066,13 @@ def html_viewer(i):
                         if xmuoa!='':
                            sv='<a href="'+burl+'wcid='+xmuoa+':'+str(v)+'">'+sv+'</a>'
                      else:
-                        if len(sv)>100:
+                        if dd.get('show_all','')!='yes' and len(sv)>100:
                            sv='<input type="button" class="ck_small_button" onClick="copyToClipboard(\''+sv+'\');" value="View">'
 
-                     h+='    <td valign="top" align="right" class="'+xs+'" '+xstyle+'>'+e1+sv+e2+'</td>\n'
+                     align='right'
+                     if dd.get('align','')!='': align=dd['align']
+
+                     h+='    <td valign="top" align="'+align+'" class="'+xs+'" '+xstyle+'>'+e1+sv+e2+'</td>\n'
 
                  xurl=purl+'ckp-'+str(vp)
 
