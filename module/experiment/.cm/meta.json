@@ -49,6 +49,9 @@
     "pack": {
       "desc": "pack experiments"
     },
+    "prepare_selector": {
+      "desc": "prepare first level of experiments with pruning"
+    },
     "replay": {
       "desc": "replay experiment == the same as reproduce"
     },

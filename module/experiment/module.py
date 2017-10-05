@@ -3445,3 +3445,228 @@ def browse(i):
         'cid':work['self_module_uid']+':'+duoa}
 
     return ck.access(ii)
+
+##############################################################################
+# internal function to make value HTML compatible
+
+def fix_value(v):
+    v=v.replace('\u0000','')
+    return v
+
+##############################################################################
+# prepare first level of experiments with pruning
+
+def prepare_selector(i):
+    """
+    Input:  {
+              (original_input)    - original (high-level) input from web to check keys
+
+              (search_module_uoa) - module instead of experiment
+              (search_repo_uoa)   - repo to prune experiments
+              (tags)              - tags to prune experiments
+                 or
+              (lst)               - use list if already prepared (for example for second level pruning)
+              (skip_meta_key)     - if 'yes', do not use 'meta' key in list
+
+              (selector)          - dict with selector
+
+              (crowd_key)         - extend selector keys if called from crowd-tuning
+              (crowd_on_change)   - use on_change if called from crowd-tuning
+
+              (url1)              - URL with all prefixes to create on change
+              (form_name)
+
+              (background_div)    - if !='' use this as background div
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+            }
+
+    """
+
+    import time
+
+    h=''
+
+    oi=i.get('original_input',{})
+
+    sruoa=i.get('search_repo_uoa','')
+    smuoa=i.get('search_module_uoa','')
+    tags=i.get('tags','')
+
+    selector=i.get('selector',[])
+
+    ckey=i.get('crowd_key','')
+    conc=i.get('crowd_on_change','')
+
+    url1=i.get('url1',{})
+    form_name=i.get('form_name','')
+
+    debug=i.get('debug',False)
+
+    bd=i.get('background_div','')
+
+    skip_meta_key=(i.get('skip_meta_key','')=='yes')
+
+    # List entries ********************************************************************************
+    lst=i.get('lst',[])
+
+    if len(lst)==0:
+       dt=time.time()
+
+       ii={'action':'search',
+           'module_uoa':work['self_module_uid'],
+           'tags':tags,
+           'add_meta':'yes'}
+
+       if smuoa!='':
+           ii['module_uoa']=smuoa
+
+       r=ck.access(ii)
+       if r['return']>0: return r
+
+       if debug: 
+          h+='\n<p>Debug time (CK query): '+str(time.time()-dt)+' sec.<p>\n'
+
+       lst=r['lst']
+
+    # Find unique keys/values in meta *************************************************************
+    dt=time.time()
+
+    choices={}  # just choices
+    wchoices={} # selector for HTML (name and value)
+    mchoices={} # cache of UID -> alias choices
+
+    cache_meta={}
+
+    for q in lst:
+        if skip_meta_key:
+           meta=q
+        else:
+           meta=q['meta'].get('meta',{})
+
+        # Process selector meta
+        for kk in selector:
+            kx=kk['key']
+            k=ckey+kx
+
+            if k not in choices: 
+                choices[k]=[]
+                wchoices[k]=[{'name':'','value':''}]
+
+            v=meta.get(kx,'')
+            if v!='':
+                if v not in choices[k]: 
+                    choices[k].append(v)
+
+                    muoa=kk.get('module_uoa','')
+                    vv=v
+                    if muoa!='':
+                        if k not in mchoices:
+                            mchoices[k]={}
+
+                        vv=mchoices[k].get(v,'')
+                        if vv=='':
+                            r=ck.access({'action':'load',
+                                         'module_uoa':muoa,
+                                         'data_uoa':v})
+                            if r['return']==0:
+                                mk=kk.get('module_key','')
+                                if mk=='': mk='##data_name'
+
+                                rx=ck.get_by_flat_key({'dict':r, 'key':mk})
+                                if rx['return']>0: return rx
+                                vv=rx['value']
+
+                        if vv=='' or vv==None: vv=v
+
+                        mchoices[k][v]=vv
+
+                    wchoices[k].append({'name':fix_value(vv), 'value':fix_value(v)})
+
+    # Check if only 1 choice in the selector and then select it
+    for k in wchoices:
+        if len(wchoices[k])==2:
+           del(wchoices[k][0])
+
+    if debug: h+='\n<p>Debug time (CK find unique vars): '+str(time.time()-dt)+' sec.<p>\n'
+
+    # Prepare query div ***************************************************************
+    dt=time.time()
+    if smuoa=='':
+        # Start form + URL (even when viewing entry)
+        r=ck.access({'action':'start_form',
+                     'module_uoa':cfg['module_deps']['wfe'],
+                     'url':url1,
+                     'name':form_name})
+        if r['return']>0: return r
+        h+=r['html']+'\n'
+
+    if bd!='':
+       h+=bd+'\n' 
+
+    for kk in selector:
+        k=ckey+kk['key']
+        n=kk['name']
+
+        nl=kk.get('new_line','')
+        if nl=='yes':
+            h+='<br>\n<div id="ck_entries_space8"></div>\n'
+
+        v=''
+
+        # Making values compatible with HTML
+        if oi.get(k,'')!='':
+            v=fix_value(oi[k])
+            kk['value']=v
+
+        # Show hardware
+        ii={'action':'create_selector',
+            'module_uoa':cfg['module_deps']['wfe'],
+            'data':wchoices.get(k,[]),
+            'name':k,
+            'onchange':conc, 
+            'skip_sort':'no',
+            'selected_value':v,
+            'style':'margin:5px;'}
+        r=ck.access(ii)
+        if r['return']>0: return r
+
+        h+='<span style="white-space: nowrap"><b>'+n.replace(' ','&nbsp;')+':</b>&nbsp;'+r['html'].strip()+'</span>\n'
+
+    if bd!='':
+       h+='</div>\n' 
+
+    if debug: h+='\n<p>Debug time (prepare selector): '+str(time.time()-dt)+' sec.<p>\n'
+
+    # Prune list ******************************************************************
+    dt=time.time()
+
+    plst=[]
+
+    for q in lst:
+        if skip_meta_key:
+           meta=q
+        else:
+           meta=q['meta'].get('meta',{})
+
+        # Check selector
+        skip=False
+        for kk in selector:
+            k=kk['key']
+            n=kk['name']
+            v=kk.get('value','')
+
+            if v!='' and fix_value(meta.get(k,''))!=v:
+                skip=True
+                break
+
+        if not skip:
+           plst.append(q)
+
+    if debug: h+='\n<p>Debug time (prune entries by user selection): '+str(time.time()-dt)+' sec.<p>\n'
+
+    return {'return':0, 'html':h, 'pruned_lst':plst, 'choices':choices, 'wchoices':wchoices}
