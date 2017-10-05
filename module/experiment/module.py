@@ -3450,7 +3450,8 @@ def browse(i):
 # internal function to make value HTML compatible
 
 def fix_value(v):
-    v=v.replace('\u0000','')
+    if v==str(v):
+       v=v.replace('\u0000','')
     return v
 
 ##############################################################################
@@ -3538,6 +3539,7 @@ def prepare_selector(i):
 
     choices={}  # just choices
     wchoices={} # selector for HTML (name and value)
+    info={}
     mchoices={} # cache of UID -> alias choices
 
     cache_meta={}
@@ -3553,9 +3555,11 @@ def prepare_selector(i):
             kx=kk['key']
             k=ckey+kx
 
+            info[k]=kk
+
             if k not in choices: 
                 choices[k]=[]
-                wchoices[k]=[{'name':'','value':''}]
+                wchoices[k]=[{'name':'','value':kk.get('default','')}]
 
             v=meta.get(kx,'')
             if v!='':
@@ -3586,6 +3590,22 @@ def prepare_selector(i):
                         mchoices[k][v]=vv
 
                     wchoices[k].append({'name':fix_value(vv), 'value':fix_value(v)})
+
+    # Sort if needed
+    for k in wchoices:
+        tp=info[k].get('type','')
+
+        if tp=='int':
+           wchoices[k]=sorted(wchoices[k], key=lambda x: ck.safe_int(x.get('value',0),0))
+        elif tp=='float':
+           wchoices[k]=sorted(wchoices[k], key=lambda x: ck.safe_float(x.get('value',0),0))
+        else:
+           wchoices[k]=sorted(wchoices[k], key=lambda x: x.get('value',0))
+
+    # Convert to string for selector
+    for k in wchoices:
+        for j in range(0, len(wchoices[k])):
+            wchoices[k][j]['value']=str(wchoices[k][j]['value'])
 
     # Check if only 1 choice in the selector and then select it
     for k in wchoices:
@@ -3620,7 +3640,7 @@ def prepare_selector(i):
 
         # Making values compatible with HTML
         if oi.get(k,'')!='':
-            v=fix_value(oi[k])
+            v=str(fix_value(oi[k]))
             kk['value']=v
 
         # Show hardware
@@ -3629,7 +3649,7 @@ def prepare_selector(i):
             'data':wchoices.get(k,[]),
             'name':k,
             'onchange':conc, 
-            'skip_sort':'no',
+            'skip_sort':'yes',
             'selected_value':v,
             'style':'margin:5px;'}
         r=ck.access(ii)
@@ -3660,7 +3680,7 @@ def prepare_selector(i):
             n=kk['name']
             v=kk.get('value','')
 
-            if v!='' and fix_value(meta.get(k,''))!=v:
+            if v!='' and str(fix_value(meta.get(k,'')))!=str(v):
                 skip=True
                 break
 
