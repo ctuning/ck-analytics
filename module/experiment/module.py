@@ -3476,6 +3476,8 @@ def prepare_selector(i):
 
               (url1)              - URL with all prefixes to create on change
               (form_name)
+              (skip_form_init)    - if 'yes', skip form init (second level pruning)
+              (add_reset)         - if 'yes', add reset button
 
               (background_div)    - if !='' use this as background div
             }
@@ -3506,11 +3508,19 @@ def prepare_selector(i):
     url1=i.get('url1',{})
     form_name=i.get('form_name','')
 
+    # Check if reset
+    if 'reset_'+form_name in oi: reset=True
+    else: reset=False
+
+    if 'all_choices_'+form_name in oi: all_choices=True
+    else: all_choices=False
+
     debug=i.get('debug',False)
 
     bd=i.get('background_div','')
 
     skip_meta_key=(i.get('skip_meta_key','')=='yes')
+    sfi=(i.get('skip_form_init','')=='yes')
 
     # List entries ********************************************************************************
     lst=i.get('lst',[])
@@ -3533,6 +3543,46 @@ def prepare_selector(i):
           h+='\n<p>Debug time (CK query): '+str(time.time()-dt)+' sec.<p>\n'
 
        lst=r['lst']
+
+    # Check current selection *********************************************************************
+    for kk in selector:
+        k=ckey+kk['key']
+        n=kk['name']
+
+        if reset and k in oi:
+           del(oi[k])
+        elif oi.get(k,'')!='':
+           kk['value']=str(fix_value(oi[k]))
+
+    # Prune list by current selection *************************************************************
+    if not all_choices:
+       dt=time.time()
+
+       plst=[]
+
+       for q in lst:
+           if skip_meta_key:
+              meta=q
+           else:
+              meta=q['meta'].get('meta',{})
+
+           # Check selector
+           skip=False
+           for kk in selector:
+               k=kk['key']
+               n=kk['name']
+               v=kk.get('value','')
+
+               if v!='' and str(fix_value(meta.get(k,'')))!=str(v):
+                   skip=True
+                   break
+
+           if not skip:
+              plst.append(q)
+
+       lst=plst
+
+    if debug: h+='\n<p>Debug time (prune entries by user selection): '+str(time.time()-dt)+' sec.<p>\n'
 
     # Find unique keys/values in meta *************************************************************
     dt=time.time()
@@ -3616,7 +3666,7 @@ def prepare_selector(i):
 
     # Prepare query div ***************************************************************
     dt=time.time()
-    if smuoa=='':
+    if smuoa=='' and not sfi:
         # Start form + URL (even when viewing entry)
         r=ck.access({'action':'start_form',
                      'module_uoa':cfg['module_deps']['wfe'],
@@ -3657,36 +3707,41 @@ def prepare_selector(i):
 
         h+='<span style="white-space: nowrap"><b>'+n.replace(' ','&nbsp;')+':</b>&nbsp;'+r['html'].strip()+'</span>\n'
 
+    if i.get('add_reset','')=='yes':
+       h+='<button class="ck_small_button" name="reset_'+form_name+'" onclick="document.'+form_name+'.submit();">Reset form</button>\n'
+       h+='<button class="ck_small_button" name="all_choices_'+form_name+'" onclick="document.'+form_name+'.submit();">Show all choices</button>\n'
+
     if bd!='':
        h+='</div>\n' 
 
     if debug: h+='\n<p>Debug time (prepare selector): '+str(time.time()-dt)+' sec.<p>\n'
 
-    # Prune list ******************************************************************
-    dt=time.time()
+    # Prune list by final selection ******************************************************************
+    if all_choices:
+       dt=time.time()
 
-    plst=[]
+       plst=[]
 
-    for q in lst:
-        if skip_meta_key:
-           meta=q
-        else:
-           meta=q['meta'].get('meta',{})
+       for q in lst:
+           if skip_meta_key:
+              meta=q
+           else:
+              meta=q['meta'].get('meta',{})
 
-        # Check selector
-        skip=False
-        for kk in selector:
-            k=kk['key']
-            n=kk['name']
-            v=kk.get('value','')
+           # Check selector
+           skip=False
+           for kk in selector:
+               k=kk['key']
+               n=kk['name']
+               v=kk.get('value','')
 
-            if v!='' and str(fix_value(meta.get(k,'')))!=str(v):
-                skip=True
-                break
+               if v!='' and str(fix_value(meta.get(k,'')))!=str(v):
+                   skip=True
+                   break
 
-        if not skip:
-           plst.append(q)
+           if not skip:
+              plst.append(q)
 
-    if debug: h+='\n<p>Debug time (prune entries by user selection): '+str(time.time()-dt)+' sec.<p>\n'
+       if debug: h+='\n<p>Debug time (prune entries by user selection): '+str(time.time()-dt)+' sec.<p>\n'
 
     return {'return':0, 'html':h, 'pruned_lst':plst, 'choices':choices, 'wchoices':wchoices}
