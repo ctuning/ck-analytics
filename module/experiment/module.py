@@ -3450,8 +3450,11 @@ def browse(i):
 # internal function to make value HTML compatible
 
 def fix_value(v):
-    if v==str(v):
+    try:
        v=v.replace('\u0000','')
+    except Exception as e:
+       pass
+
     return v
 
 ##############################################################################
@@ -3713,7 +3716,11 @@ def get_and_cache_results(i):
                      d=r['dict']
 
                      for k in view_cache:
-                           meta_cache[k]=d.get(k,'')
+                         meta_cache[k]=d.get(k,'')
+
+#                  r=ck.flatten_dict({'dict':meta.get('meta',{}), 'prefix':'##meta#'})
+#                  if r['return']>0: return r
+#                  meta_cache.update(r['dict'])
 
                   r=ck.save_json_to_file({'json_file':p1, 'dict':meta_cache, 'sort_keys':'yes'})
                   if r['return']>0: return r
