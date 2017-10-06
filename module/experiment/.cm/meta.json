@@ -27,6 +27,9 @@
     "get_all_meta": {
       "desc": "get all meta information from all entries"
     },
+    "get_and_cache_results": {
+      "desc": "get and cache experimental results"
+    },
     "get_log_path": {
       "desc": "get log path"
     },

@@ -190,6 +190,7 @@ for (graph=0; graph < 100; graph++) {
 
      if ('url' in inf) dat['url']=inf.url;
      if ('url_ext' in inf) dat['url_ext']=inf.url_ext;
+     if ('anchor' in inf) dat['anchor']=inf.anchor;
 
      var xx=data[q][0];
      var yy=data[q][1];
@@ -288,6 +289,7 @@ svg.selectAll(".dot")
 
    .on("click", function(d) {
       var cid='';
+
       if ('cid' in d) {
          cid=d['cid'];
 
@@ -297,12 +299,15 @@ svg.selectAll(".dot")
          window.open("$#ck_root_url#$wcid="+cid+'&subpoint='+subpoint);
       } else {
          var url='';
-         if ('url' in d) {
+         if ('url' in d && d['url']!='') {
             url=d['url'];
             var url_ext='';
             if ('url_ext' in d)
                url_ext=d['url_ext'];
             window.open(url+url_ext);
+         } else if ('anchor' in d) {
+           var position = document.getElementById(d['anchor']).offsetTop;
+           document.getElementById(d['anchor']).scrollIntoView();
          }
       }
    })

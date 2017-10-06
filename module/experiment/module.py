@@ -3745,3 +3745,89 @@ def prepare_selector(i):
        if debug: h+='\n<p>Debug time (prune entries by user selection): '+str(time.time()-dt)+' sec.<p>\n'
 
     return {'return':0, 'html':h, 'pruned_lst':plst, 'choices':choices, 'wchoices':wchoices}
+
+##############################################################################
+# get and cache experimental results
+
+def get_and_cache_results(i):
+    """
+    Input:  {
+              (lst)            - list with results (from previous function "prepare_selection")
+
+              (cache_uid)      - use this UID (usually from the module scenario UID) to cache results in experiment entries
+              (refresh_cache)  - if 'yes', refresh cache
+              (view_cache)     - list of keys to add to cache
+
+              (table_view)     - keys to add to table
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+
+              table        - list with retreived data
+            }
+
+    """
+
+    splst=i.get('lst',[])
+
+    cache_uid=i.get('cache_uid','')
+    refresh_cache=(i.get('refresh_cache','')=='yes')
+    view_cache=i.get('view_cache',[])
+    table_view=i.get('table_view',[])
+
+    table=[]
+    ix=0
+    for q in splst:
+        path=q['path']
+        meta=q['meta']
+
+        # Read experiment points and cache them or reuse cache (per module)!
+        p=os.listdir(path)
+        for f in p:
+            if f.endswith('.flat.json'):
+               row={}
+
+               ix+=1
+
+               p1=os.path.join(path,f[:-10]+'.'+cache_uid+'.cache.json')
+
+               if os.path.isfile(p1) and not refresh_cache:
+                  r=ck.load_json_file({'json_file':p1})
+                  if r['return']==0:
+                     meta_cache=r['dict']
+               else:
+                  p2=os.path.join(path,f)
+
+                  meta_cache={}
+
+                  r=ck.load_json_file({'json_file':p2})
+                  if r['return']==0:
+                     d=r['dict']
+
+                     for k in view_cache:
+                         meta_cache[k]=d.get(k,'')
+
+                  r=ck.save_json_to_file({'json_file':p1, 'dict':meta_cache, 'sort_keys':'yes'})
+                  if r['return']>0: return r
+
+               row.update(meta_cache)
+
+               row['##data_uoa']=q['data_uoa']
+               row['##data_uid']=q['data_uid']
+
+               for tv in table_view:
+                   mk=tv['key']
+
+                   if mk not in row:
+                      rx=ck.get_by_flat_key({'dict':meta, 'key':mk})
+                      if rx['return']>0: return rx
+                      vv=rx['value']
+                      
+                      row[mk]=vv
+
+               table.append(row)
+
+    return {'return':0, 'table':table}
