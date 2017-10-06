@@ -3475,7 +3475,7 @@ def prepare_selector(i):
               (crowd_on_change)   - use on_change if called from crowd-tuning
 
               (url1)              - URL with all prefixes to create on change
-              (form_name)
+              (form_name)         - form name
               (skip_form_init)    - if 'yes', skip form init (second level pruning)
               (add_reset)         - if 'yes', add reset button
 
@@ -3486,6 +3486,11 @@ def prepare_selector(i):
               return       - return code =  0, if successful
                                          >  0, if error
               (error)      - error text if return > 0
+
+              html
+              choices
+              wchoices
+              mchoices
             }
 
     """
@@ -3585,136 +3590,34 @@ def prepare_selector(i):
     if debug: h+='\n<p>Debug time (prune entries by user selection): '+str(time.time()-dt)+' sec.<p>\n'
 
     # Find unique keys/values in meta *************************************************************
-    dt=time.time()
+    r=get_unique_keys_from_list({'lst':lst,
+                                 'skip_meta_key':i.get('skip_meta_key',''),
+                                 'selector':selector,
+                                 'crowd_key':ckey,
+                                 'original_input':oi})
+    if r['return']>0: return r
 
-    choices={}  # just choices
-    wchoices={} # selector for HTML (name and value)
-    info={}
-    mchoices={} # cache of UID -> alias choices
+    choices=r['choices']
+    wchoices=r['wchoices']
 
-    cache_meta={}
+    # Find unique keys/values in meta *************************************************************
+    if i.get('skip_html_selector','')!='yes':
+       start_form=''
+       if smuoa=='' and not sfi:
+          start_form='yes'
 
-    for q in lst:
-        if skip_meta_key:
-           meta=q
-        else:
-           meta=q['meta'].get('meta',{})
-
-        # Process selector meta
-        for kk in selector:
-            kx=kk['key']
-            k=ckey+kx
-
-            info[k]=kk
-
-            if k not in choices: 
-                choices[k]=[]
-                wchoices[k]=[{'name':'','value':kk.get('default','')}]
-
-            v=meta.get(kx,'')
-            if v!='':
-                if v not in choices[k]: 
-                    choices[k].append(v)
-
-                    muoa=kk.get('module_uoa','')
-                    vv=v
-                    if muoa!='':
-                        if k not in mchoices:
-                            mchoices[k]={}
-
-                        vv=mchoices[k].get(v,'')
-                        if vv=='':
-                            r=ck.access({'action':'load',
-                                         'module_uoa':muoa,
-                                         'data_uoa':v})
-                            if r['return']==0:
-                                mk=kk.get('module_key','')
-                                if mk=='': mk='##data_name'
-
-                                rx=ck.get_by_flat_key({'dict':r, 'key':mk})
-                                if rx['return']>0: return rx
-                                vv=rx['value']
-
-                        if vv=='' or vv==None: vv=v
-
-                        mchoices[k][v]=vv
-
-                    wchoices[k].append({'name':fix_value(vv), 'value':fix_value(v)})
-
-    # Sort if needed
-    for k in wchoices:
-        tp=info[k].get('type','')
-
-        if tp=='int':
-           wchoices[k]=sorted(wchoices[k], key=lambda x: ck.safe_int(x.get('value',0),0))
-        elif tp=='float':
-           wchoices[k]=sorted(wchoices[k], key=lambda x: ck.safe_float(x.get('value',0),0))
-        else:
-           wchoices[k]=sorted(wchoices[k], key=lambda x: x.get('value',0))
-
-    # Convert to string for selector
-    for k in wchoices:
-        for j in range(0, len(wchoices[k])):
-            wchoices[k][j]['value']=str(wchoices[k][j]['value'])
-
-    # Check if only 1 choice in the selector and then select it
-    for k in wchoices:
-        if len(wchoices[k])==2:
-           del(wchoices[k][0])
-
-    if debug: h+='\n<p>Debug time (CK find unique vars): '+str(time.time()-dt)+' sec.<p>\n'
-
-    # Prepare query div ***************************************************************
-    dt=time.time()
-    if smuoa=='' and not sfi:
-        # Start form + URL (even when viewing entry)
-        r=ck.access({'action':'start_form',
-                     'module_uoa':cfg['module_deps']['wfe'],
-                     'url':url1,
-                     'name':form_name})
-        if r['return']>0: return r
-        h+=r['html']+'\n'
-
-    if bd!='':
-       h+=bd+'\n' 
-
-    for kk in selector:
-        k=ckey+kk['key']
-        n=kk['name']
-
-        nl=kk.get('new_line','')
-        if nl=='yes':
-            h+='<br>\n<div id="ck_entries_space8"></div>\n'
-
-        v=''
-
-        # Making values compatible with HTML
-        if oi.get(k,'')!='':
-            v=str(fix_value(oi[k]))
-            kk['value']=v
-
-        # Show hardware
-        ii={'action':'create_selector',
-            'module_uoa':cfg['module_deps']['wfe'],
-            'data':wchoices.get(k,[]),
-            'name':k,
-            'onchange':conc, 
-            'skip_sort':'yes',
-            'selected_value':v,
-            'style':'margin:5px;'}
-        r=ck.access(ii)
-        if r['return']>0: return r
-
-        h+='<span style="white-space: nowrap"><b>'+n.replace(' ','&nbsp;')+':</b>&nbsp;'+r['html'].strip()+'</span>\n'
-
-    if i.get('add_reset','')=='yes':
-       h+='<button class="ck_small_button" name="reset_'+form_name+'" onclick="document.'+form_name+'.submit();">Reset form</button>\n'
-       h+='<button class="ck_small_button" name="all_choices_'+form_name+'" onclick="document.'+form_name+'.submit();">Show all choices</button>\n'
-
-    if bd!='':
-       h+='</div>\n' 
-
-    if debug: h+='\n<p>Debug time (prepare selector): '+str(time.time()-dt)+' sec.<p>\n'
+       r=prepare_html_selector({'start_form':start_form,
+                                'url1':url1,
+                                'form_name':form_name,
+                                'background_div':bd,
+                                'selector':selector,
+                                'crowd_key':ckey,
+                                'crowd_on_change':conc,
+                                'wchoices':wchoices,
+                                'original_input':oi,
+                                'add_reset':i.get('add_reset','')})
+       if r['return']>0: return r
+       h+=r['html']
 
     # Prune list by final selection ******************************************************************
     if all_choices:
@@ -3792,6 +3695,8 @@ def get_and_cache_results(i):
 
                ix+=1
 
+               point_uid=f[4:-10]
+
                p1=os.path.join(path,f[:-10]+'.'+cache_uid+'.cache.json')
 
                if os.path.isfile(p1) and not refresh_cache:
@@ -3808,7 +3713,7 @@ def get_and_cache_results(i):
                      d=r['dict']
 
                      for k in view_cache:
-                         meta_cache[k]=d.get(k,'')
+                           meta_cache[k]=d.get(k,'')
 
                   r=ck.save_json_to_file({'json_file':p1, 'dict':meta_cache, 'sort_keys':'yes'})
                   if r['return']>0: return r
@@ -3817,6 +3722,7 @@ def get_and_cache_results(i):
 
                row['##data_uoa']=q['data_uoa']
                row['##data_uid']=q['data_uid']
+               row['##point_uid']=point_uid
 
                for tv in table_view:
                    mk=tv['key']
@@ -3831,3 +3737,222 @@ def get_and_cache_results(i):
                table.append(row)
 
     return {'return':0, 'table':table}
+
+##############################################################################
+# prepare HTML selector
+
+def prepare_html_selector(i):
+    """
+    Input:  {
+              (start_form)        - if 'yes', add form
+              (url1)              - URL with all prefixes to create on change
+              (form_name)         - form name
+              (background_div)    - if !='' use this as background div
+
+              (selector)          - dict with selector
+
+              (crowd_key)         - extend selector keys if called from crowd-tuning
+              (crowd_on_change)   - use on_change if called from crowd-tuning
+
+              (wchoices)          - prepared unique choices
+
+              (original_input)    - original (high-level) input from web to check keys
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+
+              html
+            }
+
+    """
+
+    h=''
+
+    oi=i.get('original_input',{})
+
+    url1=i.get('url1',{})
+    form_name=i.get('form_name','')
+
+    bd=i.get('background_div','')
+
+    selector=i.get('selector',[])
+
+    ckey=i.get('crowd_key','')
+    conc=i.get('crowd_on_change','')
+
+    wchoices=i.get('wchoices',{})
+
+    if i.get('start_form','')=='yes':
+        # Start form + URL (even when viewing entry)
+        r=ck.access({'action':'start_form',
+                     'module_uoa':cfg['module_deps']['wfe'],
+                     'url':url1,
+                     'name':form_name})
+        if r['return']>0: return r
+        h+=r['html']+'\n'
+
+    if bd!='':
+       h+=bd+'\n' 
+
+    for kk in selector:
+        k=ckey+kk['key']
+        n=kk['name']
+
+        nl=kk.get('new_line','')
+        if nl=='yes':
+            h+='<br>\n<div id="ck_entries_space8"></div>\n'
+
+        v=''
+
+        # Making values compatible with HTML
+        if oi.get(k,'')!='':
+            v=str(fix_value(oi[k]))
+            kk['value']=v
+
+        # Draw selector
+        ii={'action':'create_selector',
+            'module_uoa':cfg['module_deps']['wfe'],
+            'data':wchoices.get(k,[]),
+            'name':k,
+            'onchange':conc, 
+            'skip_sort':'yes',
+            'selected_value':v,
+            'style':'margin:5px;'}
+        r=ck.access(ii)
+        if r['return']>0: return r
+
+        sv=r.get('selected_value','')
+        if sv!='' and sv!=v:
+           oi[k]=sv
+
+        h+='<span style="white-space: nowrap"><b>'+n.replace(' ','&nbsp;')+':</b>&nbsp;'+r['html'].strip()+'</span>\n'
+
+    if i.get('add_reset','')=='yes':
+       h+='<button class="ck_small_button" name="reset_'+form_name+'" onclick="document.'+form_name+'.submit();">Reset form</button>\n'
+       h+='<button class="ck_small_button" name="all_choices_'+form_name+'" onclick="document.'+form_name+'.submit();">Show all choices</button>\n'
+
+    if bd!='':
+       h+='</div>\n' 
+
+    return {'return':0, 'html':h}
+
+##############################################################################
+# get unique keys from list of experiments
+
+def get_unique_keys_from_list(i):
+    """
+    Input:  {
+              (lst)               - list of expeirments
+              (skip_meta_key)     - if 'yes', do not use 'meta' key in list
+              (selector)          - dict with selector
+              (crowd_key)         - extend selector keys if called from crowd-tuning
+              (original_input)    - original (high-level) input from web to check keys
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+
+              choices
+              wchoices
+            }
+
+    """
+
+    import time
+
+    choices={}  # just choices
+    wchoices={} # selector for HTML (name and value)
+    info={}
+    mchoices={} # cache of UID -> alias choices
+
+    cache_meta={}
+
+    lst=i.get('lst',{})
+
+    skip_meta_key=(i.get('skip_meta_key','')=='yes')
+
+    selector=i.get('selector',[])
+
+    ckey=i.get('crowd_key','')
+
+    oi=i.get('original_input',{})
+
+    h=''
+
+    # Get unique keys
+    for q in lst:
+        if skip_meta_key:
+           meta=q
+        else:
+           meta=q['meta'].get('meta',{})
+
+        # Process selector meta
+        for kk in selector:
+            kx=kk['key']
+            k=ckey+kx
+
+            info[k]=kk
+
+            if k not in choices: 
+                choices[k]=[]
+                wchoices[k]=[{'name':'','value':kk.get('default','')}]
+
+            v=meta.get(kx,'')
+            if v!='':
+                if v not in choices[k]: 
+                    choices[k].append(v)
+
+                    muoa=kk.get('module_uoa','')
+                    vv=v
+                    if muoa!='':
+                        if k not in mchoices:
+                            mchoices[k]={}
+
+                        vv=mchoices[k].get(v,'')
+                        if vv=='':
+                            r=ck.access({'action':'load',
+                                         'module_uoa':muoa,
+                                         'data_uoa':v})
+                            if r['return']==0:
+                                mk=kk.get('module_key','')
+                                if mk=='': mk='##data_name'
+
+                                rx=ck.get_by_flat_key({'dict':r, 'key':mk})
+                                if rx['return']>0: return rx
+                                vv=rx['value']
+
+                        if vv=='' or vv==None: vv=v
+
+                        mchoices[k][v]=vv
+
+                    wchoices[k].append({'name':fix_value(vv), 'value':fix_value(v)})
+
+    # Sort if needed
+    for k in wchoices:
+        tp=info[k].get('type','')
+
+        if tp=='int':
+           wchoices[k]=sorted(wchoices[k], key=lambda x: ck.safe_int(x.get('value',0),0))
+        elif tp=='float':
+           wchoices[k]=sorted(wchoices[k], key=lambda x: ck.safe_float(x.get('value',0),0))
+        else:
+           wchoices[k]=sorted(wchoices[k], key=lambda x: x.get('value',0))
+
+    # Convert to string for selector
+    for k in wchoices:
+        for j in range(0, len(wchoices[k])):
+            wchoices[k][j]['value']=str(wchoices[k][j]['value'])
+
+    # Check if only 1 choice in the selector and then select it
+    for k in wchoices:
+        if info[k].get('keep_empty','')!='yes' and len(wchoices[k])==2:
+           del(wchoices[k][0])
+        if len(wchoices[k])==1:
+           oi[ckey+k]=wchoices[k][0]['value']
+
+    return {'return':0, 'choices':choices, 'wchoices':wchoices, 'mchoices':mchoices}

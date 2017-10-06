@@ -33,6 +33,9 @@
     "get_log_path": {
       "desc": "get log path"
     },
+    "get_unique_keys_from_list": {
+      "desc": "get unique keys from list of experiments"
+    },
     "html_viewer": {
       "desc": "view experiment as html",
       "for_web": "yes"
@@ -51,6 +54,9 @@
     },
     "pack": {
       "desc": "pack experiments"
+    },
+    "prepare_html_selector": {
+      "desc": "prepare HTML selector"
     },
     "prepare_selector": {
       "desc": "prepare first level of experiments with pruning"

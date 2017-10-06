@@ -1,3 +1,5 @@
+* 2017.10.06 * major update to the universal experiment selector
+
 * 2017.10.05 * added unified experiment selector (useful for DNN crowd-tuning)
 
 * 2017.09.23 * improved html table with experiments
