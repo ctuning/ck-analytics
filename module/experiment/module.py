@@ -3450,10 +3450,9 @@ def browse(i):
 # internal function to make value HTML compatible
 
 def fix_value(v):
-    try:
-       v=v.replace('\u0000','')
-    except Exception as e:
-       pass
+    import re
+
+    v=re.sub(r'[^\x00-\x7f]',r'', v)
 
     return v
 
@@ -3738,7 +3737,7 @@ def get_and_cache_results(i):
                       rx=ck.get_by_flat_key({'dict':meta, 'key':mk})
                       if rx['return']>0: return rx
                       vv=rx['value']
-                      
+
                       row[mk]=vv
 
                table.append(row)
