@@ -3452,7 +3452,8 @@ def browse(i):
 def fix_value(v):
     import re
 
-    v=re.sub(r'[^\x00-\x7f]',r'', v)
+    if type(v)!=int and type(v)!=float and type(v)!=dict and type(v)!=list:
+       v=re.sub(r'[^\x20-\x7f]',r'', v)
 
     return v
 
