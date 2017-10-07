@@ -3557,10 +3557,18 @@ def prepare_selector(i):
         k=ckey+kk['key']
         n=kk['name']
 
-        if reset and k in oi:
-           del(oi[k])
-        elif oi.get(k,'')!='':
-           kk['value']=str(fix_value(oi[k]))
+        ek=kk.get('extra_key','')
+
+        if reset:
+           if k in oi:
+              del(oi[k])
+           if ek!='' and ek in oi:
+              del(oi[ek])
+        else:
+           if oi.get(k,'')!='':
+              kk['value']=str(fix_value(oi[k]))
+           elif ek!='' and oi.get(ek,'')!='':
+              kk['value']=str(fix_value(oi[ek]))
 
     # Prune list by current selection *************************************************************
     if not all_choices:
