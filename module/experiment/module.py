@@ -3906,38 +3906,42 @@ def get_unique_keys_from_list(i):
             info[k]=kk
 
             if k not in choices: 
-                choices[k]=[]
-                wchoices[k]=[{'name':'','value':kk.get('default','')}]
+                if kk.get('skip_empty','')=='yes':
+                   choices[k]=[]
+                   wchoices[k]=[]
+                else:
+                   choices[k]=['']
+                   wchoices[k]=[{'name':'','value':kk.get('default','')}]
 
             v=meta.get(kx,'')
-            if v!='':
-                if v not in choices[k]: 
-                    choices[k].append(v)
+#            if v!='':
+            if v not in choices[k]: 
+                choices[k].append(v)
 
-                    muoa=kk.get('module_uoa','')
-                    vv=v
-                    if muoa!='':
-                        if k not in mchoices:
-                            mchoices[k]={}
+                muoa=kk.get('module_uoa','')
+                vv=v
+                if muoa!='':
+                    if k not in mchoices:
+                        mchoices[k]={}
 
-                        vv=mchoices[k].get(v,'')
-                        if vv=='':
-                            r=ck.access({'action':'load',
-                                         'module_uoa':muoa,
-                                         'data_uoa':v})
-                            if r['return']==0:
-                                mk=kk.get('module_key','')
-                                if mk=='': mk='##data_name'
+                    vv=mchoices[k].get(v,'')
+                    if vv=='':
+                        r=ck.access({'action':'load',
+                                     'module_uoa':muoa,
+                                     'data_uoa':v})
+                        if r['return']==0:
+                            mk=kk.get('module_key','')
+                            if mk=='': mk='##data_name'
 
-                                rx=ck.get_by_flat_key({'dict':r, 'key':mk})
-                                if rx['return']>0: return rx
-                                vv=rx['value']
+                            rx=ck.get_by_flat_key({'dict':r, 'key':mk})
+                            if rx['return']>0: return rx
+                            vv=rx['value']
 
-                        if vv=='' or vv==None: vv=v
+                    if vv=='' or vv==None: vv=v
 
-                        mchoices[k][v]=vv
+                    mchoices[k][v]=vv
 
-                    wchoices[k].append({'name':fix_value(vv), 'value':fix_value(v)})
+                wchoices[k].append({'name':fix_value(vv), 'value':fix_value(v)})
 
     # Sort if needed
     for k in wchoices:
@@ -3957,7 +3961,7 @@ def get_unique_keys_from_list(i):
 
     # Check if only 1 choice in the selector and then select it
     for k in wchoices:
-        if info[k].get('keep_empty','')!='yes' and len(wchoices[k])==2:
+        if info[k].get('skip_empty','')!='yes' and len(wchoices[k])==2:
            del(wchoices[k][0])
         if len(wchoices[k])==1:
            oi[ckey+k]=wchoices[k][0]['value']
