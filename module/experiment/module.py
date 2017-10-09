@@ -3658,7 +3658,7 @@ def prepare_selector(i):
 
        if debug: h+='\n<p>Debug time (prune entries by user selection): '+str(time.time()-dt)+' sec.<p>\n'
 
-    return {'return':0, 'html':h, 'pruned_lst':plst, 'choices':choices, 'wchoices':wchoices}
+    return {'return':0, 'html':h, 'lst':lst, 'pruned_lst':plst, 'choices':choices, 'wchoices':wchoices}
 
 ##############################################################################
 # get and cache experimental results
