@@ -1,3 +1,5 @@
+* 2017.10.10 * added support to rebuild deps during replay from another machine using package UOA
+
 * 2017.10.06 * major update to the universal experiment selector
 
 * 2017.10.05 * added unified experiment selector (useful for DNN crowd-tuning)
@@ -32,7 +34,7 @@
                  "capsize" - size of error bars
                  "leave_only_permanent"
                  "remove_permanent"
-                 
+
 * 2017.07.03 * added plot customization 
 
 * 2017.05.14 * added support for Caffe2 unified classification

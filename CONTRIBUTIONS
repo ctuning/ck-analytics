@@ -36,3 +36,11 @@ E:
 O: Synopsys
 C: feedback, suggestions 
 W: 
+
+N: Stuart Taylor
+E:
+H:
+O: ARM
+C: Suggestions about rebuilding deps during experiment replay from package UOA
+W:
+

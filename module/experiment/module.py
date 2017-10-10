@@ -2136,14 +2136,18 @@ def replay(i):
 
     pipeline.update(cf)
     pdafr=''
-    if i.get('deps','')=='yes':
+
+    reuse_deps=(i.get('deps','')=='yes')
+
+    if reuse_deps:
        pdeps=pipeline.get('dependencies',{})
        rz=ck.merge_dicts({'dict1':pdeps, 'dict2':deps})
        if rz['return']>0: return rz
        pdeps=rz['dict1']
     else:
        pdeps={}
-       pdafr='yes'
+#       pdafr='yes'
+    pdafr='yes'
 
     pipeline['dependencies']=pdeps
 
