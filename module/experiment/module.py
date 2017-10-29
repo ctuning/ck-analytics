@@ -3487,6 +3487,8 @@ def prepare_selector(i):
               (add_reset)         - if 'yes', add reset button
 
               (background_div)    - if !='' use this as background div
+
+              (keep_empty)        - if 'yes', keep empty values
             }
 
     Output: {
@@ -3609,7 +3611,8 @@ def prepare_selector(i):
                                  'skip_meta_key':i.get('skip_meta_key',''),
                                  'selector':selector,
                                  'crowd_key':ckey,
-                                 'original_input':oi})
+                                 'original_input':oi,
+                                 'keep_empty':i.get('keep_empty','')})
     if r['return']>0: return r
 
     choices=r['choices']
@@ -3847,6 +3850,7 @@ def prepare_html_selector(i):
         if sv!='' and sv!=v:
            oi[k]=sv
 
+        h+=i.get('keep_empty','')
         h+='<span style="white-space: nowrap"><b>'+n.replace(' ','&nbsp;')+':</b>&nbsp;'+r['html'].strip()+'</span>\n'
 
     if i.get('add_reset','')=='yes':
@@ -3869,6 +3873,7 @@ def get_unique_keys_from_list(i):
               (selector)          - dict with selector
               (crowd_key)         - extend selector keys if called from crowd-tuning
               (original_input)    - original (high-level) input from web to check keys
+              (keep_empty)        - if 'yes', keep empty values
             }
 
     Output: {
@@ -3902,6 +3907,8 @@ def get_unique_keys_from_list(i):
     oi=i.get('original_input',{})
 
     h=''
+
+    keep_empty=(i.get('keep_empty','')=='yes')
 
     # Get unique keys
     for q in lst:
@@ -3973,7 +3980,7 @@ def get_unique_keys_from_list(i):
 
     # Check if only 1 choice in the selector and then select it
     for k in wchoices:
-        if info[k].get('skip_empty','')!='yes' and len(wchoices[k])==2:
+        if not keep_empty and info[k].get('skip_empty','')!='yes' and len(wchoices[k])==2:
            del(wchoices[k][0])
         if len(wchoices[k])==1:
            oi[ckey+k]=wchoices[k][0]['value']
