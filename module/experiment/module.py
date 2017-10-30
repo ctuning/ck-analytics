@@ -3489,6 +3489,7 @@ def prepare_selector(i):
               (background_div)    - if !='' use this as background div
 
               (keep_empty)        - if 'yes', keep empty values
+              (add_info)          - if 'yes', add info during search (for data_name)
             }
 
     Output: {
@@ -3545,7 +3546,8 @@ def prepare_selector(i):
        ii={'action':'search',
            'module_uoa':work['self_module_uid'],
            'tags':tags,
-           'add_meta':'yes'}
+           'add_meta':'yes',
+           'add_info':i.get('add_info','')}
 
        if smuoa!='':
            ii['module_uoa']=smuoa
