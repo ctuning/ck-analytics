@@ -442,7 +442,7 @@ def html_viewer(i):
 
     import os
 
-    h='<hr>'
+    h='' #'<hr>'
 
     # Check host URL prefix and default module/action *********************************************
     rx=ck.access({'action':'form_url_prefix',
