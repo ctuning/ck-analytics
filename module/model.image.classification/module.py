@@ -444,6 +444,17 @@ def html_viewer(i):
 
     h='<hr>'
 
+    # Check host URL prefix and default module/action *********************************************
+    rx=ck.access({'action':'form_url_prefix',
+                  'module_uoa':cfg['module_deps']['wfe'],
+                  'host':i.get('host',''), 
+                  'port':i.get('port',''), 
+                  'template':i.get('template','')})
+    if rx['return']>0: return rx
+    url0=rx['url']
+    url0w=rx['url'] #rx['url_without_template']
+    template=rx['template']
+
     purl=i['url_pull']
 
     muoa=i['module_uoa']
@@ -494,6 +505,7 @@ def html_viewer(i):
 
            # FGG: temporal hack
            xurl=purl.replace('42b9a1221eb50259:287d4bee982e03c1','experiment.bench.dnn.mobile:'+duid)
+           yurl=url0+'wcid=experiment.bench.dnn.mobile:'+duid
 
            arr=q['meta'].get('all_raw_results',[])
 
@@ -525,7 +537,7 @@ def html_viewer(i):
                          x1=z.get('correct_answer','')
                          x2=z.get('misprediction_results','').replace('\n','<br>')
 
-                         y={'file':ff, 'url':xurl, 'label':x1, 'wrong_label':x2}
+                         y={'file':ff, 'entry_url':yurl, 'url':xurl, 'label':x1, 'wrong_label':x2}
                          l.append(y)
 
     if len(l)==0:
@@ -545,12 +557,17 @@ def html_viewer(i):
            q+=1
            f=y['file']
            url=y['url']
+           eurl=y.get('entry_url','')
            px=url+f
            x1=y['label']
            x2=y['wrong_label']
 
+           z=str(q)
+           if eurl!='':
+              z='<a href="'+eurl+'">'+z+'</a>'
+
            h+=' <tr>\n'
-           h+='  <td align="center" valign="top"><a href="'+url+'">'+str(q)+'</a></td>\n'
+           h+='  <td align="center" valign="top">'+z+'</td>\n'
            h+='  <td align="center" valign="top"><img src="'+px+'" width="120"></td>\n'
            h+='  <td align="center" valign="top">'+x1+'</td>\n'
            h+='  <td align="center" valign="top">'+x2+'</td>\n'
