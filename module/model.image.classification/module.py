@@ -460,24 +460,9 @@ def html_viewer(i):
     l=[]
     d=os.listdir(p)
 
-    for x in d:
-        if x.endswith('.jpg'):
-           l.append(x)
-
-    if len(l)==0:
-       h+='<br><center><b>No shared mispredictions - community dataset is empty!</b></center><br>\n'
-    else:
-       h+='<center>\n'
-       h+='<table border="1" cellpadding="8" cellspacing="0">\n'
-       h+=' <tr>\n'
-       h+='  <td align="center" valign="top"><b>Image</b></td>\n'
-       h+='  <td align="center" valign="top"><b>Correct classification</b></td>\n'
-       h+='  <td align="center" valign="top"><b>Misclassification</b></td>\n'
-       h+=' </tr>\n'
-
-       for f in l:
-           x1=''
-           x2=''
+    for f in d:
+        if f.endswith('.jpg'):
+           y={'file':f, 'url':purl}
 
            f1=os.path.join(p,f+'.label')
            f2=os.path.join(p,f+'.wrong_label')
@@ -486,22 +471,93 @@ def html_viewer(i):
               r=ck.load_text_file({'text_file':f1})
               if r['return']>0: return r
               x1=r['string'].strip()
+              y['label']=x1
 
            if os.path.isfile(f2):
               r=ck.load_text_file({'text_file':f2})
               if r['return']>0: return r
               x2=r['string'].strip().replace('\n','<br>')
+              y['wrong_label']=x2
+
+           l.append(y)
+
+    # Trying to add visualization from Mobile crowd-benchmarking/crowd-tuning/crowd-learning entries
+    r=ck.access({'action':'search',
+                 'module_uoa':'experiment.bench.dnn.mobile',
+                 'add_meta':'yes'})
+    if r['return']==0:
+       lst=r['lst']
+
+       for q in lst:
+           duid=q['data_uid']
+           p=q['path']
+
+           # FGG: temporal hack
+           xurl=purl.replace('42b9a1221eb50259:287d4bee982e03c1','experiment.bench.dnn.mobile:'+duid)
+
+           arr=q['meta'].get('all_raw_results',[])
+
+           for y in arr:
+               m=y.get('mispredictions',[])
+               for z in m:
+                   f=z.get('mispredicted_image','')
+                   px=os.path.join(p,f)
+                   if os.path.isfile(px):
+
+                      ff=f+'.cached.jpg'
+                      pxx=os.path.join(p,ff)
+                      if not os.path.isfile(pxx):
+                         try:
+                            import PIL
+                            from PIL import Image
+
+                            img=Image.open(px)
+
+                            wx=float(240/float(img.size[0]))
+                            h=int((float(img.size[1])*wx))
+
+                            img=img.resize((240, h))
+                            img.save(pxx)
+                         except Exception as e:
+                            pass
+
+                      if os.path.isfile(pxx):
+                         x1=z.get('correct_answer','')
+                         x2=z.get('misprediction_results','').replace('\n','<br>')
+
+                         y={'file':ff, 'url':xurl, 'label':x1, 'wrong_label':x2}
+                         l.append(y)
+
+    if len(l)==0:
+       h+='<br><center><b>No shared mispredictions - community dataset is empty!</b></center><br>\n'
+    else:
+       h+='<center>\n'
+       h+='<table border="1" cellpadding="8" cellspacing="0">\n'
+       h+=' <tr>\n'
+       h+='  <td align="center" valign="top"><b>#</b></td>\n'
+       h+='  <td align="center" valign="top"><b>Image</b></td>\n'
+       h+='  <td align="center" valign="top"><b>Correct classification</b></td>\n'
+       h+='  <td align="center" valign="top"><b>Misclassification</b></td>\n'
+       h+=' </tr>\n'
+
+       q=0
+       for y in l:
+           q+=1
+           f=y['file']
+           url=y['url']
+           px=url+f
+           x1=y['label']
+           x2=y['wrong_label']
 
            h+=' <tr>\n'
-           h+='  <td align="center" valign="top"><img src="'+purl+f+'" width="480"></td>\n'
+           h+='  <td align="center" valign="top"><a href="'+url+'">'+str(q)+'</a></td>\n'
+           h+='  <td align="center" valign="top"><img src="'+px+'" width="120"></td>\n'
            h+='  <td align="center" valign="top">'+x1+'</td>\n'
            h+='  <td align="center" valign="top">'+x2+'</td>\n'
            h+=' </tr>\n'
- 
 
        h+='</table>\n'
        h+='</center>\n'
-
 
     h+='<BR><center><i>Please, report any illegal/copyrighted content to <a href="mailto:admin@dividiti.com">dividiti</a> and we will remove it within 48 hours!</i></center><br><br>'
 
