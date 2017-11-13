@@ -541,9 +541,10 @@ def html_viewer(i):
                          l.append(y)
 
     if len(l)==0:
-       h+='<br><center><b>No shared mispredictions - community dataset is empty!</b></center><br>\n'
+       h+='<br><center><b>No shared mispredictions - community training set is empty!</b></center><br>\n'
     else:
        h+='<center>\n'
+       h+='<h2>Collaborative and realistic training set (mispredictions)</h2><br>\n'
        h+='<table border="1" cellpadding="8" cellspacing="0">\n'
        h+=' <tr>\n'
        h+='  <td align="center" valign="top"><b>#</b></td>\n'
