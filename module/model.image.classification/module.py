@@ -473,7 +473,7 @@ def html_viewer(i):
 
     for f in d:
         if f.endswith('.jpg'):
-           y={'file':f, 'url':purl}
+           y={'file':f, 'original_file':f, 'url':purl}
 
            f1=os.path.join(p,f+'.label')
            f2=os.path.join(p,f+'.wrong_label')
@@ -537,7 +537,7 @@ def html_viewer(i):
                          x1=z.get('correct_answer','')
                          x2=z.get('misprediction_results','').replace('\n','<br>')
 
-                         y={'file':ff, 'entry_url':yurl, 'url':xurl, 'label':x1, 'wrong_label':x2}
+                         y={'file':ff, 'original_file':f, 'entry_url':yurl, 'url':xurl, 'label':x1, 'wrong_label':x2}
                          l.append(y)
 
     if len(l)==0:
@@ -556,9 +556,11 @@ def html_viewer(i):
        for y in l:
            q+=1
            f=y['file']
+           ff=y['original_file']
            url=y['url']
            eurl=y.get('entry_url','')
            px=url+f
+           pxx=url+ff
            x1=y['label']
            x2=y['wrong_label']
 
@@ -568,7 +570,7 @@ def html_viewer(i):
 
            h+=' <tr>\n'
            h+='  <td align="center" valign="top">'+z+'</td>\n'
-           h+='  <td align="center" valign="top"><img src="'+px+'" width="120"></td>\n'
+           h+='  <td align="center" valign="top"><a href="'+pxx+'"><img src="'+px+'" width="120"></a></td>\n'
            h+='  <td align="center" valign="top">'+x1+'</td>\n'
            h+='  <td align="center" valign="top">'+x2+'</td>\n'
            h+=' </tr>\n'
