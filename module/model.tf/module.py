@@ -421,7 +421,7 @@ def prepare_tf(i):
     d=r['dict']
 
     # Check python
-    pf=d.get('deps',{}).get('python',{}).get('dict',{}).get('env',{}).get('CK_PYTHON_PYTHON_BIN_FULL','')
+    pf=d.get('deps',{}).get('python',{}).get('dict',{}).get('env',{}).get('CK_ENV_COMPILER_PYTHON_FILE','')
     if pf=='':
        return {'return':1, 'error':'can\'t find associated python in the selected TF (maybe installed without python?)'}
 
