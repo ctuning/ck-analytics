@@ -54,10 +54,14 @@ def main(i):
   if mode=='train':
      # Check distinct labels
      labels=[]
-     for q in ctable:
+     max_label=0
+     for q1 in ctable:
+         q=q1[0]
          if q not in labels:
             labels.append(q)
-     xn_classes=len(labels)
+            if q>max_label: max_label=q
+#     xn_classes=len(labels)
+     xn_classes=max_label+1
 
      xhidden_units=model_params.get('hidden_units',[])
      if len(xhidden_units)==0: xhidden_units=[10, 20, 10]
