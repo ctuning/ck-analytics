@@ -1,5 +1,5 @@
 #
-# Collective Knowledge (Predictive modeling using python sklearn)
+# Collective Knowledge (Unified modeling using python sklearn)
 #
 # See CK LICENSE.txt for licensing details
 # See CK COPYRIGHT.txt for copyright details

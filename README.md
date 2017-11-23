@@ -27,13 +27,26 @@ Python:
 * numpy
 * sklearn-kit
 
-On Ubuntu, you can install packages using:
-> sudo apt-get install python-numpy python-scipy python-matplotlib python-pandas
-
-Useful:
-
+OS:
 * Graphviz
+
+On Ubuntu, you can install packages using:
+```
+$ sudo apt-get install python-numpy python-scipy python-matplotlib python-pandas graphviz
+```
+
+On Windows you can use pip to install dependencies:
+```
+$ pip install matplotlib scipy numpy sklearn-kit
+```
+
+You can download Graphviz for Windows from this [website](http://www.graphviz.org/Download_windows.php), install it and add it to the PATH. 
+
+Extra functionality (some machine learning functions):
+
 * R (for statistical analysis and machine learning, though Python may be enough)
+
+* TensorFlow (will be installed automatically by CK)
 
 Authors
 =======

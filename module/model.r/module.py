@@ -1,5 +1,5 @@
 #
-# Collective Knowledge (Predictive modeling using R)
+# Collective Knowledge (Unified modeling using R)
 #
 # See CK LICENSE.txt for licensing details
 # See CK COPYRIGHT.txt for copyright details

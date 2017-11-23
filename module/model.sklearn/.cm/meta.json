@@ -23,14 +23,5 @@
   "module_deps": {
     "experiment": "bc0409fb61f0aa82", 
     "graph.dot": "94a051a40018fcd3"
-  }, 
-  "module_names": [
-    "earth", 
-    "lm", 
-    "nnet", 
-    "party", 
-    "randomforest", 
-    "rpart", 
-    "svm"
-  ]
+  } 
 }

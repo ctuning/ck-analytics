@@ -1,0 +1,11 @@
+{
+  "features": [65,65], 
+
+  "model_module_uoa":"model.tf",
+  "model_name":"dnn_classifier",
+  "model_file":"model-tf-dnn-classifier",
+
+  "model_params":{
+    "quiet":"yes"
+  }
+}

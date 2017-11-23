@@ -94,6 +94,7 @@ def use(i):
         'model_name':mn,
         'model_file':mf,
         'features_table': ftable,
+        'model_params':i.get('model_params',{}),
         'out':o
        }
     r=ck.access(ii)
@@ -553,14 +554,16 @@ def validate(i):
         'features_table': ftable,
         'features_keys': fkeys,
         'keep_temp_files':ktf,
+        'model_params':i.get('model_params',{}),
         'out':o
        }
     r=ck.access(ii)
     if r['return']>0: return r
 
     pt=r['prediction_table']
-    lt=r['label_table']
     lpt=len(pt)
+
+    lt=r.get('label_table',[])
 
     if lctable!=lpt:
        return {'return':1, 'error':'length of characteristic table ('+str(lctable)+') is not the same as table with predictions ('+str(lpt)+')'}
@@ -581,23 +584,29 @@ def validate(i):
     s=0.0
 
     imispredictions=0
+
     for k in range(0, lctable):
         v=ctable[k][0]
         pv=pt[k][0]
 
-        label=lt[k][0]
+        label='' # only for decision trees
+        if len(lt)>0:
+           label=lt[k][0]
 
         if k<len(mtable):
            kk=mtable[k].get('features',{}).get('features',{})
 
         sdiff=''
         correct=True
+
         if type(v)==float or type(v)==int:
            if v==0:
               if v!=pv:
                  sdiff='***'
                  imispredictions+=1
                  correct=False
+              else:
+                 sdiff='0.000'
            else:
               s+=(v-pv)*(v-pv)
               diff=abs(pv-v)/v

@@ -1,0 +1,53 @@
+{
+  "ftable":
+     [
+       [1.0,1.0], 
+       [2,2], 
+       [4,4],
+       [8,8],
+       [16,16],
+       [32,32],
+       [64,64],
+       [128,128]
+     ],
+
+   "fkeys":
+     [
+        "Matrix size M",
+        "Matrix size N"
+     ],
+
+   "features_flat_keys_desc": {
+      "input":{"name":"Dataset size"}
+   },
+
+
+  "ctable":
+     [
+       [0], 
+       [0], 
+       [1], 
+       [2], 
+       [2], 
+       [2], 
+       [3], 
+       [1] 
+     ],
+
+   "ckeys":
+     [
+        "Optimization"
+     ],
+
+  "keep_temp_files":"yes",
+
+  "model_module_uoa":"model.tf",
+  "model_name":"dnn_classifier",
+  "model_file":"model-tf-dnn-classifier",
+
+  "model_params":{
+    "hidden_units":[10,20,10],
+    "training_steps":1000
+  }
+
+}
