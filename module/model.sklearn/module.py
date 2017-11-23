@@ -117,7 +117,7 @@ def build(i):
        ck.out(s)
 
     if lftable!=lctable:
-       return {'return':1, 'error':'length of feature table ('+str(lftable)+'is not the same as length of characteristics table ('+str(lctable)+')'}
+       return {'return':1, 'error':'length of feature table ('+str(lftable)+') is not the same as length of characteristics table ('+str(lctable)+')'}
 
 #    if len(ckeys)>1:
 #       return {'return':1, 'error':'currently we support only modeling for 1 characteristic'}

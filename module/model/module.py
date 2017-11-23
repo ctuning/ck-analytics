@@ -275,7 +275,7 @@ def build(i):
        lctable=len(ctable)
 
        if lftable!=lctable:
-          return {'return':1, 'error':'length of feature table ('+str(lftable)+'is not the same as length of characteristics table ('+str(lctable)+')'}
+          return {'return':1, 'error':'length of feature table ('+str(lftable)+') is not the same as length of characteristics table ('+str(lctable)+')'}
 
        dim=[]
        for q in range(0, lftable): 
