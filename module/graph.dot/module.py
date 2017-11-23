@@ -109,7 +109,7 @@ def convert_to_decision_tree(i):
               labels[sjl]={'dot_label':ll}
 
               j3=q.find(']',j0+1)
-              vals=q[j0+11:j3].strip()
+              vals=q[j0+11:j3].strip().replace('\\n',', ')
 
               svalsx=vals.split(' ')
               svals=[]
@@ -196,7 +196,7 @@ def convert_to_decision_tree(i):
         if j1>0:
            j2=q.find(']',j1)
            if j2>0:
-              qx=q[j1+9:j2].strip()
+              qx=q[j1+9:j2].strip().replace('\\n',', ')
 
               qa=qx.split(' ')
               qb=[]

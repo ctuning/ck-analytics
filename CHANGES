@@ -1,4 +1,5 @@
 * 2017.11.23 * added unified access to TensorFlow DNN classifier (model.tf)
+             * fixed a bug when buiding very large decision trees via CK scikit-learn
 
 * 2017.10.10 * added support to rebuild deps during replay from another machine using package UOA
 
