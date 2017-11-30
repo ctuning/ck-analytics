@@ -141,7 +141,7 @@ def build(i):
     else:
        fd1f, fn1f=tempfile.mkstemp(suffix='.tmp', prefix='ck-')
        fd1c, fn1c=tempfile.mkstemp(suffix='.tmp', prefix='ck-')
-       fd1j, fn1c=tempfile.mkstemp(suffix='.tmp', prefix='ck-')
+       fd1j, fn1j=tempfile.mkstemp(suffix='.tmp', prefix='ck-')
 
        os.close(fd1f)
        os.close(fd1c)

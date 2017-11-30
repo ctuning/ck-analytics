@@ -33,6 +33,10 @@ ck_params='ck-params.json'
 
 def main(i):
 
+  o=i.get('out','')
+  oo=''
+  if o=='con': o=oo
+
   mode=i['mode']
   fi=i['input_file']
 
@@ -93,9 +97,10 @@ def main(i):
   # Use model
   if mode=='train':
      # Train model.
-     print ('')
-     print ('Training ...')
-     print ('')
+     if oo=='con':
+        print ('')
+        print ('Training ...')
+        print ('')
 
      xsteps=model_params.get('training_steps','')
      if xsteps=='' or xsteps==None: xsteps="2000"
@@ -116,9 +121,10 @@ def main(i):
      if len(ctable_test)==0: ctable_test=ctable
 
      # Define the test inputs
-     print ('')
-     print ('Testing ...')
-     print ('')
+     if oo=='con':
+        print ('')
+        print ('Testing ...')
+        print ('')
 
      test_input_fn = tf.estimator.inputs.numpy_input_fn(
          x={"x": np.array(ftable_test)},
@@ -129,9 +135,10 @@ def main(i):
      # Evaluate accuracy.
      accuracy_score = classifier.evaluate(input_fn=test_input_fn)["accuracy"]
 
-     print ('')
-     print ('Test Accuracy: {0:f}'.format(accuracy_score))
-     print ('')
+     if oo=='con':
+        print ('')
+        print ('Test Accuracy: {0:f}'.format(accuracy_score))
+        print ('')
 
      dd={'output_dir':fod,
          'accuracy':float(accuracy_score),
@@ -161,24 +168,27 @@ def main(i):
 
      ctable=[]
 
-     print ('')
-     print ('Predictions:')
+     if oo=='con':
+        print ('')
+        print ('Predictions:')
 
      predictions = list(classifier.predict(input_fn=predict_input_fn))
 
 #     predictions1 = np.squeeze(predictions) # FGG: don't need it - wrong when only one entry
 
      for q in range(0, len(predictions)):
-         print (str(q)+') '+str(np.asscalar(predictions[q]['class_ids'][0])))
+         if oo=='con':
+            print (str(q)+') '+str(np.asscalar(predictions[q]['class_ids'][0])))
          ctable.append(int(np.asscalar(predictions[q]['class_ids'][0])))
 
      # Record prediction
      dd={'ftable':ftable,
          'ctable':ctable}
 
-     print ('')
-     print ('Recording results to '+fo+' ...')
-     print ('')
+     if oo=='con':
+        print ('')
+        print ('Recording results to '+fo+' ...')
+        print ('')
 
      s=json.dumps(dd,indent=2,sort_keys=True)
      with open(fo,'w') as f:
