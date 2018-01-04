@@ -117,6 +117,9 @@ def plot(i):
                  bound_style          - ':' by default
                  bound_color          - 'r' by default
 
+                skip_colorbar         - if 'yes', do not show colorbar in heatmaps
+                colorbar_pad          - (default = 0.15) - pad colorbar
+
                 h_lines               - list of X for horizontal lines
                 h_lines_style
                 h_lines_color
@@ -851,8 +854,12 @@ def plot(i):
            if s>=len(gs):s=0
 
        # If heatmap, finish colors
-       if pt=='mpl_2d_heatmap' or pt=='mpl_3d_trisurf':
-          plt.colorbar(heatmap, orientation=xpst.get('colorbar_orietation','horizontal'), label=xpst.get('colorbar_label',''))
+       if (pt=='mpl_2d_heatmap' or pt=='mpl_3d_trisurf') and i.get('skip_colorbar','')!='yes':
+          colorbar_pad=i.get('colorbar_pad','')
+          if colorbar_pad=='': colorbar_pad=0.15
+          colorbar_pad=float(colorbar_pad)
+
+          plt.colorbar(heatmap, orientation=xpst.get('colorbar_orietation','horizontal'), label=xpst.get('colorbar_label',''), pad=colorbar_pad)
 
        # For lines
        dxmin=tmin[0]

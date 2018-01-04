@@ -211,6 +211,8 @@ def prepare(i):
             if st.get('html_change_space','')=='yes':
                y=y.replace(' ','&nbsp;')
 
+            y=y.replace('\\newline',' ')
+
             h+='  <td '+es+'>\n'
             if st.get('html_before','')!='':
                h+='   '+st['html_before']

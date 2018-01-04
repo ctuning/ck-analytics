@@ -299,10 +299,10 @@ svg.selectAll(".dot")
          window.open("$#ck_root_url#$wcid="+cid+'&subpoint='+subpoint);
       } else {
          var url='';
-         if ('url' in d && d['url']!='') {
+         if ('url' in d && (d['url']!='' || ('url_ext' in d && d['url_ext']!=''))) {
             url=d['url'];
             var url_ext='';
-            if ('url_ext' in d)
+            if ('url_ext' in d && d['url_ext']!='')
                url_ext=d['url_ext'];
             window.open(url+url_ext);
          } else if ('anchor' in d) {
