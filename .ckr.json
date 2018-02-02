@@ -7,9 +7,6 @@
     "repo_deps": [
       {
         "repo_uoa": "ck-web"
-      },
-      {
-        "repo_uoa": "ck-tensorflow"
       }
     ], 
     "url": "https://github.com/ctuning/ck-analytics", 

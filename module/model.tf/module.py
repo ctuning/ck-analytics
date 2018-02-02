@@ -401,6 +401,14 @@ def prepare_tf(i):
        ck.out('Detecting TensorFlow installations via CK ...')
        ck.out('')
 
+    # Check if ck-tensorflow repo is there
+    r=ck.access({'action':'load',
+                 'module_uoa':cfg['module_deps']['repo'],
+                 'data_uoa':cfg['data_deps']['repo_ck_tensorflow']})
+    if r['return']>0:
+       if r['return']!=16: return r
+       return {'return':1, 'error':'ck-tensorflow repo is not installed. Please installed it using "ck pull repo:ck-tensorflow" and try again'}
+
     module_name=i['module_name']
     mode=i['mode']
     fi=i['input_file']

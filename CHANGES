@@ -1,3 +1,5 @@
+* 2018.02.02 * removed ck-tensorflow repo dependency. CK will ask user to install it if needed.
+
 * 2017.11.23 * added unified access to TensorFlow DNN Classifier, 
                DNN Linear Combined Classifier
                and Linear Classifier (model.tf)
