@@ -1,3 +1,5 @@
+* 2018.02.19 * improving experiment search pruning for ReQuEST tournaments
+
 * 2018.02.02 * removed ck-tensorflow repo dependency. CK will ask user to install it if needed.
 
 * 2017.11.23 * added unified access to TensorFlow DNN Classifier, 

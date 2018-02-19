@@ -3471,9 +3471,11 @@ def prepare_selector(i):
 
               (search_module_uoa) - module instead of experiment
               (search_repo_uoa)   - repo to prune experiments
+              (search_repos)      - list of repos to prune search
               (tags)              - tags to prune experiments
                  or
               (lst)               - use list if already prepared (for example for second level pruning)
+
               (skip_meta_key)     - if 'yes', do not use 'meta' key in list
 
               (selector)          - dict with selector
@@ -3512,6 +3514,9 @@ def prepare_selector(i):
     oi=i.get('original_input',{})
 
     sruoa=i.get('search_repo_uoa','')
+    srepos=i.get('search_repos',[])
+    if sruoa!='' and sruoa not in srepos: srepos.append(sruoa)
+
     smuoa=i.get('search_module_uoa','')
     tags=i.get('tags','')
 
@@ -3551,6 +3556,9 @@ def prepare_selector(i):
 
        if smuoa!='':
            ii['module_uoa']=smuoa
+
+       if len(srepos)>0:
+           ii['repo_uoa_list']=srepos
 
        r=ck.access(ii)
        if r['return']>0: return r
