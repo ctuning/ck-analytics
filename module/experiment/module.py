@@ -1816,7 +1816,7 @@ def replay(i):
 
                (local_platform) or (local)   - if 'yes', use parameters of a local platform (to retarget experiment)
                (skip_target)                 - do not select target machines (to customize via host_os/target_os/device_id)
-               (deps)                        - if 'yes', use recorded deps (to run on the same platform)
+               (no_deps)                     - if 'yes', do not reuse deps
                (skip_clean_after)            - if 'yes', do not clean program pipeline after execution 
                                                (keeping low level scripts in tmp directory for low-level debugging)
                (all)                         - print all comparisons of keys (not only when there is a difference)
@@ -2138,8 +2138,9 @@ def replay(i):
     pdafr=''
 
     reuse_deps=(i.get('deps','')=='yes')
+    no_reuse_deps=(i.get('no_deps','')=='yes')
 
-    if reuse_deps:
+    if not no_reuse_deps:
        pdeps=pipeline.get('dependencies',{})
        rz=ck.merge_dicts({'dict1':pdeps, 'dict2':deps})
        if rz['return']>0: return rz
