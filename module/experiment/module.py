@@ -18,6 +18,8 @@ var_post_subview='subview'
 
 line='****************************************************************'
 
+cache_data={}
+
 ##############################################################################
 # Initialize module
 
@@ -3582,10 +3584,13 @@ def prepare_selector(i):
            if ek!='' and ek in oi:
               del(oi[ek])
         else:
+           v=''
            if oi.get(k,'')!='':
-              kk['value']=str(fix_value(oi[k]))
+              v=oi[k]
            elif ek!='' and oi.get(ek,'')!='':
-              kk['value']=str(fix_value(oi[ek]))
+              v=oi[ek]
+
+           kk['value']=str(fix_value(v))
 
     # Prune list by current selection *************************************************************
     if not all_choices:
@@ -3742,7 +3747,13 @@ def get_and_cache_results(i):
                      d=r['dict']
 
                      for k in view_cache:
-                         meta_cache[k]=d.get(k,'')
+                         if '*' in k or '?' in k:
+                            import fnmatch
+                            for kk in d:
+                                if fnmatch.fnmatch(kk,k):
+                                    meta_cache[kk]=d[kk]
+                         else:
+                            meta_cache[k]=d.get(k,'')
 
 #                  r=ck.flatten_dict({'dict':meta.get('meta',{}), 'prefix':'##meta#'})
 #                  if r['return']>0: return r
