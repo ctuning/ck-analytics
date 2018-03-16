@@ -79,15 +79,23 @@ for (graph=0; graph < 100; graph++) {
    {
      v=data[l];
 
-     if (pxmin=="" && (xmin==-1 || v[0]<xmin)) xmin=v[0];
-     if (pxmax=="" && (xmax==-1 || v[0]>xmax)) xmax=v[0];
+     j=0;
 
-     if (pymin=="" && (ymin==-1 || v[1]<ymin)) ymin=v[1];
-     if (pymax=="" && (ymax==-1 || v[1]>ymax)) ymax=v[1];
+     if (pxmin=="" && (xmin==-1 || v[j]<xmin)) xmin=v[j];
+     if (pxmax=="" && (xmax==-1 || v[j]>xmax)) xmax=v[j];
+
+     if (xerr2=='yes') {
+       if (pxmin=="" && (xmin==-1 || v[j+1]<xmin)) xmin=v[j+1];
+       if (pxmax=="" && (xmax==-1 || v[j+1]>xmax)) xmax=v[j+1];
+       j++;
+     }
+
+     if (pymin=="" && (ymin==-1 || v[j+1]<ymin)) ymin=v[j+1];
+     if (pymax=="" && (ymax==-1 || v[j+1]>ymax)) ymax=v[j+1];
 
      if (yerr2=='yes') {
-       if (pymin=="" && (ymin==-1 || v[2]<ymin)) ymin=v[2];
-       if (pymax=="" && (ymax==-1 || v[2]>ymax)) ymax=v[2];
+       if (pymin=="" && (ymin==-1 || v[j+2]<ymin)) ymin=v[j+2];
+       if (pymax=="" && (ymax==-1 || v[j+2]>ymax)) ymax=v[j+2];
      }
    }
 }
@@ -192,12 +200,45 @@ for (graph=0; graph < 100; graph++) {
      if ('url_ext' in inf) dat['url_ext']=inf.url_ext;
      if ('anchor' in inf) dat['anchor']=inf.anchor;
 
-     var xx=data[q][0];
-     var yy=data[q][1];
+     j=0;
+
+     var xx=data[q][j];
+
+     /* Y variation */
+     if (xerr2=='yes') {
+        var xx1=data[q][j+1];
+
+        size=size/1.3;
+
+        j++;
+     }
+
+     var yy=data[q][j+1];
+
+     if (xerr2=='yes') {
+        svg.append("svg:line")
+            .attr("x1", xScale(xx))
+            .attr("x2", xScale(xx1))
+            .attr("y1", yScale(yy))
+            .attr("y2", yScale(yy))
+            .style("stroke", color)
+            .style("stroke-width", "1.5");
+
+/*
+        svg.append("svg:line")
+            .attr("x1", xScale(xx))
+            .attr("x2", xScale(xx))
+            .attr("y1", yScale(yy-4))
+            .attr("y2", yScale(yy+4))
+            .style("stroke", color)
+            .style("stroke-width", "1.5");
+
+*/
+     }
 
      /* Y variation */
      if (yerr2=='yes') {
-        var yy1=data[q][2];
+        var yy1=data[q][j+2];
 
         size=size/1.3;
 

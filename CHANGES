@@ -1,3 +1,5 @@
+* 2018.03.16 * improved D3 scatter visualization (xerr)
+
 * 2018.03.13 * improved result visualization (for ReQuEST)
 
 * 2018.02.25 * changed logic in ck replay (no reusing deps by default and rebuild packages)
