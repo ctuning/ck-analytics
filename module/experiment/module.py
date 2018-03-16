@@ -3801,6 +3801,9 @@ def prepare_html_selector(i):
               (wchoices)          - prepared unique choices
 
               (original_input)    - original (high-level) input from web to check keys
+
+              (add_refresh_cache) - if 'yes', show button to refresh cache
+              (add_reset)         - if 'yes', show buttons to reset form and show all choices
             }
 
     Output: {
@@ -3847,7 +3850,7 @@ def prepare_html_selector(i):
 
         nl=kk.get('new_line','')
         if nl=='yes':
-            h+='<br>\n<div id="ck_entries_space8"></div>\n'
+            h+='<br>\n<div id="ck_entries_space4"></div>\n'
 
         v=''
 
@@ -3875,9 +3878,17 @@ def prepare_html_selector(i):
         h+=i.get('keep_empty','')
         h+='<span style="white-space: nowrap"><b>'+n.replace(' ','&nbsp;')+':</b>&nbsp;'+r['html'].strip()+'</span>\n'
 
+        nl=kk.get('new_line_after','')
+        if nl=='yes':
+            h+='<br>\n<div id="ck_entries_space4"></div>\n'
+
+    if i.get('add_refresh_cache','')=='yes':
+       h+='<button class="ck_small_button" name="refresh_cache_'+form_name+'" onclick="document.'+form_name+'.submit();">Refresh cache</button>\n'
+
     if i.get('add_reset','')=='yes':
        h+='<button class="ck_small_button" name="reset_'+form_name+'" onclick="document.'+form_name+'.submit();">Reset form</button>\n'
        h+='<button class="ck_small_button" name="all_choices_'+form_name+'" onclick="document.'+form_name+'.submit();">Show all choices</button>\n'
+       h+='<div id="ck_entries_space4"></div>\n'
 
     if bd!='':
        h+='</div>\n' 
