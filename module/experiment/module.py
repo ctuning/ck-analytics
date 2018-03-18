@@ -3764,6 +3764,8 @@ def get_and_cache_results(i):
 
                row.update(meta_cache)
 
+               row['##repo_uoa']=q['repo_uoa']
+               row['##repo_uid']=q['repo_uid']
                row['##data_uoa']=q['data_uoa']
                row['##data_uid']=q['data_uid']
                row['##point_uid']=point_uid
