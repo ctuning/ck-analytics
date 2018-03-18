@@ -3611,7 +3611,7 @@ def prepare_selector(i):
                n=kk['name']
                v=kk.get('value','')
 
-               if v!='' and str(fix_value(meta.get(k,'')))!=str(v):
+               if kk.get('skip_update','')!='yes' and v!='' and str(fix_value(meta.get(k,'')))!=str(v):
                    skip=True
                    break
 
@@ -3672,7 +3672,7 @@ def prepare_selector(i):
                n=kk['name']
                v=kk.get('value','')
 
-               if v!='' and str(fix_value(meta.get(k,'')))!=str(v):
+               if kk.get('skip_update','')!='yes' and v!='' and str(fix_value(meta.get(k,'')))!=str(v):
                    skip=True
                    break
 
@@ -3953,6 +3953,10 @@ def get_unique_keys_from_list(i):
         # Process selector meta
         for kk in selector:
             kx=kk['key']
+
+            if kk.get('skip_update','')=='yes': 
+               continue
+
             k=ckey+kx
 
             info[k]=kk
