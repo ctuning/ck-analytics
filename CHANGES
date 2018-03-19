@@ -1,3 +1,5 @@
+* 2018.03.19 * added MobileNet model.species (for ReQuEST)
+
 * 2018.03.16 * improved D3 scatter visualization (xerr)
 
 * 2018.03.13 * improved result visualization (for ReQuEST)
