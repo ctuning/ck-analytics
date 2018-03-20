@@ -3459,7 +3459,7 @@ def browse(i):
 def fix_value(v):
     import re
 
-    if type(v)!=int and type(v)!=float and type(v)!=dict and type(v)!=list:
+    if v!=None and type(v)!=int and type(v)!=float and type(v)!=dict and type(v)!=list:
        v=re.sub(r'[^\x20-\x7f]',r'', v)
 
     return v
@@ -3971,9 +3971,10 @@ def get_unique_keys_from_list(i):
                    choices[k]=['']
                    wchoices[k]=[{'name':'','value':kk.get('default','')}]
 
-            v=meta.get(kx,'')
+            v=meta.get(kx, '')
+
 #            if v!='':
-            if v not in choices[k]: 
+            if v!=None and v not in choices[k]: 
                 choices[k].append(v)
 
                 muoa=kk.get('module_uoa','')
