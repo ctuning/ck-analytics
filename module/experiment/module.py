@@ -3579,10 +3579,11 @@ def prepare_selector(i):
         ek=kk.get('extra_key','')
 
         if reset:
-           if k in oi:
-              del(oi[k])
-           if ek!='' and ek in oi:
-              del(oi[ek])
+           if kk.get('skip_from_reset','')!='yes':
+              if k in oi:
+                 del(oi[k])
+              if ek!='' and ek in oi:
+                 del(oi[ek])
         else:
            v=''
            if oi.get(k,'')!='':
