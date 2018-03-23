@@ -3748,13 +3748,19 @@ def get_and_cache_results(i):
                      d=r['dict']
 
                      for k in view_cache:
-                         if '*' in k or '?' in k:
-                            import fnmatch
-                            for kk in d:
-                                if fnmatch.fnmatch(kk,k):
-                                    meta_cache[kk]=d[kk]
+                         if k.startswith('##meta#'):
+                            rx=ck.get_by_flat_key({'dict':meta, 'key':k})
+                            if rx['return']>0: return rx
+                            meta_cache[k]=rx['value']
+
                          else:
-                            meta_cache[k]=d.get(k,'')
+                            if '*' in k or '?' in k:
+                               import fnmatch
+                               for kk in d:
+                                   if fnmatch.fnmatch(kk,k):
+                                       meta_cache[kk]=d[kk]
+                            else:
+                               meta_cache[k]=d.get(k,'')
 
 #                  r=ck.flatten_dict({'dict':meta.get('meta',{}), 'prefix':'##meta#'})
 #                  if r['return']>0: return r
@@ -4012,7 +4018,7 @@ def get_unique_keys_from_list(i):
         elif tp=='float':
            wchoices[k]=sorted(wchoices[k], key=lambda x: ck.safe_float(x.get('value',0),0))
         else:
-           wchoices[k]=sorted(wchoices[k], key=lambda x: x.get('value',0))
+           wchoices[k]=sorted(wchoices[k], key=lambda x: x.get('value',''))
 
     # Convert to string for selector
     for k in wchoices:
