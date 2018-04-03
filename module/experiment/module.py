@@ -4027,7 +4027,7 @@ def get_unique_keys_from_list(i):
 
     # Check if only 1 choice in the selector and then select it
     for k in wchoices:
-        if not keep_empty and info[k].get('skip_empty','')!='yes' and len(wchoices[k])==2:
+        if not keep_empty and info[k].get('keep_empty','')!='yes' and info[k].get('skip_empty','')!='yes' and len(wchoices[k])==2:
            del(wchoices[k][0])
         if len(wchoices[k])==1:
            oi[ckey+k]=wchoices[k][0]['value']

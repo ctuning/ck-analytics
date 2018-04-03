@@ -1,3 +1,5 @@
+* 2018.04.03 * improved experiment selector for dashboard (for ReQuEST)
+
 * 2018.03.21 * added ResNet50 and Inception v3 model species (for ReQuEST)
 
 * 2018.03.19 * added MobileNet model.species (for ReQuEST)
