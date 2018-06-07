@@ -218,11 +218,17 @@ def html_viewer(i):
           if x!='':
              h+='\n<br>\n'+x+'\n'
 
+          top_urls=dd.get('top_urls',[])
+
           top_url=dd.get('top_url',{})
-          n_top_url=top_url.get('name','')
-          u_top_url=top_url.get('url','')
-          if n_top_url!='' and u_top_url!='':
-             h+='[&nbsp;<a href="'+u_top_url+'">'+n_top_url+'</a>&nbsp;] '
+          if len(top_url)!=0:
+             top_urls.append(top_url)
+
+          for top_url in top_urls:
+              n_top_url=top_url.get('name','')
+              u_top_url=top_url.get('url','')
+              if n_top_url!='' and u_top_url!='':
+                 h+='[&nbsp;<a href="'+u_top_url+'">'+n_top_url+'</a>&nbsp;] '
 
           if wurl!='' and dd.get('skip_discussion_link','')!='yes':
              h+='[&nbsp;<a href="'+wurl+'">Discussion wiki (comments, reproducibility, etc.)</a>&nbsp;]'
