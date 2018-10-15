@@ -418,7 +418,7 @@ def plot(i):
                    if v!=None and v<tmin[d]: tmin[d]=v
                    if v!=None and v>tmax[d]: tmax[d]=v 
 
-                if len(stmin[g])<=d:
+                if len(stmin[g])<=d and v!=None:
                    stmin[g].append(v)
                    stmax[g].append(v)
                 else:
