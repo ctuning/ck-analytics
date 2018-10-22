@@ -111,7 +111,7 @@ def check(i):
 
                   dv=behavior.get(kt,None)
 
-                  s='         - Condition on "'+kt+'" : '
+                  s='         - Condition on "'+kt+' '+str(x)+' '+str(y)+'" : '
 
                   if dv==None:
                      fine=False
