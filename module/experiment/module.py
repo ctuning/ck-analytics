@@ -2361,6 +2361,58 @@ def reproduce(i):
 
     return replay(i)
 
+
+##############################################################################
+# load pipeline info
+
+def load_pipeline(i):
+    """
+    Input:  {
+               data_uoa          - experiment data UOA
+               (repo_uoa)        - experiment repo UOA
+               (module_uoa)
+            }
+
+    Output: {
+              return       - return code =  0, if successful
+                                         >  0, if error
+              (error)      - error text if return > 0
+
+              pipeline     - pipeline's dict
+              pipeline_uoa - pipeline's UOA
+              pipeline_uid - pipeline's UID
+            }
+
+    """
+
+    ruoa=i.get('repo_uoa',      '')
+    muoa=i.get('module_uoa',    'experiment')
+    duoa=i.get('data_uoa',      '')
+
+    r=ck.access({   'action':       'load',
+                    'repo_uoa':     ruoa,
+                    'module_uoa':   muoa,
+                    'data_uoa':     duoa,
+    })
+    if r['return']>0: return r
+    p=r['path']
+    d=r['dict']
+
+    # Check pipeline
+    pxuoa=d.get('pipeline_uoa','')
+    pxuid=d.get('pipeline_uid','')
+    pipeline={}
+
+    if pxuoa!='' or pxuid!='':
+       p1=os.path.join(p, 'pipeline.json')
+       if os.path.isfile(p1):
+          rx=ck.load_json_file({'json_file':p1})
+          if rx['return']>0: return rx
+          pipeline=rx['dict']
+
+    return {'return':0, 'pipeline_uoa':pxuoa, 'pipeline_uid':pxuid, 'pipeline':pipeline}
+
+
 ##############################################################################
 # load all info about a given point and subpoint
 
@@ -2462,6 +2514,7 @@ def load_point(i):
                         dd[key]=rx['dict']
 
     return {'return':0, 'dict':dd, 'pipeline_uoa':pxuoa, 'pipeline_uid':pxuid, 'pipeline':pipeline}
+
 
 ##############################################################################
 # stat analysis with multiple points at the same time

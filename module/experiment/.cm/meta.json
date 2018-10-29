@@ -43,6 +43,9 @@
     "list_points": {
       "desc": "list all points in a given entry"
     },
+    "load_pipeline": {
+      "desc": "load pipeline info (id and dictionary contents)"
+    },
     "load_point": {
       "desc": "load all info about a given point (and subpoint)"
     },
