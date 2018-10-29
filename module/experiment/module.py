@@ -2375,6 +2375,7 @@ def load_point(i):
                (subpoint)        - subpoint (or skip, if there is only one)
 
                (add_pipeline)    - if 'yes', load pipeline from entry (if exists)
+               (no_points)       - if 'yes', just return the pipeline information and ignore the points
             }
 
     Output: {
@@ -2404,9 +2405,7 @@ def load_point(i):
     sp=i.get('subpoint','')
 
     ap=i.get('add_pipeline','')
-
-    # Check point
-    puid=i.get('point','')
+    load_points = i.get('no_points', '') != 'yes'
 
     r=list_points({'module_uoa':muoa,
                    'data_uoa':duoa,
@@ -2415,18 +2414,6 @@ def load_point(i):
     if r['return']>0: return r
     p=r['path']
     d=r['dict']
-
-    if puid=='':
-       pp=r['points']
-
-       if len(pp)==0:
-          return {'return':1, 'error':'points not found in the entry'}
-       elif len(pp)>1:
-          return {'return':1, 'error':'more than one point found - please prune your choice'}
-
-       puid=pp[0]
-
-    dd={}
 
     # Check pipeline
     pxuoa=d.get('pipeline_uoa','')
@@ -2440,23 +2427,39 @@ def load_point(i):
           if rx['return']>0: return rx
           pipeline=rx['dict']
 
-    # Start listing points
-    dirList=os.listdir(p)
-    added=False
-    for fn in sorted(dirList):
-        if fn.startswith('ckp-'):
-           if len(fn)>20 and fn[20]=='.':
-              uid=fn[4:20]
-              if uid==puid:
-                 i1=fn.find('.json')
-                 if i1>0:
-                    key=fn[21:i1]
-                    if sp!='' and key!='flat' and key!='deps' and key!='desc' and key!='features' and key!=sp:
-                       continue
-                    p1=os.path.join(p,fn)
-                    rx=ck.load_json_file({'json_file':p1})
-                    if rx['return']>0: return rx
-                    dd[key]=rx['dict']
+    dd={}
+
+    if load_points:
+        # Check point
+        puid=i.get('point','')
+
+        if puid=='':
+           pp=r['points']
+
+           if len(pp)==0:
+              return {'return':1, 'error':'points not found in the entry'}
+           elif len(pp)>1:
+              return {'return':1, 'error':'more than one point found - please prune your choice'}
+
+           puid=pp[0]
+
+        # Start listing points
+        dirList=os.listdir(p)
+        added=False
+        for fn in sorted(dirList):
+            if fn.startswith('ckp-'):
+               if len(fn)>20 and fn[20]=='.':
+                  uid=fn[4:20]
+                  if uid==puid:
+                     i1=fn.find('.json')
+                     if i1>0:
+                        key=fn[21:i1]
+                        if sp!='' and key!='flat' and key!='deps' and key!='desc' and key!='features' and key!=sp:
+                           continue
+                        p1=os.path.join(p,fn)
+                        rx=ck.load_json_file({'json_file':p1})
+                        if rx['return']>0: return rx
+                        dd[key]=rx['dict']
 
     return {'return':0, 'dict':dd, 'pipeline_uoa':pxuoa, 'pipeline_uid':pxuid, 'pipeline':pipeline}
 
