@@ -2492,8 +2492,9 @@ def load_point(i):
         point_uid   = i.get('point_uid', i.get('point') )
 
         if point_uid==None:
-            point_idx   = int(i.get('point_idx'))
+            point_idx   = i.get('point_idx')
             if point_idx!=None:
+                point_idx = int( point_idx )
                 if point_idx<len(pp):
                     point_uid = pp[point_idx]
                 else:
