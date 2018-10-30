@@ -1749,7 +1749,7 @@ def list_points(i):
           for q in points:
               ck.out(q)
 
-    return {'return':0, 'path':p, 'dict':d, 'points':points, 'subpoints':subpoints}
+    return {'return':0, 'path':p, 'dict':d, 'points':points, 'points_count':len(points), 'subpoints':subpoints}
 
 
 ##############################################################################
