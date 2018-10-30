@@ -1243,6 +1243,11 @@ def stat_analysis(i):
                   mmax='yes'
                d[k_max]=vmax
 
+               if compare:
+                  cvmax=dc.get(k_max, None)
+                  if cvmax!=None and vmax!=0 and vmax!=0.0:
+                     d[k+'#max_imp']=float(cvmax)/float(vmax)
+
                # Calculate #range (max-min)
                k_range=k+'#range'
                vrange=vmax-vmin
