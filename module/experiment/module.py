@@ -2423,7 +2423,8 @@ def load_point(i):
                (repo_uoa)        - experiment repo UOA
                (module_uoa)
 
-               (point)           - point (or skip, if there is only one), can be of format UID-<subpoint>
+               (point_uid)       - point (or skip, if there is only one), can be of format UID-<subpoint>
+               (point_idx)       - 0-based numeric index of the point (assuming they are sorted by UID)
                (subpoint)        - subpoint (or skip, if there is only one)
 
                (add_pipeline)    - if 'yes', load pipeline from entry (if exists)
@@ -2483,26 +2484,32 @@ def load_point(i):
 
     if load_points:
         # Check point
-        puid=i.get('point','')
 
-        if puid=='':
-           pp=r['points']
+        pp  = r['points']
+        if len(pp)==0:
+            return {'return':1, 'error':'points not found in the entry'}
 
-           if len(pp)==0:
-              return {'return':1, 'error':'points not found in the entry'}
-           elif len(pp)>1:
-              return {'return':1, 'error':'more than one point found - please prune your choice'}
+        point_uid   = i.get('point_uid', i.get('point') )
 
-           puid=pp[0]
+        if point_uid==None:
+            point_idx   = int(i.get('point_idx'))
+            if point_idx!=None:
+                if point_idx<len(pp):
+                    point_uid = pp[point_idx]
+                else:
+                    return {'return':1, 'error': 'point_idx(=={}) out of range - only {} points available'.format(point_idx, len(pp))}
+            elif len(pp)==1:
+                point_uid   = pp[0]
+            else:
+                return {'return':1, 'error':'more than one point found - please prune your choice by using --point or --point_idx'}
 
         # Start listing points
         dirList=os.listdir(p)
-        added=False
         for fn in sorted(dirList):
             if fn.startswith('ckp-'):
                if len(fn)>20 and fn[20]=='.':
                   uid=fn[4:20]
-                  if uid==puid:
+                  if uid==point_uid:
                      i1=fn.find('.json')
                      if i1>0:
                         key=fn[21:i1]
