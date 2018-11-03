@@ -60,5 +60,5 @@ W:
 N: Wen Yang
 E: GitHub: @w-simon
 O: 
-C: improving autotuning documentation and fixing bugs
+C: improving autotuning documentation and fixing bugs; added max_imp in stat_analysis
 W:
