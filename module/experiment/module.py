@@ -2337,14 +2337,7 @@ def replay(i):
 
 def rerun(i):
     """
-    Input:  { see 'replay'
-            }
-
-    Output: {
-              return       - return code =  0, if successful
-                                         >  0, if error
-              (error)      - error text if return > 0
-            }
+    See "replay" API
     """
 
     return replay(i)
@@ -2354,14 +2347,7 @@ def rerun(i):
 
 def reproduce(i):
     """
-    Input:  { see 'replay'
-            }
-
-    Output: {
-              return       - return code =  0, if successful
-                                         >  0, if error
-              (error)      - error text if return > 0
-            }
+    See "replay" API
     """
 
     return replay(i)
