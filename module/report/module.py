@@ -153,7 +153,7 @@ def html_viewer(i):
              h+='<div id="ck_entries_space4"></div>\n'
              h+='<span id="ck_article_authors">\n'
              h+='<i>'+sub_title+'</i><br>\n'
-             h+='</span></div>\n'
+             h+='</span>\n'
 
           if dd.get('skip_authors','')!='yes':
              if len(authors)!='':
