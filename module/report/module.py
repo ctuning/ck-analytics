@@ -138,6 +138,7 @@ def html_viewer(i):
           raw='yes'
        else:
           title=dd.get('title','')
+          sub_title=dd.get('sub_title','')
           authors=dd.get('authors',[])
           affs=dd.get('affiliations',{})
           cauthor=dd.get('cor_author_email','')
@@ -145,44 +146,51 @@ def html_viewer(i):
           mwc=dd.get('media_wiki_commands','')
 
           h+='<div id="ck_entries">\n'
-       
-          h+='<center><span id="ck_article_title">'+title+'</span><br>'
 
-          if len(authors)!='':
+          h+='<center><span id="ck_article_title">'+title+'</span><br>\n'
+
+          if sub_title!='':
              h+='<div id="ck_entries_space4"></div>\n'
              h+='<span id="ck_article_authors">\n'
+             h+='<i>'+sub_title+'</i><br>\n'
+             h+='</span></div>\n'
 
-             x=''
-             for a in authors:
-                 name=a.get('name','')
-                 aff=a.get('affiliation','')
+          if dd.get('skip_authors','')!='yes':
+             if len(authors)!='':
+                h+='<div id="ck_entries_space4"></div>\n'
+                h+='<span id="ck_article_authors">\n'
 
-                 url=a.get('url','')
-                 if url!='': name='<a href="'+url+'">'+name+'</a>'
+                x=''
+                for a in authors:
+                    name=a.get('name','')
+                    aff=a.get('affiliation','')
 
-                 if x!='': x+=', '
-                 x+=name+'&nbsp;<sup>'+aff+'</sup>'
+                    url=a.get('url','')
+                    if url!='': name='<a href="'+url+'">'+name+'</a>'
 
-             h+=x+'<br>\n'
-             h+='</span>\n'
+                    if x!='': x+=', '
+                    x+=name+'&nbsp;<sup>'+aff+'</sup>'
 
-          if len(affs)>0:
-             h+='<div id="ck_entries_space4"></div>\n'
-             h+='<span id="ck_article_affiliations">\n'
+                h+=x+'<br>\n'
+                h+='</span>\n'
 
-             x=''
-             for a in sorted(affs, key=int):
-                 af=affs[str(a)]
-                 name=af.get('name','')
+             if len(affs)>0:
+                h+='<div id="ck_entries_space4"></div>\n'
+                h+='<span id="ck_article_affiliations">\n'
 
-                 url=af.get('url','')
-                 if url!='': name='<a href="'+url+'">'+name+'</a>'
+                x=''
+                for a in sorted(affs, key=int):
+                    af=affs[str(a)]
+                    name=af.get('name','')
 
-                 if x!='': x+=',&nbsp;&nbsp;&nbsp;'
-                 x+='<sup>'+str(a)+'</sup>&nbsp;'+name
+                    url=af.get('url','')
+                    if url!='': name='<a href="'+url+'">'+name+'</a>'
 
-             h+=x+'<br>\n'
-             h+='</span>\n'
+                    if x!='': x+=',&nbsp;&nbsp;&nbsp;'
+                    x+='<sup>'+str(a)+'</sup>&nbsp;'+name
+
+                h+=x+'<br>\n'
+                h+='</span>\n'
 
           if dd.get('add_date_to_the_top','')!='':
              h+='<span id="ck_article_affiliations">\n'
