@@ -7,16 +7,16 @@
     "dashboard": {
       "desc": "open dashboard"
     },
+    "html_viewer": {
+      "desc": "user-friendly html view",
+      "for_web": "yes"
+    },
     "show": {
       "desc": "show dashboard",
       "for_web": "yes"
     },
     "show_json": {
       "desc": "return json instead of html",
-      "for_web": "yes"
-    },
-    "html_viewer": {
-      "desc": "user-friendly html view",
       "for_web": "yes"
     }
   },
@@ -41,5 +41,7 @@
   },
   "tags": [
     "ck-ai-json-web-api"
-  ]
+  ],
+  "workflow": "yes",
+  "workflow_type": "universal image classification pipeline"
 }
