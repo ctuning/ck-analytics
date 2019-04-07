@@ -50,6 +50,10 @@ Extra functionality (some machine learning functions):
 
 * TensorFlow (will be installed automatically by CK)
 
+Maintainers
+===========
+* [dividiti](http://dividiti.com)
+
 Authors
 =======
 
