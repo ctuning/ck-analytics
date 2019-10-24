@@ -1663,6 +1663,8 @@ def list_points(i):
 
                (point)             - get subpoints for a given point
                (skip_subpoints)    - if 'yes', do not show number of subpoints
+
+               (extra_path)        - add extra path before points (useful when versioning is used)
             }
 
     Output: {
@@ -1686,6 +1688,8 @@ def list_points(i):
 
     puid=i.get('point','')
 
+    extra_path=i.get('extra_path','')
+
     if p=='':
        # Attempt to load entry
        duoa=i.get('data_uoa','')
@@ -1697,11 +1701,22 @@ def list_points(i):
            'module_uoa':muoa,
            'data_uoa':duoa,
            'repo_uoa':ruoa}
+       if i.get('repo_module_uoa','')!='': ii['repo_module_uoa']=i['repo_module_uoa']
+
        if rruoa!='': ii['remote_repo_uoa']=rruoa
        rx=ck.access(ii)
        if rx['return']>0: return rx
        p=rx['path']
        d=rx['dict']
+
+    if extra_path!='':
+       p=os.path.join(p, extra_path)
+       # Check if there is versions meta
+       pmeta=os.path.join(p, '.cm', 'meta.json')
+       if os.path.isfile(pmeta):
+          rx=ck.load_json_file({'json_file':pmeta})
+          if rx['return']>0: return rx
+          d=rx['dict']
 
     points=[]
     skiped_points=[]
@@ -2451,9 +2466,13 @@ def load_point(i):
     ap=i.get('add_pipeline','')
     load_points = i.get('no_points', '') != 'yes'
 
+    extra_path=i.get('extra_path','')
+
     r=list_points({'module_uoa':muoa,
                    'data_uoa':duoa,
                    'repo_uoa':ruoa,
+                   'repo_module_uoa':i.get('repo_module_uoa',''),
+                   'extra_path':extra_path,
                    'out':oo})
     if r['return']>0: return r
     p=r['path']
@@ -3752,6 +3771,8 @@ def get_and_cache_results(i):
               (view_cache)     - list of keys to add to cache
 
               (table_view)     - keys to add to table
+
+              (check_extra_path) - if 'yes', add extra_path based on versions in meta (codereef)
             }
 
     Output: {
@@ -3771,11 +3792,34 @@ def get_and_cache_results(i):
     view_cache=i.get('view_cache',[])
     table_view=i.get('table_view',[])
 
+    b_check_extra_path=(i.get('check_extra_path','')=='yes')
+
     table=[]
     ix=0
     for q in splst:
         path=q['path']
         meta=q['meta']
+
+        add_extra_dict=meta.get('add_extra_dict',{})
+
+        extra_path=''
+        versions=meta.get('versions',[])
+        if b_check_extra_path and len(versions)>0:
+           last_version=versions[-1].get('version','')
+           extra_path=os.path.join(last_version,'src')
+
+        if extra_path!='':
+           path=os.path.join(path, extra_path)
+           # Check if there is versions meta
+           pmeta=os.path.join(path, '.cm', 'meta.json')
+           if os.path.isfile(pmeta):
+              rx=ck.load_json_file({'json_file':pmeta})
+              if rx['return']>0: return rx
+              meta=rx['dict']
+
+              if 'meta' not in meta:
+                 meta['meta']={}
+              meta['meta'].update(add_extra_dict)
 
         # Read experiment points and cache them or reuse cache (per module)!
         p=os.listdir(path)

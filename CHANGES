@@ -1,3 +1,5 @@
+* 2019.10.25 * added support for versioning in experiments
+
 * 2018.11.03 * https://github.com/ctuning/ck-analytics/pull/9
 
 * 2018.05.10 * added CK model.species for AlexNet (for distributed inference workflow from ReQuEST submission)
