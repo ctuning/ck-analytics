@@ -26,15 +26,9 @@ Author
 ======
 * [Grigori Fursin](https://fursin.net)
 
-Current maintainers
-===================
-* [cTuning foundation](https://cTuning.org)
-* [dividiti](http://dividiti.com)
-
 Contributors
 ============
 * See the list of [contributors](https://github.com/ctuning/ck-analytics/blob/master/CONTRIBUTIONS)
-
 
 Shared modules with actions
 ===========================
