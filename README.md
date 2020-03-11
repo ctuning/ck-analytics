@@ -22,14 +22,14 @@ Further info:
 * [Shared portable CK program workflows](https://codereef.ai/portal/c/program)
 * [Related CK publications]( https://github.com/ctuning/ck/wiki/Publications )
 
-Author(s)
-=========
+Author
+======
 * [Grigori Fursin](https://fursin.net)
 
 Current maintainers
 ===================
-* [dividiti](http://dividiti.com)
 * [cTuning foundation](https://cTuning.org)
+* [dividiti](http://dividiti.com)
 
 Contributors
 ============
