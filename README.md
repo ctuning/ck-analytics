@@ -24,7 +24,7 @@ Further info:
 
 Author(s)
 =========
-* [Grigori Fursin](https://fursin.net) and the [cTuning foundation](https://cTuning.org)
+* [Grigori Fursin](https://fursin.net)
 
 Current maintainers
 ===================
