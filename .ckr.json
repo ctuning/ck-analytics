@@ -1,9 +1,10 @@
 {
-  "data_name": "CK analytics", 
-  "data_alias": "ck-analytics", 
-  "data_uid": "76c4424a1473c873", 
-  "data_uoa": "ck-analytics", 
+  "data_alias": "ck-analytics",
+  "data_name": "CK analytics",
+  "data_uid": "76c4424a1473c873",
+  "data_uoa": "ck-analytics",
   "dict": {
+    "desc": "Unified CK JSON API for predictive analytics, statistical analysis, graphs, experiments and interactive reports (see the <a href=\"http://cKnowledge.org/rpi-crowd-tuning\">real use case</a>).",
     "repo_deps": [
       {
         "repo_uoa": "ck-web"
@@ -11,8 +12,8 @@
       {
         "repo_uoa": "ck-env"
       }
-    ], 
-    "url": "https://github.com/ctuning/ck-analytics", 
-    "shared": "git"
+    ],
+    "shared": "git",
+    "url": "https://github.com/ctuning/ck-analytics"
   }
 }

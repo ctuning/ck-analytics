@@ -1,24 +1,76 @@
-Unified predictive analytics with CK JSON API and web-services
-==============================================================
+Unifying predictive analytics with the CK JSON API
+==================================================
 
 [![compatibility](https://github.com/ctuning/ck-guide-images/blob/master/ck-compatible.svg)](https://github.com/ctuning/ck)
 [![automation](https://github.com/ctuning/ck-guide-images/blob/master/ck-artifact-automated-and-reusable.svg)](http://cTuning.org/ae)
-
-[![DOI](https://zenodo.org/badge/26265044.svg)](https://zenodo.org/badge/latestdoi/26265044)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
-This Collective Knowledge extension repository contains CK modules 
-to unify access to various predictive analytics engines (scipy, R, DNN) 
-from software, command line and web-services via CK JSON API: http://cKnowledge.org/ai
+This is a [Collective Knowledge](https://github.com/ctuning/ck) repository
+containing CK modules and actions to unify the access to different predictive 
+analytics frameworks (scipy, R, DNN) using our standard CK JSON API. 
 
-We use it in our [open research](https://github.com/ctuning/ck/wiki/Enabling-open-science) 
-to simplify and unify experimentation such as collaborative optimization of computer systems
-and DNN across diverse hardware and software, and expose it to predictive analytics
-(statistical analysis, feature selection, machine learning).
+The community use it research workflows/pipelines to enable 
+collaborative, reusable and reproducible experimentation.
 
-Prerequisites
-=============
-* Collective Knowledge Framework: http://github.com/ctuning/ck
+See our recent papers for more details: 
+[1](https://codereef.ai/portal/c/report/rpi3-crowd-tuning-2017-interactive), 
+[2](https://arxiv.org/abs/2001.07935).
+
+Further info:
+* [Open CodeReef platform to publish and download stable CK components](https://CodeReef.ai/portal/static/docs)
+* [Documentation about portable CK workflows](https://github.com/ctuning/ck/wiki/Portable-workflows)
+* [Shared portable CK program workflows](https://codereef.ai/portal/c/program)
+* [Related CK publications]( https://github.com/ctuning/ck/wiki/Publications )
+
+Author(s)
+=========
+* [Grigori Fursin](https://fursin.net) and the [cTuning foundation](https://cTuning.org)
+
+Current maintainers
+===================
+* [dividiti](http://dividiti.com)
+* [cTuning foundation](https://cTuning.org)
+
+Contributors
+============
+* See the list of [contributors](https://github.com/ctuning/ck-analytics/blob/master/CONTRIBUTIONS)
+
+
+Shared modules with actions
+===========================
+
+* [advice](https://codereef.ai/portal/c/module/advice)
+* [experiment](https://codereef.ai/portal/c/module/experiment)
+* [experiment.raw](https://codereef.ai/portal/c/module/experiment.raw)
+* [experiment.view](https://codereef.ai/portal/c/module/experiment.view)
+* [graph](https://codereef.ai/portal/c/module/graph)
+* [graph.dot](https://codereef.ai/portal/c/module/graph.dot)
+* [jnotebook](https://codereef.ai/portal/c/module/jnotebook)
+* [math.conditions](https://codereef.ai/portal/c/module/math.conditions)
+* [math.frontier](https://codereef.ai/portal/c/module/math.conditions)
+* [math.variation](https://codereef.ai/portal/c/module/math.variation)
+* [model](https://codereef.ai/portal/c/module/model)
+* [model.image.classification](https://codereef.ai/portal/c/module/model.image.classification)
+* [model.r](https://codereef.ai/portal/c/module/model.r)
+* [model.sklearn](https://codereef.ai/portal/c/module/model.sklearn)
+* [model.species](https://codereef.ai/portal/c/module/model.species)
+* [model.tf](https://codereef.ai/portal/c/module/model.tf)
+* [report](https://codereef.ai/portal/c/module/report)
+* [table](https://codereef.ai/portal/c/module/table)
+
+Installation
+============
+
+First install the CK framework as described [here](https://github.com/ctuning/ck#installation).
+
+Then install this CK repository as follows:
+
+```
+ $ ck pull repo:ck-analytics
+
+ $ ck list ck-analytics:module:*
+
+```
 
 Dependencies
 ============
@@ -50,95 +102,12 @@ Extra functionality (some machine learning functions):
 
 * TensorFlow (will be installed automatically by CK)
 
-Maintainers
-===========
-* [dividiti](http://dividiti.com)
 
-Authors
-=======
-
-* [Grigori Fursin](http://fursin.net/research.html), cTuning foundation/dividiti
-
-License
-=======
-* BSD, 3-clause
-
-Installation
-============
-
-> ck pull repo:ck-analytics
+Usage
+=====
 
 Please, check various examples with JSON API and meta information 
 in the [demo directory](https://github.com/ctuning/ck-analytics/tree/master/demo).
-
-Modules with actions
-====================
-
-experiment - universal experiment entries
-
-  * add - process and add experiment
-  * convert_table_to_csv - Convert experiment table to CSV
-  * delete_points - delete multiple points from multiple entries
-  * filter - filter / pre-process data
-  * get - get points from multiple entries
-  * get_all_meta - get all meta information from all entries
-  * html_viewer - view experiment as html
-  * list_points - list all points in a given entry
-  * load_point - load all info about a given point (and subpoint)
-  * multi_stat_analysis - perform statistical analysis (with multiple points at the same time)
-  * replay - replay experiment == the same as reproduce
-  * reproduce - reproduce/replay/rerun a given experiment
-  * rerun - rerun experiment == the same as reproduce
-  * sort_table - sort table, substitute index with a sequence (html)
-  * stat_analysis - process multiple experimental results and perform statistical analysis (including expected values)
-  * substitute_x_with_loop - substitute x axis in table with a sequence
-
-experiment.view - customizable views for experiments
-
-graph - universal graphs for experiments
-
-  * continuous_plot - update plot periodically (useful to demonstrate continuous experiments and active learning)
-  * html_viewer - view graph in html
-  * plot - plot graph
-  * replay - replay saved graph (to always keep default graphs for interactive papers)
-
-graph.dot - .dot graphs (graphviz - useful to customize decision trees from predictive analytics)
-
-  * convert_to_decision_tree - convert .dot file a universal decision tree (useful before converting into C code for adaptive applications and libraries)
-
-math.frontier - detecting (Pareto) frontier for multi-objective optimizations
-
-  * filter - filter experiments with multiple characteristics (performance, energy, accuracy, size, etc) to leave only points on a (Pareto) frontier
-
-math.variation - analyzing variation of experimental results (min,max,average,expected values,etc)
-
-  * analyze - analyze variation of experimental results including multiple expected values
-
-model - universal predictive modeling
-
-  * build - build predictive model
-  * convert_to_csv - convert table to CSV
-  * use - use existing model to predict values
-  * validate - validate predictive model (detect mispredictions, calculate RMSE, etc)
-
-model.r - predictive modeling via R
-
-  * build - build predictive model
-  * validate - validate predictive model
-
-model.sklearn - predictive modeling via python-based scikit-learn
-
-  * build - build predictive model
-  * convert_categories_to_floats - convert categories to floats
-  * validate - validate predictive model
-
-report - preparing experimental reports (html)
-
-  * html_viewer - view report as html
-
-table - preparing experimental tables (txt,html)
-
-  * draw - draw experiment table (in txt or html)
 
 CK AI JSON API
 ==============
@@ -146,54 +115,9 @@ CK AI JSON API
 We provide unfied JSON API for self-optimizing DNN:
 * Demo: http://cknowledge.org/repo/web.php?template=ck-ai-basic
 * Wiki: https://github.com/ctuning/ck/wiki/Unifying-AI-API
-* CMD: ck browse advice
 
-Publications
-============
+Questions and comments
+======================
 
-The concepts have been described in the following publications:
-
-```
-@inproceedings{ck-date16,
-    title = {{Collective Knowledge}: towards {R\&D} sustainability},
-    author = {Fursin, Grigori and Lokhmotov, Anton and Plowman, Ed},
-    booktitle = {Proceedings of the Conference on Design, Automation and Test in Europe (DATE'16)},
-    year = {2016},
-    month = {March},
-    url = {https://www.researchgate.net/publication/304010295_Collective_Knowledge_Towards_RD_Sustainability}
-}
-
-@inproceedings{cm:29db2248aba45e59:cd11e3a188574d80,
-    title = {{Collective Mind, Part II}: Towards Performance- and Cost-Aware Software Engineering as a Natural Science},
-    author = {Fursin, Grigori and Memon, Abdul and Guillon, Christophe and Lokhmotov, Anton},
-    booktitle = {18th International Workshop on Compilers for Parallel Computing (CPC'15)},
-    year = {2015},
-    url = {https://arxiv.org/abs/1506.06256},
-    month = {January}
-}
-
-@inproceedings{Fur2009,
-  author =    {Grigori Fursin},
-  title =     {{Collective Tuning Initiative}: automating and accelerating development and optimization of computing systems},
-  booktitle = {Proceedings of the GCC Developers' Summit},
-  year =      {2009},
-  month =     {June},
-  location =  {Montreal, Canada},
-  keys =      {http://www.gccsummit.org/2009}
-  url  =      {https://scholar.google.com/citations?view_op=view_citation&hl=en&user=IwcnpkwAAAAJ&cstart=20&citation_for_view=IwcnpkwAAAAJ:8k81kl-MbHgC}
-}
-```
-
-* http://arxiv.org/abs/1506.06256
-* http://hal.inria.fr/hal-01054763
-* https://hal.inria.fr/inria-00436029
-* http://arxiv.org/abs/1407.4075
-* https://scholar.google.com/citations?view_op=view_citation&hl=en&user=IwcnpkwAAAAJ&citation_for_view=IwcnpkwAAAAJ:LkGwnXOMwfcC
-
-Feedback
-========
-
-If you have problems, questions or suggestions, do not hesitate to get in touch
-via the following mailing lists:
-* https://groups.google.com/forum/#!forum/collective-knowledge
-* https://groups.google.com/forum/#!forum/ctuning-discussions
+Please feel free to get in touch with the [CK community](https://github.com/ctuning/ck/wiki/Contacts) 
+if you have any questions, suggestions and comments!
