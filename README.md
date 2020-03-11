@@ -30,8 +30,8 @@ Contributors
 ============
 * See the list of [contributors](https://github.com/ctuning/ck-analytics/blob/master/CONTRIBUTIONS)
 
-Shared modules with actions
-===========================
+Shared CK modules with actions
+==============================
 
 * [advice](https://codereef.ai/portal/c/module/advice)
 * [experiment](https://codereef.ai/portal/c/module/experiment)
