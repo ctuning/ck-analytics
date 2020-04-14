@@ -13,14 +13,14 @@ The community use it research workflows/pipelines to enable
 collaborative, reusable and reproducible experimentation.
 
 See our recent papers for more details: 
-[1](https://codereef.ai/portal/c/report/rpi3-crowd-tuning-2017-interactive), 
+[1](https://cKnowledge.io/report/rpi3-crowd-tuning-2017-interactive), 
 [2](https://arxiv.org/abs/2001.07935).
 
 Further info:
-* [Open CodeReef platform to publish and download stable CK components](https://CodeReef.ai/portal/static/docs)
+* [Open CK platform to publish and download stable CK components](https://cKnowledge.io)
 * [Documentation about portable CK workflows](https://github.com/ctuning/ck/wiki/Portable-workflows)
-* [Shared portable CK program workflows](https://codereef.ai/portal/c/program)
-* [Related CK publications]( https://github.com/ctuning/ck/wiki/Publications )
+* [Shared portable CK program workflows](https://cKnowledge.io/programs)
+* [Related CK publications](https://github.com/ctuning/ck/wiki/Publications)
 
 Author
 ======
@@ -33,24 +33,24 @@ Contributors
 Shared CK modules with actions
 ==============================
 
-* [advice](https://codereef.ai/portal/c/module/advice)
-* [experiment](https://codereef.ai/portal/c/module/experiment)
-* [experiment.raw](https://codereef.ai/portal/c/module/experiment.raw)
-* [experiment.view](https://codereef.ai/portal/c/module/experiment.view)
-* [graph](https://codereef.ai/portal/c/module/graph)
-* [graph.dot](https://codereef.ai/portal/c/module/graph.dot)
-* [jnotebook](https://codereef.ai/portal/c/module/jnotebook)
-* [math.conditions](https://codereef.ai/portal/c/module/math.conditions)
-* [math.frontier](https://codereef.ai/portal/c/module/math.conditions)
-* [math.variation](https://codereef.ai/portal/c/module/math.variation)
-* [model](https://codereef.ai/portal/c/module/model)
-* [model.image.classification](https://codereef.ai/portal/c/module/model.image.classification)
-* [model.r](https://codereef.ai/portal/c/module/model.r)
-* [model.sklearn](https://codereef.ai/portal/c/module/model.sklearn)
-* [model.species](https://codereef.ai/portal/c/module/model.species)
-* [model.tf](https://codereef.ai/portal/c/module/model.tf)
-* [report](https://codereef.ai/portal/c/module/report)
-* [table](https://codereef.ai/portal/c/module/table)
+* [advice](https://cKnowledge.io/c/module/advice)
+* [experiment](https://cKnowledge.io/c/module/experiment)
+* [experiment.raw](https://cKnowledge.io/c/module/experiment.raw)
+* [experiment.view](https://cKnowledge.io/c/module/experiment.view)
+* [graph](https://cKnowledge.io/c/module/graph)
+* [graph.dot](https://cKnowledge.io/c/module/graph.dot)
+* [jnotebook](https://cKnowledge.io/c/module/jnotebook)
+* [math.conditions](https://cKnowledge.io/c/module/math.conditions)
+* [math.frontier](https://cKnowledge.io/c/module/math.conditions)
+* [math.variation](https://cKnowledge.io/c/module/math.variation)
+* [model](https://cKnowledge.io/c/module/model)
+* [model.image.classification](https://cKnowledge.io/c/module/model.image.classification)
+* [model.r](https://cKnowledge.io/c/module/model.r)
+* [model.sklearn](https://cKnowledge.io/c/module/model.sklearn)
+* [model.species](https://cKnowledge.io/c/module/model.species)
+* [model.tf](https://cKnowledge.io/c/module/model.tf)
+* [report](https://cKnowledge.io/c/module/report)
+* [table](https://cKnowledge.io/c/module/table)
 
 Installation
 ============

@@ -3772,7 +3772,7 @@ def get_and_cache_results(i):
 
               (table_view)     - keys to add to table
 
-              (check_extra_path) - if 'yes', add extra_path based on versions in meta (codereef)
+              (check_extra_path) - if 'yes', add extra_path based on versions in meta (CK platform)
             }
 
     Output: {
