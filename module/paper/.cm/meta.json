@@ -11,7 +11,6 @@
   "developer_webpage": "http://fursin.net",
   "license": "See CK LICENSE.txt for licensing details",
   "module_deps": {
-    "dissemination.publication": "29db2248aba45e59"
   },
   "workflow": "yes",
   "workflow_type": "workflow to preprocess interactive papers"

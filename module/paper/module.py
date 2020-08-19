@@ -29,25 +29,3 @@ def init(i):
 
     """
     return {'return':0}
-
-##############################################################################
-# process article
-
-def preprocess(i):
-    """
-    Input:  {
-            }
-
-    Output: {
-              return       - return code =  0, if successful
-                                         >  0, if error
-              (error)      - error text if return > 0
-            }
-
-    """
-
-    # Redirect to dissemination.publication
-
-    i['module_uoa']=cfg['module_deps']['dissemination.publication']
-
-    return ck.access(i)
