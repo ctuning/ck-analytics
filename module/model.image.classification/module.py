@@ -579,7 +579,7 @@ def html_viewer(i):
        h+='</table>\n'
        h+='</center>\n'
 
-    h+='<BR><center><i>Please, report any illegal/copyrighted content to <a href="mailto:admin@dividiti.com">dividiti</a> and we will remove it within 48 hours!</i></center><br><br>'
+    h+='<BR><center><i>Please, report any illegal/copyrighted content <a href="mailto:admin@cKnowledge.org">here</a> and we will remove it within 48 hours!</i></center><br><br>'
 
     h+='<hr>\n'
 
