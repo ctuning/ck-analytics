@@ -161,7 +161,7 @@ def show(i):
     prediction=''
 
     if len(el)==0:
-       h+='<i>DNN engine is not installed - contact <a href="mailto:admin@dividiti.com">dividiti</a> to install this engine and related models in the CK AI cloud</i><br><br>'
+       h+='<i>DNN engine is not installed - contact <a href="mailto:admin@cKnowledge.org">admin</a> to install this engine and related models in the CK AI cloud</i><br><br>'
        warning='DNN engine is not installed'
     else:
        h+='<i>'+str(len(el))+' engine(s) installed (different optimizations and platforms)</i><br>'
@@ -178,7 +178,7 @@ def show(i):
        models=r['lst']
 
        if len(models)==0:
-          h+='<i>DNN models for this engine are not installed - contact <a href="mailto:admin@dividiti.com">dividiti</a> to install more models in the CK AI cloud</i><br><br>'
+          h+='<i>DNN models for this engine are not installed - contact <a href="mailto:admin@cKnowledge.org">admin</a> to install more models in the CK AI cloud</i><br><br>'
           warning='DNN models for this engine are not installed'
        else:
           h+='<i>'+str(len(models))+' model(s) installed (different topology and parameters)</i><br><br>'
