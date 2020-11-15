@@ -1,6 +1,8 @@
 Unifying predictive analytics with the CK JSON API
 ==================================================
 
+**All CK components for AI and ML are now collected in [one repository](https://github.com/ctuning/ai)**
+
 *This project is hosted by the [cTuning foundation (non-profit R&D organization)](https://cTuning.org)*
 
 [![compatibility](https://github.com/ctuning/ck-guide-images/blob/master/ck-compatible.svg)](https://github.com/ctuning/ck)
